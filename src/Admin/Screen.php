@@ -7,6 +7,7 @@
 
 namespace ProductPublishGuard\Admin;
 
+use ProductPublishGuard\Settings\Settings_Page;
 use WP_Post;
 use WP_Screen;
 
@@ -38,10 +39,13 @@ final class Screen {
 	/**
 	 * Hook suffix of the settings page, as produced by `add_submenu_page( 'woocommerce', … )`.
 	 *
+	 * Derived from the menu slug rather than repeated, so the two cannot drift apart and
+	 * leave the settings page silently unstyled.
+	 *
 	 * @since 1.0.0
 	 * @var string
 	 */
-	public const SETTINGS_HOOK = 'woocommerce_page_wcpg-settings';
+	public const SETTINGS_HOOK = 'woocommerce_page_' . Settings_Page::MENU_SLUG;
 
 	/**
 	 * Hook suffixes that render a single post.

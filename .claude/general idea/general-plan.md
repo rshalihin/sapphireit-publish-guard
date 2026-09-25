@@ -825,9 +825,9 @@ Use plugin-specific class naming to prevent collisions.
 Example:
 
 ```css
-.wcpc-checklist {}
-.wcpc-checklist__item {}
-.wcpc-checklist__item--error {}
+.sit-wcpg-checklist {}
+.sit-wcpg-checklist__item {}
+.sit-wcpg-checklist__item--error {}
 ```
 
 Avoid generic classes such as:

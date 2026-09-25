@@ -159,7 +159,7 @@ final class Plugin {
 		load_plugin_textdomain(
 			'product-publish-guard',
 			false,
-			dirname( plugin_basename( WCPG_FILE ) ) . '/languages'
+			dirname( plugin_basename( SIT_WCPG_FILE ) ) . '/languages'
 		);
 	}
 
@@ -181,7 +181,7 @@ final class Plugin {
 	/**
 	 * Get the populated rule registry.
 	 *
-	 * Population fires `wcpg_register_rules`, so third-party rules are available to
+	 * Population fires `sit_wcpg_register_rules`, so third-party rules are available to
 	 * every caller of this method.
 	 *
 	 * @since 1.0.0

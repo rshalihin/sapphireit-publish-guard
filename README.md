@@ -33,7 +33,7 @@ npm install          # wp-scripts + wp-env
 npm run build        # build/editor.js, build/editor.css, build/admin.css
 npm run start        # watch mode
 
-composer lint        # PHPCS, WordPress ruleset, security sniffs at error severity
+composer lint        # PHPCS (WordPress ruleset, security sniffs at error severity) + prefix guard
 composer test        # PHPUnit
 npm run lint:js
 npm run test:unit:js
@@ -61,8 +61,8 @@ npm run env:floor    # WordPress 6.5 + WooCommerce 9.0.0, PHP 8.0 (the declared 
 ## Layout
 
 ```
-product-publish-guard.php   Plugin header, constants, wcpg_bootstrap()
-uninstall.php               Removes wcpg_settings and the notice transients
+product-publish-guard.php   Plugin header, constants, sit_wcpg_bootstrap()
+uninstall.php               Removes sit_wcpg_settings and the notice transients
 src/                        PHP only, PSR-4 under ProductPublishGuard\
   Autoloader.php            src/Some/Class_Name.php -> ProductPublishGuard\Some\Class_Name
   Plugin.php                Lazy service locator + hook wiring
@@ -79,9 +79,13 @@ for anything this file summarises.
 
 ## Conventions
 
-* Everything the plugin owns is prefixed `wcpg_` — options, transients, hooks, cache
-  groups, CSS classes and the JS global. `grep -r wcpg` finds every touch point.
-* One option row (`wcpg_settings`). No custom tables, post types, taxonomies or
+* Everything the plugin stores or registers globally carries one prefix, spelled per
+  context: `sit_wcpg_` for functions, hooks, options, transients and error codes;
+  `SIT_WCPG_` for constants; `sit-wcpg-` for script handles, admin slugs, HTML ids and
+  CSS classes; `sit-wcpg/v1` for the REST namespace; `sitWcpg…` for JS globals. The full
+  contract is `.claude/plan/coding-plan.md` §10.6, and `composer lint:prefix` fails on
+  any leftover of the retired prefix.
+* One option row (`sit_wcpg_settings`). No custom tables, post types, taxonomies or
   capabilities, and no role edits.
 * Rules exist only in PHP. The browser sends a draft snapshot and PHP validates it, so
   the live checklist and the publish guard can never disagree.

@@ -2,16 +2,19 @@
 # Verified in Phase 12: assets/, tests/, node_modules/, vendor/, dotfiles and .claude/.
 
 .claude
+CLAUDE.md
 .git
 .github
 .gitignore
 .distignore
 .editorconfig
 .phpcs.cache
+.stylelintrc.json
 .wp-env.json
 .wp-env.floor.json
 .wp-env.override.json
 assets
+bin
 node_modules
 tests
 vendor

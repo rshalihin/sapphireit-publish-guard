@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * This is the only file that knows the built-in catalogue. Adding a twelfth rule means
  * writing the rule class and adding one line here; adding one from another plugin means
- * hooking `wcpg_register_rules` and touching nothing in this plugin at all.
+ * hooking `sit_wcpg_register_rules` and touching nothing in this plugin at all.
  *
  * @since 1.0.0
  */
@@ -53,7 +53,7 @@ final class Rules_Provider {
 		 *
 		 * @param Rule_Registry $registry The registry being populated.
 		 */
-		do_action( 'wcpg_register_rules', $registry );
+		do_action( 'sit_wcpg_register_rules', $registry );
 	}
 
 	/**

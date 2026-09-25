@@ -26,9 +26,9 @@ final class Product_Context_Test extends TestCase {
 	 * @return void
 	 */
 	protected function set_up() {
-		$GLOBALS['wcpg_test_terms']     = array();
-		$GLOBALS['wcpg_test_options']   = array();
-		$GLOBALS['wcpg_test_image_ids'] = array();
+		$GLOBALS['sit_wcpg_test_terms']     = array();
+		$GLOBALS['sit_wcpg_test_options']   = array();
+		$GLOBALS['sit_wcpg_test_image_ids'] = array();
 	}
 
 	/**
@@ -326,7 +326,7 @@ final class Product_Context_Test extends TestCase {
 	 * @return void
 	 */
 	public function test_featured_image_validity_is_checked_against_the_media_library() {
-		$GLOBALS['wcpg_test_image_ids'] = array( 9 );
+		$GLOBALS['sit_wcpg_test_image_ids'] = array( 9 );
 
 		$valid   = Product_Context::from_product( $this->stored_product() );
 		$missing = Product_Context::from_product( $this->stored_product( array( 'image_id' => 404 ) ) );
@@ -343,7 +343,7 @@ final class Product_Context_Test extends TestCase {
 	 * @return void
 	 */
 	public function test_term_ids_come_from_the_product_or_the_override() {
-		$GLOBALS['wcpg_test_terms'] = array(
+		$GLOBALS['sit_wcpg_test_terms'] = array(
 			'product_cat' => array( 3, 4 ),
 			'product_tag' => array( 7 ),
 		);
@@ -404,7 +404,7 @@ final class Product_Context_Test extends TestCase {
 	 * @return void
 	 */
 	public function test_default_category_comes_from_the_option() {
-		$GLOBALS['wcpg_test_options'] = array( 'default_product_cat' => '15' );
+		$GLOBALS['sit_wcpg_test_options'] = array( 'default_product_cat' => '15' );
 
 		$context = Product_Context::from_product( $this->stored_product() );
 
@@ -458,14 +458,14 @@ final class Product_Context_Test extends TestCase {
 	 * @return void
 	 */
 	public function test_values_are_memoized() {
-		$GLOBALS['wcpg_test_terms'] = array( 'product_cat' => array( 3 ) );
+		$GLOBALS['sit_wcpg_test_terms'] = array( 'product_cat' => array( 3 ) );
 
 		$context = Product_Context::from_product( $this->stored_product() );
 
 		$this->assertSame( array( 3 ), $context->get_category_ids() );
 
 		// Changing the source after the first read must not change the answer.
-		$GLOBALS['wcpg_test_terms'] = array( 'product_cat' => array( 99 ) );
+		$GLOBALS['sit_wcpg_test_terms'] = array( 'product_cat' => array( 99 ) );
 
 		$this->assertSame( array( 3 ), $context->get_category_ids() );
 	}

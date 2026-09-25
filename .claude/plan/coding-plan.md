@@ -84,21 +84,21 @@ These are settled. Do not re-litigate them during implementation.
 | Plugin slug / dir | `product-publish-guard` | Matches the existing directory. |
 | Main file | `product-publish-guard.php` | WP.org convention: main file matches slug. |
 | Text domain | `product-publish-guard` | Must equal the slug for WP.org language packs. |
-| Global prefix | `wcpg_` (functions, hooks, options, transients, cache groups, CSS classes, JS globals) | Short, distinctive, collision-safe; used consistently everywhere so a grep for `wcpg` finds every touch point. |
+| Global prefix | `sit_wcpg_` (functions, hooks, options, transients, error codes, meta box id; cache group `sit_wcpg`), `SIT_WCPG_` (constants), `sit-wcpg-` (script/style handles, admin slugs, HTML ids, CSS classes; REST namespace `sit-wcpg/v1`), `sitWcpg…` (JS globals). Exact form per context: §10.6. | Vendor-prefixed, distinctive, collision-safe; each global string is defined once as a class constant. Enforced by PHPCS `PrefixAllGlobals` and `composer lint:prefix`. Changed from `wcpg` to `sit_wcpg` by user decision on 2026-09-25 to add a vendor prefix (`prefix-migration-plan.md`). <!-- prefix-guard: ignore --> |
 | PHP namespace root | `ProductPublishGuard\` | One root namespace, sub-namespaces per concern. |
 | Min PHP | **8.0** | Raised from 7.4 by user decision on 2026-09-24 (§17.24): PHP 7.4 is not installed in this environment, so a 7.4 claim could not be substantiated. Typed properties, arrow functions, constructor promotion, union types, `match` and named arguments are all available. **Do not use** enums, `readonly` properties, `never` return types or first-class callable syntax (all 8.1+). |
 | Min WordPress | **6.5** | First version supporting the `Requires Plugins:` header, which gives us dependency handling for free. |
 | Min WooCommerce | **9.0** | Raised from 8.2 by user decision on 2026-09-24 (§17.24). Still HPOS-default era; `wc_get_product` / CRUD APIs used here are long-stable, and 9.x is testable via `wp-env`. |
 | Autoloading | Hand-written PSR-4 autoloader in `src/Autoloader.php` | Zero runtime dependencies, no `vendor/` in the zip, no autoloader conflicts with other plugins. Composer is dev-only (PHPCS/PHPUnit). |
 | File naming | PSR-4 (`src/Engine/Rule_Registry.php` → `ProductPublishGuard\Engine\Rule_Registry`) with WPCS class names (`Snake_Case`) | Keeps WPCS naming while allowing a trivial autoloader. `WordPress.Files.FileName` is excluded in `phpcs.xml.dist`. |
-| Settings storage | **One** autoloaded option, `wcpg_settings` (nested array) | One row, atomic sanitization, trivial version/migration, and a cheap settings hash for cache keys. |
-| Settings UI | WP Settings API + `options.php`, with `option_page_capability_wcpg_settings` filtered to `manage_woocommerce` | Free nonce/CSRF handling and a core-verified save path, while still letting shop managers (not just admins) configure it. |
+| Settings storage | **One** autoloaded option, `sit_wcpg_settings` (nested array) | One row, atomic sanitization, trivial version/migration, and a cheap settings hash for cache keys. |
+| Settings UI | WP Settings API + `options.php`, with `option_page_capability_sit_wcpg_settings` filtered to `manage_woocommerce` | Free nonce/CSRF handling and a core-verified save path, while still letting shop managers (not just admins) configure it. |
 | Editor UI | React app mounted in a classic `add_meta_box` panel (`side`, `high`) | §13.1 forbids replacing the editor; a meta box is the supported, lightweight integration point. |
 | Build | `@wordpress/scripts` (wp-scripts), output to `build/` | Standard WP tooling, generates `*.asset.php` dependency/version manifests. |
 | React provenance | Core-provided script handles (`wp-element`, `wp-components`, `wp-api-fetch`, `wp-i18n`) | React is **not** bundled; keeps the editor bundle small (§16). |
-| Transport | REST (`wcpg/v1`), `POST .../validate` | Carries an unsaved draft snapshot in the body; authenticated admin-only; `@wordpress/api-fetch` handles the `X-WP-Nonce` automatically. |
+| Transport | REST (`sit-wcpg/v1`), `POST .../validate` | Carries an unsaved draft snapshot in the body; authenticated admin-only; `@wordpress/api-fetch` handles the `X-WP-Nonce` automatically. |
 | Enforcement | Server-side, three layers (`wp_insert_post_data`, `woocommerce_before_product_object_save`, `future_to_publish` backstop) | general-plan §15.11: UI-only blocking is not acceptable. |
-| Persistence | None beyond `wcpg_settings` + short-lived transients for admin notices | §13.5 of general-plan. |
+| Persistence | None beyond `sit_wcpg_settings` + short-lived transients for admin notices | §13.5 of general-plan. |
 
 ---
 
@@ -146,12 +146,12 @@ These are settled. Do not re-litigate them during implementation.
 (1) Product editor first paint
     post.php → Editor_Meta_Box::render()
         → Checklist_Service::validate_post($id)
-        → Validation_Result → wp_add_inline_script( wcpgEditorData )
+        → Validation_Result → wp_add_inline_script( sitWcpgEditorData )
         → React hydrates with data already present → 0 HTTP requests
 
 (2) Live re-check while typing
     field-watcher → snapshot → signature changed? → debounce 800ms
-        → POST /wcpg/v1/products/{id}/validate  { draft: {...} }
+        → POST /sit-wcpg/v1/products/{id}/validate  { draft: {...} }
         → Validate_Controller (permission_callback: edit_post)
         → Product_Context::from_product_with_overrides()
         → Validator → Validation_Result (JSON) → React re-render
@@ -176,7 +176,7 @@ These are settled. Do not re-litigate them during implementation.
 * **Single source of truth for rules (PHP).** Every entry point funnels into `Validator`. The browser never decides pass/fail; it only renders what PHP returned. This is what makes the live UI and the server-side block impossible to disagree with, and it is what makes general-plan §15.11 (publishing bypass) tractable.
 * **`Product_Context` as the only product accessor.** Rules never touch `$_POST`, `$wpdb`, `get_post_meta`, or `WC_Product` directly. Three factories produce a context from three very different data situations (saved product / saved + unsaved overrides / in-flight save request), and every rule works unchanged against all three. Without this, publish-time validation and editor-time validation would need separate rule implementations.
 * **Rules are pure.** Because the context exposes only normalized scalars and arrays (with lazy, memoized WP lookups behind it), each rule is a pure function of `(context data, settings)`. That makes §12.1 unit tests runnable without a WordPress bootstrap.
-* **Registry + action hook for discovery.** Adding a rule in V2 means: add one class, register it in `Rules_Provider` (or from a third-party plugin via `wcpg_register_rules`). No existing file changes behaviour. This satisfies constraint 9 without building a rule-builder UI.
+* **Registry + action hook for discovery.** Adding a rule in V2 means: add one class, register it in `Rules_Provider` (or from a third-party plugin via `sit_wcpg_register_rules`). No existing file changes behaviour. This satisfies constraint 9 without building a rule-builder UI.
 * **Lazy service locator, not a DI container.** ~25 classes do not justify a container (constraint 10). `Plugin` holds lazily-instantiated singletons; constructors receive their collaborators explicitly, so unit tests can inject doubles.
 * **Facade (`Checklist_Service`) between callers and the engine.** It is the single place that owns memoization and cache keys. It is also the documented seam where a persisted readiness store could be introduced later (§14.4) without touching any caller.
 
@@ -268,14 +268,14 @@ product-publish-guard/
 
 | File | Responsibility | Key API | Called by |
 |---|---|---|---|
-| `product-publish-guard.php` | Plugin header (incl. `Requires Plugins: woocommerce`), define constants (`WCPG_VERSION`, `WCPG_FILE`, `WCPG_PATH`, `WCPG_URL`, `WCPG_MIN_PHP`, `WCPG_MIN_WP`, `WCPG_MIN_WC`), require `src/Autoloader.php`, register the autoloader, hook `plugins_loaded` → `Requirements::check()` → `Plugin::instance()->boot()`, hook `before_woocommerce_init` → `Woo_Compat::declare_compatibility()`. | `wcpg_bootstrap()` — the only global function in the plugin | WordPress |
+| `product-publish-guard.php` | Plugin header (incl. `Requires Plugins: woocommerce`), define constants (`SIT_WCPG_VERSION`, `SIT_WCPG_FILE`, `SIT_WCPG_PATH`, `SIT_WCPG_URL`, `SIT_WCPG_MIN_PHP`, `SIT_WCPG_MIN_WP`, `SIT_WCPG_MIN_WC`), require `src/Autoloader.php`, register the autoloader, hook `plugins_loaded` → `Requirements::check()` → `Plugin::instance()->boot()`, hook `before_woocommerce_init` → `Woo_Compat::declare_compatibility()`. | `sit_wcpg_bootstrap()` — the only global function in the plugin | WordPress |
 | `src/Autoloader.php` | PSR-4 map `ProductPublishGuard\` → `src/`. Only handles the plugin prefix; `str_replace( '\\', '/' )`; `file_exists` check before `require`. | `Autoloader::register()` | Bootstrap |
 | `src/Plugin.php` | Lazy service locator + hook wiring. `boot()` decides what to instantiate for this request: `Publish_Guard` always; `Admin\*` only when `is_admin()`; `Validate_Controller` on `rest_api_init`. Exposes `settings()`, `registry()`, `validator()`, `checklist()` which construct on first call. | `Plugin::instance()`, `boot()`, typed getters | Bootstrap, internal |
 | `src/Compat/Requirements.php` | PHP/WP/WC version + WooCommerce-active checks. On failure: register an `admin_notices` callback with an escaped, translated, actionable message and return `false` (plugin does not boot). Also exposes `is_product_block_editor_active()`, implemented as `! use_block_editor_for_post_type( 'product' ) ? false : true` with an optional `FeaturesUtil::feature_is_enabled( 'product_block_editor' )` check behind `method_exists()` — **never** `Features::is_enabled()`, deprecated since WC 11.1.0. On WC 11 this always returns `false`. | `check(): bool`, `get_failures(): array` | Bootstrap |
-| `src/Compat/Woo_Compat.php` | `FeaturesUtil::declare_compatibility( 'custom_order_tables', WCPG_FILE, true )` only, wrapped in a `class_exists` guard. **Do not declare against `product_block_editor`** — that feature id does not exist in current WooCommerce and the call would simply return `false` (verified: `verification-notes.md` §2). | `declare_compatibility()` | `before_woocommerce_init` |
-| `src/Settings/Settings.php` | Typed, cached facade over the `wcpg_settings` option. Merges stored values over `get_defaults()`. Provides `is_enabled()`, `rule_is_enabled( $id )`, `rule_severity( $id )`, `threshold( $key )`, `blocks_publishing()`, `allows_admin_override()`, `enforcement_scope()`, `shows_list_column()`, `get_hash()` (md5 of the normalized array, used in cache keys), `get_all()`. Defaults derive from the registry's rule defaults, so a newly added rule works before it is ever saved. | as above | Everything |
-| `src/Settings/Settings_Sanitizer.php` | Pure sanitizer: raw `$_POST` array → fully normalized settings array. Whitelists rule ids against the registry, coerces booleans, clamps thresholds, whitelists severity + enforcement-scope enums, drops unknown keys. Adds `settings_errors()` entries when a value is clamped. | `sanitize( array $raw ): array` | `register_setting` sanitize callback (and therefore every `update_option` on `wcpg_settings`) |
-| `src/Settings/Settings_Page.php` | Registers submenu `woocommerce` → `wcpg-settings` with cap `manage_woocommerce`; `register_setting`; the `option_page_capability_wcpg_settings` filter; renders the form (sections: Rules, Content, Publishing) with `settings_fields()`, escaped labels, and rule rows built from the registry. | `register()`, `render_page()` | `admin_menu`, `admin_init` |
+| `src/Compat/Woo_Compat.php` | `FeaturesUtil::declare_compatibility( 'custom_order_tables', SIT_WCPG_FILE, true )` only, wrapped in a `class_exists` guard. **Do not declare against `product_block_editor`** — that feature id does not exist in current WooCommerce and the call would simply return `false` (verified: `verification-notes.md` §2). | `declare_compatibility()` | `before_woocommerce_init` |
+| `src/Settings/Settings.php` | Typed, cached facade over the `sit_wcpg_settings` option. Merges stored values over `get_defaults()`. Provides `is_enabled()`, `rule_is_enabled( $id )`, `rule_severity( $id )`, `threshold( $key )`, `blocks_publishing()`, `allows_admin_override()`, `enforcement_scope()`, `shows_list_column()`, `get_hash()` (md5 of the normalized array, used in cache keys), `get_all()`. Defaults derive from the registry's rule defaults, so a newly added rule works before it is ever saved. | as above | Everything |
+| `src/Settings/Settings_Sanitizer.php` | Pure sanitizer: raw `$_POST` array → fully normalized settings array. Whitelists rule ids against the registry, coerces booleans, clamps thresholds, whitelists severity + enforcement-scope enums, drops unknown keys. Adds `settings_errors()` entries when a value is clamped. | `sanitize( array $raw ): array` | `register_setting` sanitize callback (and therefore every `update_option` on `sit_wcpg_settings`) |
+| `src/Settings/Settings_Page.php` | Registers submenu `woocommerce` → `sit-wcpg-settings` with cap `manage_woocommerce`; `register_setting`; the `option_page_capability_sit_wcpg_settings` filter; renders the form (sections: Rules, Content, Publishing) with `settings_fields()`, escaped labels, and rule rows built from the registry. | `register()`, `render_page()` | `admin_menu`, `admin_init` |
 | `src/Engine/Status.php` | `const PASS/WARNING/FAIL/SKIPPED` + `is_valid()`, `weight()` (sort order: fail < warning < pass < skipped). A class of constants, not an enum (enums are PHP 8.1+; the floor is 8.0). | constants | Engine, Admin |
 | `src/Engine/Severity.php` | `const REQUIRED/WARNING` + `is_valid()`, `all()`, `label()`. | constants | Engine, Settings |
 | `src/Engine/Rule_Interface.php` | The rule contract (§5.1). | — | Rules |
@@ -285,17 +285,17 @@ product-publish-guard/
 | `src/Engine/Rule_Registry.php` | Holds rules keyed by id. `register()` (rejects duplicate ids; `_doing_it_wrong()` in debug), `get()`, `has()`, `all()` (sorted by priority then id), `get_active( Settings, Product_Context )`. Populated once per request, lazily. | as above | Validator, Settings_Page, Settings_Sanitizer |
 | `src/Engine/Product_Context.php` | Normalized, memoized product data (§5.3). Four factories. **The only class in `Engine`/`Rules` allowed to call WordPress/WooCommerce data functions.** | `from_product()`, `from_product_with_overrides()`, `from_save_request()`, `from_array()`, ~20 getters | Validator, rules |
 | `src/Engine/Save_Request_Reader.php` | Knows the shape of every admin save payload (classic editor, quick edit, bulk edit) and converts it to a normalized override array. Handles `wp_unslash`, the missing-vs-empty distinction, `-1` sentinels, per-field sanitization. **Verified field names** (`verification-notes.md` §9): status `_status` (`-1` = no change, and core may omit `post_status` entirely); WooCommerce `_sku`, `_regular_price`, `_sale_price`, `_stock_status`, `_stock`, `_manage_stock`; bulk-edit modifiers `change_regular_price` / `change_sale_price` / `change_stock` (absent/empty = no change); featured image `_thumbnail_id` where **any value `<= 0` means "no image"**; gallery `product_image_gallery` (comma-separated ids); quick-edit marker `woocommerce_quick_edit`. **Isolates all `$_POST` knowledge in one file.** | `read( array $post_data, array $insert_data ): array`, `detect_source(): string` | `Publish_Guard` |
-| `src/Engine/Validator.php` | Runs active rules against a context, applies configured severity to rule outcomes (§5.5), builds `Validation_Result`, fires the `wcpg_validation_result` filter. Wraps each rule call in try/catch so one bad rule cannot break the screen. | `validate( Product_Context ): Validation_Result` | `Checklist_Service` |
-| `src/Rules/Rules_Provider.php` | Instantiates the 11 built-in rules into the registry, then `do_action( 'wcpg_register_rules', $registry )`. | `populate( Rule_Registry )` | `Plugin::registry()` |
+| `src/Engine/Validator.php` | Runs active rules against a context, applies configured severity to rule outcomes (§5.5), builds `Validation_Result`, fires the `sit_wcpg_validation_result` filter. Wraps each rule call in try/catch so one bad rule cannot break the screen. | `validate( Product_Context ): Validation_Result` | `Checklist_Service` |
+| `src/Rules/Rules_Provider.php` | Instantiates the 11 built-in rules into the registry, then `do_action( 'sit_wcpg_register_rules', $registry )`. | `populate( Rule_Registry )` | `Plugin::registry()` |
 | `src/Rules/*_Rule.php` | One rule each (§5.6). | `check( Product_Context, Settings ): Rule_Result` | `Validator` |
-| `src/Support/Checklist_Service.php` | Public façade. Owns memoization: a static per-request array plus optional `wp_cache_get/set` in group `wcpg`, keyed `v1:{id}:{post_modified_gmt}:{settings_hash}` — only for override-free validations. | `validate_post( $id, $overrides = [] )`, `get_summary_for_post_id( $id )`, `flush_post( $id )` | Meta box, REST, list column, guard |
-| `src/Rest/Validate_Controller.php` | Registers `wcpg/v1`, the full `args` schema with per-field `sanitize_callback`/`validate_callback`, the `permission_callback`, and response assembly. | `register_routes()`, `validate_item()`, `permissions_check()` | `rest_api_init` |
+| `src/Support/Checklist_Service.php` | Public façade. Owns memoization: a static per-request array plus optional `wp_cache_get/set` in group `sit_wcpg`, keyed `v1:{id}:{post_modified_gmt}:{settings_hash}` — only for override-free validations. | `validate_post( $id, $overrides = [] )`, `get_summary_for_post_id( $id )`, `flush_post( $id )` | Meta box, REST, list column, guard |
+| `src/Rest/Validate_Controller.php` | Registers `sit-wcpg/v1`, the full `args` schema with per-field `sanitize_callback`/`validate_callback`, the `permission_callback`, and response assembly. | `register_routes()`, `validate_item()`, `permissions_check()` | `rest_api_init` |
 | `src/Publishing/Publish_Guard.php` | The three enforcement layers (§6.3), the skip matrix, scope resolution, override checks, notice queuing. | `filter_insert_post_data()`, `guard_product_object_save()`, `guard_scheduled_publish()`, `can_override()` | `wp_insert_post_data`, `woocommerce_before_product_object_save`, `future_to_publish` |
 | `src/Admin/Screen.php` | Screen predicates: `is_product_edit_screen()`, `is_product_list_screen()`, `is_settings_screen()`, `current_product_id()`. The single place that knows hook suffixes. | static predicates | Assets, meta box, list column |
 | `src/Admin/Assets.php` | Conditional enqueue (§11.1). Reads `build/editor.asset.php` for deps/version. `wp_set_script_translations()`. Prints the bootstrap payload via `wp_add_inline_script()` with `wp_json_encode()`, never string concatenation. | `enqueue( $hook_suffix )` | `admin_enqueue_scripts` |
 | `src/Admin/Editor_Meta_Box.php` | Registers the meta box; renders the mount node plus a server-rendered, fully escaped no-JS fallback list. | `register()`, `render( WP_Post )` | `add_meta_boxes_product` |
 | `src/Admin/Product_List_Column.php` | Column registration, cache priming on `the_posts`, cell rendering. | `add_column()`, `prime_caches()`, `render_column()` | `manage_edit-product_columns`, `the_posts`, `manage_product_posts_custom_column` |
-| `src/Admin/Notices.php` | Per-user transient queue for "publishing blocked" events; renders on `admin_notices`; overrides `post_updated_messages` for products; adds the `wcpg_blocked` redirect arg. | `queue( $user_id, $post_id, Validation_Result )`, `render()` | `Publish_Guard`, `admin_notices` |
+| `src/Admin/Notices.php` | Per-user transient queue for "publishing blocked" events; renders on `admin_notices`; overrides `post_updated_messages` for products; adds the `sit_wcpg_blocked` redirect arg. | `queue( $user_id, $post_id, Validation_Result )`, `render()` | `Publish_Guard`, `admin_notices` |
 
 ### 4.2 Files deliberately **not** created
 
@@ -305,7 +305,7 @@ product-publish-guard/
 
 ```text
 assets/js/editor/
-├── index.js                 # entry: reads window.wcpgEditorData, renders <ChecklistApp/> into #wcpg-checklist-root
+├── index.js                 # entry: reads window.sitWcpgEditorData, renders <ChecklistApp/> into #sit-wcpg-checklist-root
 ├── api.js                   # apiFetch wrapper: builds the request, owns AbortController, maps errors
 ├── field-watcher.js         # subscribes to classic-editor fields, emits debounced snapshots
 │                            # (delegated jQuery on #woocommerce-product-data; MutationObserver on the
@@ -349,7 +349,7 @@ interface Rule_Interface {
 
 ### 5.2 Registry, discovery, enable/disable, priority
 
-* `Rules_Provider::populate( $registry )` registers the 11 built-ins in priority order, then fires `do_action( 'wcpg_register_rules', $registry )`.
+* `Rules_Provider::populate( $registry )` registers the 11 built-ins in priority order, then fires `do_action( 'sit_wcpg_register_rules', $registry )`.
 * The registry is built **lazily** — only when a validation, the settings page, or the sanitizer needs it. No rule objects are constructed on unrelated admin pages.
 * Duplicate ids are rejected; under `WP_DEBUG` this calls `_doing_it_wrong()`.
 * `get_active( Settings $s, Product_Context $c )` returns rules where `$s->rule_is_enabled( $id ) && $rule->supports( $c )`, sorted by `get_priority()` then `get_id()` — deterministic ordering for a stable UI and stable test assertions.
@@ -465,7 +465,7 @@ Every message above is a translated literal, contains **no product-supplied text
 
 ```php
 // In a third-party plugin, or in Rules_Provider for a first-party V2 rule:
-add_action( 'wcpg_register_rules', function ( $registry ) {
+add_action( 'sit_wcpg_register_rules', function ( $registry ) {
     $registry->register( new My_Alt_Text_Rule() );
 } );
 ```
@@ -488,17 +488,17 @@ Handled automatically: the settings page gains a row (rows are built from the re
 
 | Hook | Server/Client | Why | Data available | Action |
 |---|---|---|---|---|
-| `add_meta_boxes_product` | server | Product-specific variant of `add_meta_boxes`, so no per-request post-type branch. | `WP_Post` | Register the `wcpg_product_checklist` meta box, context `side`, priority `high`. |
+| `add_meta_boxes_product` | server | Product-specific variant of `add_meta_boxes`, so no per-request post-type branch. | `WP_Post` | Register the `sit_wcpg_product_checklist` meta box, context `side`, priority `high`. |
 | `admin_enqueue_scripts` | server | Single conditional enqueue point; receives `$hook_suffix`. | screen | See §11.1. |
-| `manage_edit-product_columns` | server | Adds the readiness column; product-specific hook. | columns array | Insert `wcpg_readiness` before `date`. Skipped when the column setting is off or the user lacks `edit_products`. |
+| `manage_edit-product_columns` | server | Adds the readiness column; product-specific hook. | columns array | Insert `sit_wcpg_readiness` before `date`. Skipped when the column setting is off or the user lacks `edit_products`. |
 | `the_posts` | server | Runs once with **all** rows for the screen, before any column renders. The only place bulk cache priming is possible (R4). | `WP_Post[]` | Product list screen only: prime post, meta, term and attachment caches. |
 | `manage_product_posts_custom_column` | server | Renders the cell. | `$column, $post_id` | `Checklist_Service::get_summary_for_post_id()` → escaped icon + label. |
-| `admin_menu` | server | Settings submenu under WooCommerce. | — | `add_submenu_page( 'woocommerce', …, 'manage_woocommerce', 'wcpg-settings', … )`. |
-| `admin_init` | server | `register_setting( 'wcpg_settings', 'wcpg_settings', [ 'sanitize_callback' => … ] )` and `add_filter( 'option_page_capability_wcpg_settings', … )`. | — | — |
+| `admin_menu` | server | Settings submenu under WooCommerce. | — | `add_submenu_page( 'woocommerce', …, 'manage_woocommerce', 'sit-wcpg-settings', … )`. |
+| `admin_init` | server | `register_setting( 'sit_wcpg_settings', 'sit_wcpg_settings', [ 'sanitize_callback' => … ] )` and `add_filter( 'option_page_capability_sit_wcpg_settings', … )`. | — | — |
 | `admin_notices` | server | Publishing-blocked feedback + requirement failures. | — | `Notices::render()`. |
 | `post_updated_messages` | server | Replaces "Product published." after a blocked publish, which would otherwise be an outright lie. | messages array | Swap in "Product saved as a draft — publishing was blocked." |
-| `redirect_post_location` | server | Adds `wcpg_blocked=1` so the notice trigger survives the post-save redirect deterministically. | `$location, $post_id` | Append the arg when a block occurred in this request. |
-| `rest_api_init` | server | Register `wcpg/v1`. | — | `Validate_Controller::register_routes()`. |
+| `redirect_post_location` | server | Adds `sit_wcpg_blocked=1` so the notice trigger survives the post-save redirect deterministically. | `$location, $post_id` | Append the arg when a block occurred in this request. |
+| `rest_api_init` | server | Register `sit-wcpg/v1`. | — | `Validate_Controller::register_routes()`. |
 
 ### 6.3 Publishing enforcement (the critical section)
 
@@ -514,7 +514,7 @@ Handled automatically: the settings page gains a row (rows are built from the re
 * **Verified ordering fact (`verification-notes.md` §9):** WooCommerce applies Quick Edit and Bulk Edit product values on **`save_post` priority 10**, i.e. *after* this filter. So (a) Layer A must take price/SKU/stock from `$_POST`, never from `wc_get_product()`, which is still stale here — which is exactly what `Save_Request_Reader` does; and (b) when Layer A downgrades the status, WooCommerce still applies the field edits afterwards, so the merchant keeps their data and only the publish is refused. This is the desired behaviour and needs an integration test that asserts it.
 * **Absent status is not a publish attempt.** Bulk Edit's `_status = -1` makes core `unset( $post_data['post_status'] )` entirely, and `wp_insert_post()` then carries the existing status forward. The skip matrix must treat a missing/empty `post_status` as "no transition requested" — never as an implicit publish.
 * **On required failures:** set `$data['post_status']` to the stored status when it was `draft`/`pending`, otherwise `'draft'`; record the `Validation_Result` on the guard instance; return `$data`.
-* **Feedback (R5):** `Notices::queue()` writes a 60-second transient `wcpg_blocked_{user_id}_{post_id}` containing only rule ids/labels/statuses; `redirect_post_location` adds `wcpg_blocked=1`; `admin_notices` renders and deletes it.
+* **Feedback (R5):** `Notices::queue()` writes a 60-second transient `sit_wcpg_blocked_{user_id}_{post_id}` containing only rule ids/labels/statuses; `redirect_post_location` adds `sit_wcpg_blocked=1`; `admin_notices` renders and deletes it.
 
 #### 6.3.2 Layer B — `woocommerce_before_product_object_save` (CRUD gate)
 
@@ -531,9 +531,9 @@ Setting `publishing.enforce_scope`:
 * `editor` — only requests where `Save_Request_Reader::detect_source()` recognises an admin save payload (classic editor / quick edit / bulk edit).
 * `authenticated` (**default**) — any request with `get_current_user_id() > 0`, which additionally covers REST and admin-triggered CRUD.
 * **Always excluded:** `wp_doing_cron()` (Layer C handles that case), `defined( 'WP_CLI' )`, and unauthenticated contexts — so imports and system jobs are never silently demoted.
-* Filter `wcpg_should_enforce( bool $enforce, Product_Context $context, string $source )` for integrators, documented in `README.md`.
+* Filter `sit_wcpg_should_enforce( bool $enforce, Product_Context $context, string $source )` for integrators, documented in `README.md`.
 
-**Override:** `Publish_Guard::can_override( $user_id )` returns `true` only when `publishing.allow_admin_override` is on **and** `user_can( $user_id, 'manage_woocommerce' )`. Filterable via `wcpg_can_override_publish_guard`. **No custom capability is registered and no role is modified** — nothing to clean up on uninstall.
+**Override:** `Publish_Guard::can_override( $user_id )` returns `true` only when `publishing.allow_admin_override` is on **and** `user_can( $user_id, 'manage_woocommerce' )`. Filterable via `sit_wcpg_can_override_publish_guard`. **No custom capability is registered and no role is modified** — nothing to clean up on uninstall.
 
 #### 6.3.4 Layer C — scheduled publishes (backstop)
 
@@ -591,7 +591,7 @@ Enforcement applies to transitions **into** `publish`/`future`. A live product t
 ### 7.2 Products list column
 
 * Column title **Readiness**, inserted before **Date**.
-* Cell values: `✓ Ready` / `! 2 warnings` / `✗ 3 errors` (plural-aware via `_n()`), linking to the product's edit screen with `#wcpg_product_checklist`.
+* Cell values: `✓ Ready` / `! 2 warnings` / `✗ 3 errors` (plural-aware via `_n()`), linking to the product's edit screen with `#sit_wcpg_product_checklist`.
 * `auto-draft` and trashed products render `—`.
 * Drafts and published products are treated identically — the indicator describes **content completeness**, not publication state. A published product with errors is precisely the case a merchant needs to see.
 * Hidden entirely when `product_list.show_column` is off or the user lacks `edit_products`.
@@ -632,7 +632,7 @@ Product Checklist
 [ Save changes ]
 ```
 
-**Storage:** the single option `wcpg_settings`.
+**Storage:** the single option `sit_wcpg_settings`.
 
 ```php
 [
@@ -657,13 +657,13 @@ Product Checklist
 post.php
   └─ Editor_Meta_Box::render()
        ├─ Checklist_Service::validate_post( $id )        → Validation_Result
-       ├─ echo '<div id="wcpg-checklist-root">' + escaped no-JS fallback + '</div>'
-       └─ Assets: wp_add_inline_script( 'wcpg-editor',
-              'window.wcpgEditorData = ' . wp_json_encode( [
+       ├─ echo '<div id="sit-wcpg-checklist-root">' + escaped no-JS fallback + '</div>'
+       └─ Assets: wp_add_inline_script( 'sit-wcpg-editor',
+              'window.sitWcpgEditorData = ' . wp_json_encode( [
                   'productId' => int,
                   'result'    => $result->to_array(),
                   'settings'  => [ 'blocksPublishing' => bool, 'canOverride' => bool ],
-                  'restPath'  => '/wcpg/v1/products/<id>/validate',
+                  'restPath'  => '/sit-wcpg/v1/products/<id>/validate',
                   'groups'    => [ 'content' => 'Content', … ],   // translated labels
               ] ) . ';', 'before' )
 ```
@@ -748,7 +748,7 @@ Each item names the exact location and the exact mechanism.
 |---|---|---|
 | Settings menu item | `manage_woocommerce` | `add_submenu_page()` `$capability` argument |
 | Settings page render | `manage_woocommerce` | an explicit `current_user_can()` guard at the top of `render_page()` — the menu capability alone does not protect direct `admin.php?page=` access in every scenario |
-| Settings save | `manage_woocommerce` | the `option_page_capability_wcpg_settings` filter, enforced by core `options.php` **before** the sanitize callback runs |
+| Settings save | `manage_woocommerce` | the `option_page_capability_sit_wcpg_settings` filter, enforced by core `options.php` **before** the sanitize callback runs |
 | REST validate | `current_user_can( 'edit_post', $product_id )` | `permission_callback` |
 | Meta box render | `current_user_can( 'edit_post', $post->ID )` | guard in `render()` — cheap and explicit |
 | List column | `current_user_can( 'edit_products' )` | column registration and cell render |
@@ -760,7 +760,7 @@ Each item names the exact location and the exact mechanism.
 
 | Action | Nonce | Why it is required |
 |---|---|---|
-| Settings form | `settings_fields( 'wcpg_settings' )` emits `_wpnonce` for `wcpg_settings-options`; core `options.php` calls `check_admin_referer()` | Without it, an attacker page could make a logged-in shop manager disable publish blocking through a forged POST — a genuinely privilege-relevant state change (general-plan §15.10). |
+| Settings form | `settings_fields( 'sit_wcpg_settings' )` emits `_wpnonce` for `sit_wcpg_settings-options`; core `options.php` calls `check_admin_referer()` | Without it, an attacker page could make a logged-in shop manager disable publish blocking through a forged POST — a genuinely privilege-relevant state change (general-plan §15.10). |
 | REST validate | `X-WP-Nonce` (`wp_rest`), added automatically by `@wordpress/api-fetch`'s nonce middleware and verified by core cookie authentication | Cookie-authenticated REST requests are CSRF-able without it. Core rejects the request before our `permission_callback` runs, but the capability check remains the authorization decision — the nonce authenticates the *request origin*, the capability authorizes the *action*. Both are required; neither substitutes for the other. |
 | Publish blocking | inherits WordPress's own `post.php` nonce | We add no new state-changing endpoint here. |
 
@@ -770,10 +770,10 @@ The plugin registers **no `admin-ajax.php` handlers** and **no `admin_post_` han
 
 | Input | Handling |
 |---|---|
-| Settings POST | `Settings_Sanitizer::sanitize()`, registered as `register_setting`'s `sanitize_callback` — which also hooks `sanitize_option_wcpg_settings`, so it runs for **every** `update_option` on that key, not only form posts. Whitelist-based: the output array is **constructed from defaults**, never a filtered copy of the input, so unknown keys cannot survive. |
+| Settings POST | `Settings_Sanitizer::sanitize()`, registered as `register_setting`'s `sanitize_callback` — which also hooks `sanitize_option_sit_wcpg_settings`, so it runs for **every** `update_option` on that key, not only form posts. Whitelist-based: the output array is **constructed from defaults**, never a filtered copy of the input, so unknown keys cannot survive. |
 | REST draft payload | A per-field `args` schema: `type`, `sanitize_callback`, `validate_callback`. IDs → `absint`; ID arrays → `wp_parse_id_list` + `array_slice` caps (categories 100, tags 200, gallery 100) to bound work; `product_type` → whitelist against `wc_get_product_types()` keys; `stock_status` → whitelist; prices → string, normalized then numerically validated; `title`/`content`/`excerpt` → accepted as raw strings and **immediately reduced to a length integer, never stored, echoed or logged**. |
 | `$_POST` at save time | Read only inside `Save_Request_Reader`, always via `wp_unslash()` then field-appropriate sanitizers (`sanitize_text_field`, `absint`, `wp_parse_id_list`). The reader never writes anything. |
-| `$_GET['wcpg_blocked']` | Existence check only; never echoed. |
+| `$_GET['sit_wcpg_blocked']` | Existence check only; never echoed. |
 | Product data from the database | Treated as untrusted — it may contain merchant- or import-authored HTML. See 9.4 / 9.5. |
 
 ### 9.4 Output escaping
@@ -823,7 +823,7 @@ No `$wpdb` usage anywhere in V1. All data access goes through `wc_get_product()`
 
 ### 9.10 REST endpoint hardening summary
 
-`permission_callback` is `Validate_Controller::permissions_check()` — never `__return_true`. It (1) resolves `$request['id']` with `absint()`, (2) `wc_get_product()` → `WP_Error( 'wcpg_not_found', 404 )` when false, (3) `current_user_can( 'edit_post', $id )` → `WP_Error( 'wcpg_forbidden', rest_authorization_required_code() )`. The route performs no writes, fires no state-changing hooks, and returns no product content.
+`permission_callback` is `Validate_Controller::permissions_check()` — never `__return_true`. It (1) resolves `$request['id']` with `absint()`, (2) `wc_get_product()` → `WP_Error( 'sit_wcpg_not_found', 404 )` when false, (3) `current_user_can( 'edit_post', $id )` → `WP_Error( 'sit_wcpg_forbidden', rest_authorization_required_code() )`. The route performs no writes, fires no state-changing hooks, and returns no product content.
 
 ---
 
@@ -834,9 +834,9 @@ No `$wpdb` usage anywhere in V1. All data access goes through `wc_get_product()`
 * **WordPress Coding Standards** (`WordPress` + `WordPress-Docs` + `WordPress-Extra`) via `phpcs.xml.dist`; CI-blocking. Excluded sniffs, each justified in the ruleset: `WordPress.Files.FileName` (PSR-4 layout), `Universal.Files.SeparateFunctionsFromOO` (single-class files).
 * `declare( strict_types=1 )` is **not** used — it interacts badly with WordPress core passing loose types into filter callbacks. Use parameter and return type declarations instead (PHP 8.0-compatible only).
 * Every file starts with `defined( 'ABSPATH' ) || exit;`.
-* Naming: classes `Snake_Case` with an initial capital per word (`Rule_Registry`); methods/functions/variables `snake_case`; constants `UPPER_SNAKE`; hooks `wcpg_snake_case`; option/transient keys `wcpg_*`.
+* Naming: classes `Snake_Case` with an initial capital per word (`Rule_Registry`); methods/functions/variables `snake_case`; constants `UPPER_SNAKE`; hooks `sit_wcpg_snake_case`; option/transient keys `sit_wcpg_*`.
 * Namespaces: `ProductPublishGuard\<Concern>`. Exactly one class per file.
-* **Zero global variables and zero global functions**, with one exception: the procedural `wcpg_bootstrap()` in the main file.
+* **Zero global variables and zero global functions**, with one exception: the procedural `sit_wcpg_bootstrap()` in the main file.
 * DocBlocks on every class and public method: summary, `@param`, `@return`, `@since` (`1.0.0` for everything in V1).
 * Comments explain **why**, not what. No commented-out code and no TODOs in a release build.
 * Class-responsibility rule: if a class needs a new collaborator, pass it in the constructor. If a class exceeds ~200 lines or has two reasons to change, split it — **except** that splitting must not produce a file containing a single one-line method (constraint 10).
@@ -847,7 +847,7 @@ No `$wpdb` usage anywhere in V1. All data access goes through `wc_get_product()`
 * Text domain `product-publish-guard` on every user-facing string, always as a **literal** (never a variable or constant) so scanners can find it.
 * `load_plugin_textdomain()` on `init`.
 * `_n()` for anything countable ("2 warnings"); `_x()` where a string is ambiguous; a translator comment (`/* translators: %d is the character count. */`) immediately above every placeholder string.
-* `wp_set_script_translations( 'wcpg-editor', 'product-publish-guard', WCPG_PATH . 'languages' )`.
+* `wp_set_script_translations( 'sit-wcpg-editor', 'product-publish-guard', SIT_WCPG_PATH . 'languages' )`.
 * Strings that reach the browser are translated **server-side** where they are data (rule labels, messages, summary label) and **client-side** with `@wordpress/i18n` where they are UI chrome (buttons, loading/error text). No string is translated in both places.
 * `languages/product-publish-guard.pot` generated with `wp i18n make-pot . languages/product-publish-guard.pot`.
 
@@ -863,7 +863,7 @@ No `$wpdb` usage anywhere in V1. All data access goes through `wc_get_product()`
 
 ### 10.4 CSS
 
-* BEM with the `wcpg-` prefix: `.wcpg-checklist`, `.wcpg-checklist__item`, `.wcpg-checklist__item--fail`, `.wcpg-readiness`, `.wcpg-readiness--warning`. Generic class names (`.container`, `.title`, `.button`, `.wrapper`) are forbidden.
+* BEM with the `sit-wcpg-` prefix: `.sit-wcpg-checklist`, `.sit-wcpg-checklist__item`, `.sit-wcpg-checklist__item--fail`, `.sit-wcpg-readiness`, `.sit-wcpg-readiness--warning`. Generic class names (`.container`, `.title`, `.button`, `.wrapper`) are forbidden.
 * Use WordPress admin colour variables where available so the panel matches both admin colour schemes; do not hard-code a palette beyond the three status colours, which must also be distinguishable without colour (icon + text).
 * SCSS compiled by `wp-scripts`; exactly two output files (`editor.css`, `admin.css`).
 
@@ -883,6 +883,29 @@ No `$wpdb` usage anywhere in V1. All data access goes through `wc_get_product()`
 
 `get_post_meta()` is acceptable **only** inside `Product_Context::from_save_request()` fallbacks where no `WC_Product` exists yet, and must carry a comment saying so.
 
+### 10.6 Naming contract
+
+One prefix, two spellings; which one depends on where the name lives. Every string that WordPress, WooCommerce or the browser stores **globally** (outside our PHP namespace) carries the prefix, and each such string is defined **once**, as a class constant, and referenced from there — derived names (e.g. `Admin\Screen::SETTINGS_HOOK`, the payload's `restPath`) are built from those constants, never retyped.
+
+| Context | Form | Example |
+|---|---|---|
+| PHP constants | `SIT_WCPG_` | `SIT_WCPG_VERSION` |
+| Global functions, global variables | `sit_wcpg_` | `sit_wcpg_bootstrap()`, `$sit_wcpg_user_ids` |
+| Hooks (actions / filters) | `sit_wcpg_` | `sit_wcpg_register_rules` |
+| Options, transients, post meta | `sit_wcpg_` (hidden meta: `_sit_wcpg_`) | `sit_wcpg_settings` |
+| Object-cache group | `sit_wcpg` | `'sit_wcpg'` |
+| REST namespace | `sit-wcpg/v1` | `/wp-json/sit-wcpg/v1/products/12/validate` |
+| REST / `WP_Error` / settings-error codes | `sit_wcpg_` | `sit_wcpg_forbidden` |
+| Meta box id, list-column key | `sit_wcpg_` | `sit_wcpg_product_checklist` |
+| Script & style handles, admin page slugs, HTML ids | `sit-wcpg-` | `sit-wcpg-editor`, `sit-wcpg-settings` |
+| CSS classes (BEM) | `sit-wcpg-block__element--modifier` | `.sit-wcpg-checklist__item--fail` |
+| JS globals | `sitWcpg` + PascalCase | `window.sitWcpgEditorData` |
+| Test / audit IDs in docs | `SIT-WCPG-` | `SIT-WCPG-REST-1` |
+| PHP namespace | **unchanged** `ProductPublishGuard\<Concern>` | `ProductPublishGuard\Engine\Validator` |
+| Text domain, slug, main file | **unchanged** `product-publish-guard` | `__( '…', 'product-publish-guard' )` |
+
+Enforcement: PHPCS `PrefixAllGlobals` (prefixes `sit_wcpg`, `SIT_WCPG`, `ProductPublishGuard`); `composer lint:prefix` (`bin/check-prefix.php`) fails on any leftover of the retired prefix; `.stylelintrc.json` requires every class to be `sit-wcpg-` BEM; `tests/Unit/Naming_Contract_Test.php` asserts the constants above and their links.
+
 ---
 
 ## 11. Performance
@@ -891,9 +914,9 @@ No `$wpdb` usage anywhere in V1. All data access goes through `wc_get_product()`
 
 | Screen | JS | CSS | Inline payload |
 |---|---|---|---|
-| `post.php` / `post-new.php` with `post_type=product` | `wcpg-editor` (+ core deps) | `editor.css` | `wcpgEditorData` |
+| `post.php` / `post-new.php` with `post_type=product` | `sit-wcpg-editor` (+ core deps) | `editor.css` | `sitWcpgEditorData` |
 | `edit.php?post_type=product` | **none** | `admin.css` | none |
-| `woocommerce_page_wcpg-settings` | **none** | `admin.css` | none |
+| `woocommerce_page_sit-wcpg-settings` | **none** | `admin.css` | none |
 | Everything else | none | none | none |
 
 Determined from `admin_enqueue_scripts`'s `$hook_suffix` plus `get_current_screen()->post_type`, centralised in `Admin\Screen`. The settings page and the products list are plain server-rendered HTML — shipping React to them would be pure waste.
@@ -914,7 +937,7 @@ Result: per-row validation performs **zero** additional queries. Added cost for 
 `Checklist_Service` layers:
 
 1. **Static per-request array** keyed by product id — the meta box and any other caller never validate the same product twice in one request.
-2. **Object cache** (`wp_cache_get/set`, group `wcpg`, key `v1:{id}:{post_modified_gmt}:{settings_hash}`, TTL 300 s) — only for override-free validations. Safe by construction: the key changes when the product or the settings change, so there is no invalidation logic to get wrong. Without a persistent object cache this degrades to layer 1 and costs nothing.
+2. **Object cache** (`wp_cache_get/set`, group `sit_wcpg`, key `v1:{id}:{post_modified_gmt}:{settings_hash}`, TTL 300 s) — only for override-free validations. Safe by construction: the key changes when the product or the settings change, so there is no invalidation logic to get wrong. Without a persistent object cache this degrades to layer 1 and costs nothing.
 3. **Never cached:** validations with overrides (editor live checks, publish-guard checks). They must reflect the exact in-flight data.
 
 Explicitly **not** done: storing readiness in post meta (§13). The seam for adding it later is `Checklist_Service::get_summary_for_post_id()` (§14.4).
@@ -1000,7 +1023,7 @@ Engine and settings unit tests:
 | REST validate with 10,000 `category_ids` | capped, no timeout, 200 |
 | REST validate with `product_type` = `'<script>'` | rejected by `validate_callback`, 400 |
 | Settings save without a nonce | `options.php` dies |
-| Settings save as a subscriber, and as an `edit_products`-only user | denied by `option_page_capability_wcpg_settings` |
+| Settings save as a subscriber, and as an `edit_products`-only user | denied by `option_page_capability_sit_wcpg_settings` |
 | Settings save with an injected unknown rule id and an injected `version` | both dropped; the stored option matches the whitelist exactly |
 | Publish attempt as a shop manager with `allow_admin_override` **off** | blocked |
 | Publish via `/wc/v3/products` as a shop manager with failing rules | blocked (Layer B) |
@@ -1076,11 +1099,11 @@ Only these five seams exist. Each costs ~0 lines in V1 and removes a rewrite lat
 
 | # | Seam | Enables | V1 cost |
 |---|---|---|---|
-| 14.1 | `do_action( 'wcpg_register_rules', Rule_Registry $registry )` | Custom rules, V2 rule packs (variations, images, alt text, attributes), Pro add-ons — without touching core files. | 1 line |
+| 14.1 | `do_action( 'sit_wcpg_register_rules', Rule_Registry $registry )` | Custom rules, V2 rule packs (variations, images, alt text, attributes), Pro add-ons — without touching core files. | 1 line |
 | 14.2 | `Rule_Interface::supports( Product_Context )` + `Status::SKIPPED` | Product-type-specific rule sets (variation rules that apply only to variable products) with correct counts from day one. | already required by §5.6 |
-| 14.3 | `apply_filters( 'wcpg_validation_result', Validation_Result $r, Product_Context $c )` | Result post-processing: suppressing rules per product, synthetic results, Pro reporting hooks. | 1 line in `Validator` |
+| 14.3 | `apply_filters( 'sit_wcpg_validation_result', Validation_Result $r, Product_Context $c )` | Result post-processing: suppressing rules per product, synthetic results, Pro reporting hooks. | 1 line in `Validator` |
 | 14.4 | `Checklist_Service::get_summary_for_post_id()` as the **only** read path for non-editor consumers | A persisted readiness store (post meta + settings-hash stamp) can be introduced behind this one method to enable list sorting/filtering, bulk audits and reports without changing a single caller. | already required by §11.3 |
-| 14.5 | `apply_filters( 'wcpg_should_enforce', bool, Product_Context, string $source )` and `wcpg_can_override_publish_guard` | Role-based publishing rules, approval workflows, per-integration exemptions. | 2 lines in `Publish_Guard` |
+| 14.5 | `apply_filters( 'sit_wcpg_should_enforce', bool, Product_Context, string $source )` and `sit_wcpg_can_override_publish_guard` | Role-based publishing rules, approval workflows, per-integration exemptions. | 2 lines in `Publish_Guard` |
 
 Also extensible without extra work because they are data-driven: the settings page (rows built from the registry), the React panel (renders whatever results the payload contains), and `Settings::get_defaults()` (derived from rule defaults).
 
@@ -1223,7 +1246,7 @@ V1 is complete when **all** of the following are true. Each is objectively check
 20. `npm run build` produces `build/` from a clean checkout, and the plugin runs from the zip alone.
 21. All user-facing strings are translatable with translator comments on every placeholder string; `product-publish-guard.pot` is current.
 22. `readme.txt` and `README.md` are complete, including the developer hook reference and the documented enforcement limitations (the Layer C window; the block editor).
-23. `uninstall.php` removes `wcpg_settings` and all `wcpg_*` transients, leaving no orphan data, roles or tables.
+23. `uninstall.php` removes `sit_wcpg_settings` and all `sit_wcpg_*` transients, leaving no orphan data, roles or tables.
 24. The packaged zip installs on a clean site and passes the Phase 12 smoke test.
 
 ---

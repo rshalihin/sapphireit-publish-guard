@@ -167,7 +167,7 @@ final class Settings_Test extends WP_UnitTestCase {
 	 */
 	public function test_the_registered_sanitizer_filters_a_direct_update_option(): void {
 		register_setting(
-			'wcpg_settings',
+			'sit_wcpg_settings',
 			Settings::OPTION_NAME,
 			array(
 				'type'              => 'array',
@@ -189,7 +189,7 @@ final class Settings_Test extends WP_UnitTestCase {
 
 		$stored = get_option( Settings::OPTION_NAME );
 
-		unregister_setting( 'wcpg_settings', Settings::OPTION_NAME );
+		unregister_setting( 'sit_wcpg_settings', Settings::OPTION_NAME );
 
 		$this->assertSame( Settings::VERSION, $stored['version'] );
 		$this->assertArrayNotHasKey( 'injected', $stored );

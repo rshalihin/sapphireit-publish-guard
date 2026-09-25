@@ -21,7 +21,7 @@ use WP_REST_Server;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * `POST /wcpg/v1/products/<id>/validate` — validate a product against an unsaved draft.
+ * `POST /sit-wcpg/v1/products/<id>/validate` — validate a product against an unsaved draft.
  *
  * The route is **read-only**: it computes a `Validation_Result` and returns it. It writes
  * nothing, fires no state-changing hook and returns no product content, so a crafted body
@@ -45,7 +45,7 @@ final class Validate_Controller {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	public const REST_NAMESPACE = 'wcpg/v1';
+	public const REST_NAMESPACE = 'sit-wcpg/v1';
 
 	/**
 	 * Route pattern, relative to the namespace.
@@ -269,7 +269,7 @@ final class Validate_Controller {
 
 		if ( ! current_user_can( 'edit_post', $product_id ) ) {
 			return new WP_Error(
-				'wcpg_forbidden',
+				'sit_wcpg_forbidden',
 				__( 'You are not allowed to check this product.', 'product-publish-guard' ),
 				array( 'status' => rest_authorization_required_code() )
 			);
@@ -300,7 +300,7 @@ final class Validate_Controller {
 			}
 
 			return new WP_Error(
-				'wcpg_validation_failed',
+				'sit_wcpg_validation_failed',
 				__( 'The checklist could not be calculated.', 'product-publish-guard' ),
 				array( 'status' => WP_Http::INTERNAL_SERVER_ERROR )
 			);
@@ -598,7 +598,7 @@ final class Validate_Controller {
 	 */
 	private static function not_found(): WP_Error {
 		return new WP_Error(
-			'wcpg_not_found',
+			'sit_wcpg_not_found',
 			__( 'No product was found with that identifier.', 'product-publish-guard' ),
 			array( 'status' => WP_Http::NOT_FOUND )
 		);

@@ -16,7 +16,7 @@ A flat, ordered task list derived from `coding-plan.md` §15. Tick items in orde
 
 ## Phase 1 — Project foundation
 
-- [x] `product-publish-guard.php` — header (incl. `Requires Plugins: woocommerce`), constants, `wcpg_bootstrap()`
+- [x] `product-publish-guard.php` — header (incl. `Requires Plugins: woocommerce`), constants, `sit_wcpg_bootstrap()`
 - [x] `src/Autoloader.php`
 - [x] `src/Plugin.php` (skeleton: `instance()`, `boot()`, lazy getters)
 - [x] `src/Compat/Requirements.php` (PHP/WP/WC checks, admin notices, block-editor detection)
@@ -38,7 +38,7 @@ A flat, ordered task list derived from `coding-plan.md` §15. Tick items in orde
 - [x] `Engine/Rule_Result.php`, `Engine/Validation_Result.php` — the severity matrix lives in `Rule_Result::with_severity()`, so the outcome a rule reported (`get_outcome()`) stays readable after demotion
 - [x] `Engine/Rule_Registry.php`
 - [x] `Engine/Product_Context.php` (`from_product`, `from_product_with_overrides`, `from_array`) — accepts the editor's `content`/`excerpt` field names as aliases for `description`/`short_description`
-- [x] `Engine/Validator.php` (§5.5 severity matrix + per-rule try/catch + `wcpg_validation_result` filter)
+- [x] `Engine/Validator.php` (§5.5 severity matrix + per-rule try/catch + `sit_wcpg_validation_result` filter)
 - [x] Test harness: `tests/bootstrap.php` (WP test suite when `WP_TESTS_DIR`/`WP_PHPUNIT__DIR` is set, doubles otherwise) + `tests/stubs/` (`wordpress-functions.php`, `class-wc-product.php`, `class-fake-rule.php`, `class-settings.php`)
 - [x] Unit tests: `Rule_Result_Test` (10), `Validation_Result_Test` (8), `Validator_Test` (8), `Rule_Registry_Test` (8), `Product_Context_Test` (21) — 55 cases
 - [x] **Gate — `phpcs` clean:** zero errors, zero warnings across all 25 PHP files (`src/` + `tests/`).
@@ -49,7 +49,7 @@ A flat, ordered task list derived from `coding-plan.md` §15. Tick items in orde
 
 - [x] `Settings/Settings.php` (facade, defaults from registry, `get_hash()`) — public surface unchanged from the Phase 2 placeholder plus `get_defaults()`, `refresh()` and the static `scopes()` / `threshold_limits()` / `threshold_label()` helpers; class is non-final; `tests/stubs/class-settings.php` deleted and its conditional require removed from `tests/bootstrap.php`. The registry is resolved lazily (constructor-injectable) so reading a setting never forces the rule list to be built.
 - [x] `Settings/Settings_Sanitizer.php` (whitelist-built output, clamping, enum validation) — output is constructed from `get_defaults()`, never filtered from input. `sanitize()` takes an untyped parameter by design: core passes whatever was posted under the option name, and a typed parameter would turn a crafted non-array POST into a fatal on the settings screen.
-- [x] `Settings/Settings_Page.php` (submenu, `register_setting`, `option_page_capability_wcpg_settings`, form) — rule rows built from the registry; `render_page()` repeats the `manage_woocommerce` check; wired from `Plugin::boot()` under `is_admin()`.
+- [x] `Settings/Settings_Page.php` (submenu, `register_setting`, `option_page_capability_sit_wcpg_settings`, form) — rule rows built from the registry; `render_page()` repeats the `manage_woocommerce` check; wired from `Plugin::boot()` under `is_admin()`.
 - [x] Unit test `Settings_Sanitizer_Test` (14 cases incl. a 6-case data provider); integration test `Settings_Test` (9 cases). **Not run** — the user asked for no test execution this session. `php -l` clean on both.
 - [x] **Gate — settings save/reload correctly; unknown keys and injected `version` dropped; thresholds clamp:** run as a direct harness at `scratchpad/gate-phase3.php` on PHP 8.3.33 with `error_reporting=E_ALL`. **77 checks, 0 failures, zero diagnostics.** Covers defaults, the hostile-payload whitelist, the version lock, clamping at both bounds + the clamp notices, non-numeric fallback, save/reload, a rule registered after the option was saved, the settings hash, menu/capability/`register_setting` wiring, form rendering, escaping of a hostile rule label, and an end-to-end round trip of the rendered form's own field names back through the sanitizer.
 - [x] **Gate — `phpcs` clean:** zero errors, zero warnings across all 29 PHP files.
@@ -57,7 +57,7 @@ A flat, ordered task list derived from `coding-plan.md` §15. Tick items in orde
 
 ## Phase 4 — The 11 rules
 
-- [x] `Rules/Rules_Provider.php` (+ `wcpg_register_rules` action) — built-ins registered in priority order, then the action fires with the registry
+- [x] `Rules/Rules_Provider.php` (+ `sit_wcpg_register_rules` action) — built-ins registered in priority order, then the action fires with the registry
 - [x] `Title_Rule`, `Description_Rule`, `Short_Description_Rule`
 - [x] `Featured_Image_Rule`, `Image_Count_Rule`
 - [x] `Price_Rule`, `Sale_Price_Rule`
@@ -74,7 +74,7 @@ A flat, ordered task list derived from `coding-plan.md` §15. Tick items in orde
 - §5.6 lists `grouped` as a skip for the price rule without giving a reason string; it has one of its own ("A grouped product takes its price from the products it contains.") so the checklist row explains itself.
 - `Stock_Status_Rule` requires a **non-null** managed quantity before warning about a contradiction, so the `%d` placeholder is never fed a null.
 - `Sale_Price_Rule` compares against the regular price only when that price is itself numeric; an unusable regular price is the price rule's finding to report, not this one's.
-- `tests/stubs/wordpress-functions.php` gained a `do_action()` stub recording into `$GLOBALS['wcpg_test_actions']`, which is how the provider test asserts the extension point is opened.
+- `tests/stubs/wordpress-functions.php` gained a `do_action()` stub recording into `$GLOBALS['sit_wcpg_test_actions']`, which is how the provider test asserts the extension point is opened.
 
 ## Phase 5 — Checklist service + server-rendered panel
 
@@ -96,7 +96,7 @@ A flat, ordered task list derived from `coding-plan.md` §15. Tick items in orde
 
 ## Phase 6 — REST endpoint
 
-- [x] `Rest/Validate_Controller.php` — `POST /wcpg/v1/products/(?P<id>[\d]+)/validate`; a single `draft` object argument carrying its own per-field whitelist (`DRAFT_FIELDS`, 16 fields), `validate_draft()` and `sanitize_draft()`; `permissions_check()` in the §9.10 order (`absint` → 404 → `edit_post`); caps of 100 / 200 / 100 applied to the **raw** list before any per-item work; `try/catch ( \Throwable )` → 500 with a `WP_DEBUG`-only log, so a rule bug never fatals a REST request.
+- [x] `Rest/Validate_Controller.php` — `POST /sit-wcpg/v1/products/(?P<id>[\d]+)/validate`; a single `draft` object argument carrying its own per-field whitelist (`DRAFT_FIELDS`, 16 fields), `validate_draft()` and `sanitize_draft()`; `permissions_check()` in the §9.10 order (`absint` → 404 → `edit_post`); caps of 100 / 200 / 100 applied to the **raw** list before any per-item work; `try/catch ( \Throwable )` → 500 with a `WP_DEBUG`-only log, so a rule bug never fatals a REST request.
 - [x] `Plugin::boot()` registers the controller **outside** `is_admin()` — a REST request is not an admin request — and the checklist service is still resolved lazily, so merely adding the `rest_api_init` callback builds nothing.
 - [x] Integration test `Rest_Validate_Test` (13 cases): route registration, the §5.4 response shape, draft-wins / absent-keys-fall-back, no-draft, price normalization, bare sale dates, the `-1` featured-image sentinel, 404 for a non-product and for an unknown id, product unchanged, unknown keys dropped, drafted results never cached.
 - [x] Security tests `tests/Security/Rest_Validate_Security_Test.php` (11 cases): logged out, subscriber, a product editor without `edit_others_products` (refused another's product, allowed its own), the REST nonce under cookie auth, oversized arrays through both the route and the sanitizer, `product_type` = `'<script>'`, an unregistered stock status, a scalar draft, hostile product text, and a refused call writing nothing. **Not run** — the user asked for no test execution this session. `php -l` clean on both files.
@@ -110,6 +110,17 @@ A flat, ordered task list derived from `coding-plan.md` §15. Tick items in orde
 - Unknown draft keys are **dropped, not rejected**, so a newer client sending a field this version does not know about still gets a correct answer for the fields it does. Verified that the internal context key `has_valid_featured_image` cannot be set from a request.
 - **Finding (core ordering, no code change):** `WP_REST_Server::respond_to_request()` validates and sanitizes arguments **before** calling the `permission_callback`, so a malformed body returns 400 to an anonymous caller rather than 401. §12.3 requires the enum rejection to come from `validate_callback`, so this ordering is inherent. The only thing it discloses is which product types and stock statuses a store has registered, and no result body is ever returned. Asserted explicitly in the gate so it stays a recorded decision.
 - Identifier lists use `absint()` per §9.3's `wp_parse_id_list` reference, so a negative id becomes positive rather than being dropped. Nested arrays, zeroes and duplicates are dropped outright.
+
+## Cross-cutting — Prefix migration to `sit_wcpg` / `sit-wcpg` (2026-09-25)
+
+Executed per `prefix-migration-plan.md`, on branch `chore/prefix-sit-wcpg`. No backward compatibility (the plugin was never released).
+
+- [x] Plan docs first: `coding-plan.md` §2 row + new §10.6 "Naming contract"; every mention renamed in `coding-plan.md`, this file and `general-plan.md` §14
+- [x] Guards: PHPCS `PrefixAllGlobals` → `sit_wcpg` / `SIT_WCPG`; `bin/check-prefix.php` as `composer lint:prefix`, chained into `composer lint`; `.stylelintrc.json` BEM + prefix pattern; `bin` and `.stylelintrc.json` in `.distignore`
+- [x] Production code, `uninstall.php` and tests renamed; `Admin\Screen::SETTINGS_HOOK` now derived from `Settings_Page::MENU_SLUG`, and the payload's `restPath` from `Validate_Controller::REST_NAMESPACE`
+- [x] New `tests/Unit/Naming_Contract_Test.php` (12 cases)
+- [x] `CLAUDE.md` at the plugin root carries the contract for future sessions
+- [x] **Gate — `composer lint` clean (PHPCS + prefix guard); unit suite green (149 → 161).** Integration/security suites and the manual `wp-env` checks (settings URL `page=sit-wcpg-settings`, `sit-wcpg/v1` route, old route 404, uninstall) still to run where the WP test suite is available.
 
 ## Phase 7 — React checklist UI
 
@@ -129,7 +140,7 @@ A flat, ordered task list derived from `coding-plan.md` §15. Tick items in orde
 - [ ] `Publishing/Publish_Guard.php` Layer A (`wp_insert_post_data`) + skip matrix
 - [ ] Layer B (`woocommerce_before_product_object_save`) + re-entrancy guard
 - [ ] Layer C (`future_to_publish` backstop) + `future` treated as publish intent in Layer A
-- [ ] Enforcement scope + `wcpg_should_enforce` filter + `can_override()` + `wcpg_can_override_publish_guard`
+- [ ] Enforcement scope + `sit_wcpg_should_enforce` filter + `can_override()` + `sit_wcpg_can_override_publish_guard`
 - [ ] Fail-open on internal exceptions (with logging)
 - [ ] `Admin/Notices.php` (transient queue, `admin_notices`, `post_updated_messages`, `redirect_post_location`)
 - [ ] Client-side advisory notice (never disables the Publish button)

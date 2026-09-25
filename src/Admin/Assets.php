@@ -9,6 +9,7 @@ namespace ProductPublishGuard\Admin;
 
 use ProductPublishGuard\Engine\Validation_Result;
 use ProductPublishGuard\Plugin;
+use ProductPublishGuard\Rest\Validate_Controller;
 use ProductPublishGuard\Settings\Settings;
 use ProductPublishGuard\Support\Checklist_Service;
 
@@ -18,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
  * The plugin's only enqueue point, implementing the matrix in coding-plan.md section 11.1.
  *
  * | Screen                              | JS           | CSS         | Inline payload  |
- * | product editor (`post.php`/`post-new.php`) | `wcpg-editor` | editor.css | `wcpgEditorData` |
+ * | product editor (`post.php`/`post-new.php`) | `sit-wcpg-editor` | editor.css | `sitWcpgEditorData` |
  * | products list (`edit.php`)          | none         | admin.css   | none            |
  * | plugin settings page                | none         | admin.css   | none            |
  * | everything else                     | none         | none        | none            |
@@ -41,7 +42,7 @@ final class Assets {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	public const EDITOR_HANDLE = 'wcpg-editor';
+	public const EDITOR_HANDLE = 'sit-wcpg-editor';
 
 	/**
 	 * Handle of the shared admin stylesheet.
@@ -49,7 +50,7 @@ final class Assets {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	public const ADMIN_HANDLE = 'wcpg-admin';
+	public const ADMIN_HANDLE = 'sit-wcpg-admin';
 
 	/**
 	 * The global the editor bundle reads its bootstrap payload from.
@@ -57,7 +58,7 @@ final class Assets {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	public const PAYLOAD_GLOBAL = 'wcpgEditorData';
+	public const PAYLOAD_GLOBAL = 'sitWcpgEditorData';
 
 	/**
 	 * The merchant's configuration.
@@ -121,7 +122,7 @@ final class Assets {
 		}
 
 		if ( Screen::is_product_list_screen( $hook_suffix ) || Screen::is_settings_screen( $hook_suffix ) ) {
-			$this->enqueue_style( self::ADMIN_HANDLE, 'admin.css', WCPG_VERSION );
+			$this->enqueue_style( self::ADMIN_HANDLE, 'admin.css', SIT_WCPG_VERSION );
 		}
 	}
 
@@ -143,19 +144,19 @@ final class Assets {
 
 		$this->enqueue_style( self::EDITOR_HANDLE, 'editor.css', $asset['version'] );
 
-		if ( ! file_exists( WCPG_PATH . 'build/editor.js' ) ) {
+		if ( ! file_exists( SIT_WCPG_PATH . 'build/editor.js' ) ) {
 			return;
 		}
 
 		wp_enqueue_script(
 			self::EDITOR_HANDLE,
-			WCPG_URL . 'build/editor.js',
+			SIT_WCPG_URL . 'build/editor.js',
 			$asset['dependencies'],
 			$asset['version'],
 			true
 		);
 
-		wp_set_script_translations( self::EDITOR_HANDLE, 'product-publish-guard', WCPG_PATH . 'languages' );
+		wp_set_script_translations( self::EDITOR_HANDLE, 'product-publish-guard', SIT_WCPG_PATH . 'languages' );
 
 		/*
 		 * `wp_json_encode()` inside `wp_add_inline_script()`, never string concatenation
@@ -193,7 +194,7 @@ final class Assets {
 				 */
 				'canOverride'      => $this->settings->allows_admin_override() && current_user_can( 'manage_woocommerce' ),
 			),
-			'restPath'  => '/wcpg/v1/products/' . $product_id . '/validate',
+			'restPath'  => '/' . Validate_Controller::REST_NAMESPACE . '/products/' . $product_id . '/validate',
 			'groups'    => Editor_Meta_Box::group_labels(),
 		);
 	}
@@ -209,11 +210,11 @@ final class Assets {
 	 * @return void
 	 */
 	private function enqueue_style( string $handle, string $file, string $version ): void {
-		if ( ! file_exists( WCPG_PATH . 'build/' . $file ) ) {
+		if ( ! file_exists( SIT_WCPG_PATH . 'build/' . $file ) ) {
 			return;
 		}
 
-		wp_enqueue_style( $handle, WCPG_URL . 'build/' . $file, array(), $version );
+		wp_enqueue_style( $handle, SIT_WCPG_URL . 'build/' . $file, array(), $version );
 	}
 
 	/**
@@ -227,10 +228,10 @@ final class Assets {
 	private function read_asset_file( string $entry ): array {
 		$defaults = array(
 			'dependencies' => array(),
-			'version'      => WCPG_VERSION,
+			'version'      => SIT_WCPG_VERSION,
 		);
 
-		$path = WCPG_PATH . 'build/' . $entry . '.asset.php';
+		$path = SIT_WCPG_PATH . 'build/' . $entry . '.asset.php';
 
 		if ( ! file_exists( $path ) ) {
 			return $defaults;

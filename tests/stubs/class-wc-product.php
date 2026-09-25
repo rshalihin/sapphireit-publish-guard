@@ -24,7 +24,7 @@ class WC_Product {
 	 * @since 1.0.0
 	 * @var array
 	 */
-	private array $wcpg_values;
+	private array $sit_wcpg_values;
 
 	/**
 	 * Construct the double.
@@ -34,7 +34,7 @@ class WC_Product {
 	 * @param array $values Product values, keyed like the getters below.
 	 */
 	public function __construct( array $values = array() ) {
-		$this->wcpg_values = $values;
+		$this->sit_wcpg_values = $values;
 	}
 
 	/**
@@ -46,8 +46,8 @@ class WC_Product {
 	 * @param mixed  $default_value Fallback.
 	 * @return mixed
 	 */
-	private function wcpg_value( string $key, $default_value ) {
-		return $this->wcpg_values[ $key ] ?? $default_value;
+	private function sit_wcpg_value( string $key, $default_value ) {
+		return $this->sit_wcpg_values[ $key ] ?? $default_value;
 	}
 
 	/**
@@ -58,7 +58,7 @@ class WC_Product {
 	 * @return int
 	 */
 	public function get_id() {
-		return (int) $this->wcpg_value( 'id', 0 );
+		return (int) $this->sit_wcpg_value( 'id', 0 );
 	}
 
 	/**
@@ -69,7 +69,7 @@ class WC_Product {
 	 * @return string
 	 */
 	public function get_type() {
-		return (string) $this->wcpg_value( 'type', 'simple' );
+		return (string) $this->sit_wcpg_value( 'type', 'simple' );
 	}
 
 	/**
@@ -83,7 +83,7 @@ class WC_Product {
 	public function get_status( $context = 'view' ) {
 		unset( $context );
 
-		return (string) $this->wcpg_value( 'status', 'draft' );
+		return (string) $this->sit_wcpg_value( 'status', 'draft' );
 	}
 
 	/**
@@ -97,7 +97,7 @@ class WC_Product {
 	public function get_name( $context = 'view' ) {
 		unset( $context );
 
-		return (string) $this->wcpg_value( 'name', '' );
+		return (string) $this->sit_wcpg_value( 'name', '' );
 	}
 
 	/**
@@ -111,7 +111,7 @@ class WC_Product {
 	public function get_description( $context = 'view' ) {
 		unset( $context );
 
-		return (string) $this->wcpg_value( 'description', '' );
+		return (string) $this->sit_wcpg_value( 'description', '' );
 	}
 
 	/**
@@ -125,7 +125,7 @@ class WC_Product {
 	public function get_short_description( $context = 'view' ) {
 		unset( $context );
 
-		return (string) $this->wcpg_value( 'short_description', '' );
+		return (string) $this->sit_wcpg_value( 'short_description', '' );
 	}
 
 	/**
@@ -139,7 +139,7 @@ class WC_Product {
 	public function get_image_id( $context = 'view' ) {
 		unset( $context );
 
-		return (int) $this->wcpg_value( 'image_id', 0 );
+		return (int) $this->sit_wcpg_value( 'image_id', 0 );
 	}
 
 	/**
@@ -153,7 +153,7 @@ class WC_Product {
 	public function get_gallery_image_ids( $context = 'view' ) {
 		unset( $context );
 
-		return (array) $this->wcpg_value( 'gallery_image_ids', array() );
+		return (array) $this->sit_wcpg_value( 'gallery_image_ids', array() );
 	}
 
 	/**
@@ -167,7 +167,7 @@ class WC_Product {
 	public function get_regular_price( $context = 'view' ) {
 		unset( $context );
 
-		return (string) $this->wcpg_value( 'regular_price', '' );
+		return (string) $this->sit_wcpg_value( 'regular_price', '' );
 	}
 
 	/**
@@ -181,7 +181,7 @@ class WC_Product {
 	public function get_sale_price( $context = 'view' ) {
 		unset( $context );
 
-		return (string) $this->wcpg_value( 'sale_price', '' );
+		return (string) $this->sit_wcpg_value( 'sale_price', '' );
 	}
 
 	/**
@@ -195,7 +195,7 @@ class WC_Product {
 	public function get_date_on_sale_from( $context = 'view' ) {
 		unset( $context );
 
-		return $this->wcpg_value( 'date_on_sale_from', null );
+		return $this->sit_wcpg_value( 'date_on_sale_from', null );
 	}
 
 	/**
@@ -209,7 +209,7 @@ class WC_Product {
 	public function get_date_on_sale_to( $context = 'view' ) {
 		unset( $context );
 
-		return $this->wcpg_value( 'date_on_sale_to', null );
+		return $this->sit_wcpg_value( 'date_on_sale_to', null );
 	}
 
 	/**
@@ -223,7 +223,7 @@ class WC_Product {
 	public function get_sku( $context = 'view' ) {
 		unset( $context );
 
-		return (string) $this->wcpg_value( 'sku', '' );
+		return (string) $this->sit_wcpg_value( 'sku', '' );
 	}
 
 	/**
@@ -237,7 +237,7 @@ class WC_Product {
 	public function get_stock_status( $context = 'view' ) {
 		unset( $context );
 
-		return (string) $this->wcpg_value( 'stock_status', 'instock' );
+		return (string) $this->sit_wcpg_value( 'stock_status', 'instock' );
 	}
 
 	/**
@@ -251,7 +251,7 @@ class WC_Product {
 	public function get_manage_stock( $context = 'view' ) {
 		unset( $context );
 
-		return (bool) $this->wcpg_value( 'manage_stock', false );
+		return (bool) $this->sit_wcpg_value( 'manage_stock', false );
 	}
 
 	/**
@@ -265,7 +265,7 @@ class WC_Product {
 	public function get_stock_quantity( $context = 'view' ) {
 		unset( $context );
 
-		return $this->wcpg_value( 'stock_quantity', null );
+		return $this->sit_wcpg_value( 'stock_quantity', null );
 	}
 }
 

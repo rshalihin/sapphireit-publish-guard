@@ -12,10 +12,10 @@ use ProductPublishGuard\Engine\Severity;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * The only writer of the `wcpg_settings` option.
+ * The only writer of the `sit_wcpg_settings` option.
  *
  * Registered as `register_setting()`'s sanitize callback, which also makes it the
- * `sanitize_option_wcpg_settings` filter — so it runs for every `update_option()` on
+ * `sanitize_option_sit_wcpg_settings` filter — so it runs for every `update_option()` on
  * that key, not only for form posts.
  *
  * The output array is **built from the defaults**, never filtered down from the input.
@@ -212,7 +212,7 @@ final class Settings_Sanitizer {
 
 		add_settings_error(
 			Settings::OPTION_NAME,
-			'wcpg_threshold_clamped_' . $key,
+			'sit_wcpg_threshold_clamped_' . $key,
 			sprintf(
 				/* translators: 1: threshold setting label, 2: the value that was stored instead. */
 				__( '%1$s was outside the allowed range and has been saved as %2$d.', 'product-publish-guard' ),

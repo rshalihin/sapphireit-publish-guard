@@ -21,15 +21,15 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WCPG_VERSION', '1.0.0' );
-define( 'WCPG_FILE', __FILE__ );
-define( 'WCPG_PATH', plugin_dir_path( __FILE__ ) );
-define( 'WCPG_URL', plugin_dir_url( __FILE__ ) );
-define( 'WCPG_MIN_PHP', '8.0' );
-define( 'WCPG_MIN_WP', '6.5' );
-define( 'WCPG_MIN_WC', '9.0' );
+define( 'SIT_WCPG_VERSION', '1.0.0' );
+define( 'SIT_WCPG_FILE', __FILE__ );
+define( 'SIT_WCPG_PATH', plugin_dir_path( __FILE__ ) );
+define( 'SIT_WCPG_URL', plugin_dir_url( __FILE__ ) );
+define( 'SIT_WCPG_MIN_PHP', '8.0' );
+define( 'SIT_WCPG_MIN_WP', '6.5' );
+define( 'SIT_WCPG_MIN_WC', '9.0' );
 
-require_once WCPG_PATH . 'src/Autoloader.php';
+require_once SIT_WCPG_PATH . 'src/Autoloader.php';
 
 /**
  * Bootstrap the plugin.
@@ -46,7 +46,7 @@ require_once WCPG_PATH . 'src/Autoloader.php';
  *
  * @return void
  */
-function wcpg_bootstrap() {
+function sit_wcpg_bootstrap() {
 	\ProductPublishGuard\Autoloader::register();
 
 	add_action(
@@ -54,20 +54,20 @@ function wcpg_bootstrap() {
 		array( \ProductPublishGuard\Compat\Woo_Compat::class, 'declare_compatibility' )
 	);
 
-	add_action( 'plugins_loaded', 'wcpg_boot_plugin', 5 );
+	add_action( 'plugins_loaded', 'sit_wcpg_boot_plugin', 5 );
 }
 
 /**
  * Check requirements and, if they are met, boot the plugin.
  *
- * Kept separate from `wcpg_bootstrap()` so the `plugins_loaded` callback is a named
+ * Kept separate from `sit_wcpg_bootstrap()` so the `plugins_loaded` callback is a named
  * function rather than a closure, which makes it unhookable-by-accident and testable.
  *
  * @since 1.0.0
  *
  * @return void
  */
-function wcpg_boot_plugin() {
+function sit_wcpg_boot_plugin() {
 	if ( ! \ProductPublishGuard\Compat\Requirements::check() ) {
 		return;
 	}
@@ -75,4 +75,4 @@ function wcpg_boot_plugin() {
 	\ProductPublishGuard\Plugin::instance()->boot();
 }
 
-wcpg_bootstrap();
+sit_wcpg_bootstrap();

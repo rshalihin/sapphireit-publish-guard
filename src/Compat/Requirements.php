@@ -47,30 +47,30 @@ final class Requirements {
 	public static function check(): bool {
 		self::$failures = array();
 
-		if ( version_compare( PHP_VERSION, WCPG_MIN_PHP, '<' ) ) {
+		if ( version_compare( PHP_VERSION, SIT_WCPG_MIN_PHP, '<' ) ) {
 			self::$failures[] = array(
 				'code'     => 'php',
-				'required' => WCPG_MIN_PHP,
+				'required' => SIT_WCPG_MIN_PHP,
 				'actual'   => PHP_VERSION,
 			);
 		}
 
 		$wp_version = get_bloginfo( 'version' );
 
-		if ( version_compare( $wp_version, WCPG_MIN_WP, '<' ) ) {
+		if ( version_compare( $wp_version, SIT_WCPG_MIN_WP, '<' ) ) {
 			self::$failures[] = array(
 				'code'     => 'wp',
-				'required' => WCPG_MIN_WP,
+				'required' => SIT_WCPG_MIN_WP,
 				'actual'   => $wp_version,
 			);
 		}
 
 		if ( ! self::woocommerce_is_active() ) {
 			self::$failures[] = array( 'code' => 'wc_missing' );
-		} elseif ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, WCPG_MIN_WC, '<' ) ) {
+		} elseif ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, SIT_WCPG_MIN_WC, '<' ) ) {
 			self::$failures[] = array(
 				'code'     => 'wc_version',
-				'required' => WCPG_MIN_WC,
+				'required' => SIT_WCPG_MIN_WC,
 				'actual'   => WC_VERSION,
 			);
 		}

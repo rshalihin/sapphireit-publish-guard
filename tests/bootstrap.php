@@ -11,27 +11,27 @@
  * @package ProductPublishGuard
  */
 
-$wcpg_root = dirname( __DIR__ );
+$sit_wcpg_root = dirname( __DIR__ );
 
-require_once $wcpg_root . '/vendor/autoload.php';
+require_once $sit_wcpg_root . '/vendor/autoload.php';
 
-$wcpg_wp_tests = getenv( 'WP_TESTS_DIR' );
+$sit_wcpg_wp_tests = getenv( 'WP_TESTS_DIR' );
 
-if ( ! $wcpg_wp_tests ) {
-	$wcpg_wp_tests = getenv( 'WP_PHPUNIT__DIR' );
+if ( ! $sit_wcpg_wp_tests ) {
+	$sit_wcpg_wp_tests = getenv( 'WP_PHPUNIT__DIR' );
 }
 
-if ( $wcpg_wp_tests && file_exists( $wcpg_wp_tests . '/includes/functions.php' ) ) {
-	require_once $wcpg_wp_tests . '/includes/functions.php';
+if ( $sit_wcpg_wp_tests && file_exists( $sit_wcpg_wp_tests . '/includes/functions.php' ) ) {
+	require_once $sit_wcpg_wp_tests . '/includes/functions.php';
 
 	tests_add_filter(
 		'muplugins_loaded',
-		static function () use ( $wcpg_root ) {
-			require $wcpg_root . '/product-publish-guard.php';
+		static function () use ( $sit_wcpg_root ) {
+			require $sit_wcpg_root . '/product-publish-guard.php';
 		}
 	);
 
-	require $wcpg_wp_tests . '/includes/bootstrap.php';
+	require $sit_wcpg_wp_tests . '/includes/bootstrap.php';
 
 	/*
 	 * After the suite has booted, the plugin's autoloader is registered, so the rule
@@ -48,9 +48,9 @@ if ( $wcpg_wp_tests && file_exists( $wcpg_wp_tests . '/includes/functions.php' )
  * every plugin file guards on it.
  */
 // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
-defined( 'ABSPATH' ) || define( 'ABSPATH', $wcpg_root . '/' );
-defined( 'WCPG_PATH' ) || define( 'WCPG_PATH', $wcpg_root . '/' );
-defined( 'WCPG_VERSION' ) || define( 'WCPG_VERSION', '1.0.0' );
+defined( 'ABSPATH' ) || define( 'ABSPATH', $sit_wcpg_root . '/' );
+defined( 'SIT_WCPG_PATH' ) || define( 'SIT_WCPG_PATH', $sit_wcpg_root . '/' );
+defined( 'SIT_WCPG_VERSION' ) || define( 'SIT_WCPG_VERSION', '1.0.0' );
 
 require_once __DIR__ . '/stubs/wordpress-functions.php';
 
@@ -58,7 +58,7 @@ if ( ! class_exists( 'WC_Product' ) ) {
 	require_once __DIR__ . '/stubs/class-wc-product.php';
 }
 
-require_once $wcpg_root . '/src/Autoloader.php';
+require_once $sit_wcpg_root . '/src/Autoloader.php';
 
 ProductPublishGuard\Autoloader::register();
 

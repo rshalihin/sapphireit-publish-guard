@@ -41,7 +41,7 @@ final class Editor_Meta_Box {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	public const ID = 'wcpg_product_checklist';
+	public const ID = 'sit_wcpg_product_checklist';
 
 	/**
 	 * The id of the node the React app mounts into.
@@ -49,7 +49,7 @@ final class Editor_Meta_Box {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	public const MOUNT_ID = 'wcpg-checklist-root';
+	public const MOUNT_ID = 'sit-wcpg-checklist-root';
 
 	/**
 	 * Group display order. Groups a third-party rule invents are rendered after these.
@@ -163,12 +163,12 @@ final class Editor_Meta_Box {
 
 		$result = $this->checklist()->validate_post( (int) $post->ID );
 
-		echo '<div id="' . esc_attr( self::MOUNT_ID ) . '" class="wcpg-checklist">';
+		echo '<div id="' . esc_attr( self::MOUNT_ID ) . '" class="sit-wcpg-checklist">';
 
 		if ( $result instanceof Validation_Result ) {
 			$this->render_fallback( $result );
 		} else {
-			echo '<p class="wcpg-checklist__empty">'
+			echo '<p class="sit-wcpg-checklist__empty">'
 				. esc_html__( 'The checklist will appear once this product has been saved.', 'product-publish-guard' )
 				. '</p>';
 		}
@@ -205,7 +205,7 @@ final class Editor_Meta_Box {
 	 * @return void
 	 */
 	private function render_fallback( Validation_Result $result ): void {
-		echo '<div class="wcpg-checklist__fallback">';
+		echo '<div class="sit-wcpg-checklist__fallback">';
 
 		$this->render_summary( $result );
 
@@ -248,15 +248,15 @@ final class Editor_Meta_Box {
 			? __( 'Ready to publish', 'product-publish-guard' )
 			: __( 'Not ready to publish', 'product-publish-guard' );
 
-		echo '<p class="wcpg-checklist__summary wcpg-checklist__summary--' . esc_attr( $state ) . '" aria-live="polite">';
-		echo '<span class="wcpg-checklist__icon" aria-hidden="true">' . esc_html( self::ICONS[ $state ] ) . '</span> ';
-		echo '<strong class="wcpg-checklist__state">' . esc_html( $headline ) . '</strong>';
-		echo '<span class="wcpg-checklist__counts">' . esc_html( $result->get_summary_label() ) . '</span>';
+		echo '<p class="sit-wcpg-checklist__summary sit-wcpg-checklist__summary--' . esc_attr( $state ) . '" aria-live="polite">';
+		echo '<span class="sit-wcpg-checklist__icon" aria-hidden="true">' . esc_html( self::ICONS[ $state ] ) . '</span> ';
+		echo '<strong class="sit-wcpg-checklist__state">' . esc_html( $headline ) . '</strong>';
+		echo '<span class="sit-wcpg-checklist__counts">' . esc_html( $result->get_summary_label() ) . '</span>';
 
 		$issues = (int) $counts['failed'] + (int) $counts['warnings'];
 
 		if ( $issues > 0 ) {
-			echo '<span class="wcpg-checklist__issues">' . esc_html(
+			echo '<span class="sit-wcpg-checklist__issues">' . esc_html(
 				sprintf(
 					/* translators: %d: number of checks that did not pass. */
 					_n( '%d issue', '%d issues', $issues, 'product-publish-guard' ),
@@ -280,8 +280,8 @@ final class Editor_Meta_Box {
 	private function render_group( string $group, array $rows ): void {
 		$labels = self::group_labels();
 
-		echo '<h4 class="wcpg-checklist__group">' . esc_html( $labels[ $group ] ?? $group ) . '</h4>';
-		echo '<ul class="wcpg-checklist__items">';
+		echo '<h4 class="sit-wcpg-checklist__group">' . esc_html( $labels[ $group ] ?? $group ) . '</h4>';
+		echo '<ul class="sit-wcpg-checklist__items">';
 
 		foreach ( $rows as $row ) {
 			$this->render_item( $row );
@@ -303,7 +303,7 @@ final class Editor_Meta_Box {
 			return;
 		}
 
-		echo '<h4 class="wcpg-checklist__group wcpg-checklist__group--skipped">' . esc_html(
+		echo '<h4 class="sit-wcpg-checklist__group sit-wcpg-checklist__group--skipped">' . esc_html(
 			sprintf(
 				/* translators: %d: number of checks that do not apply to this product. */
 				_n( 'Not applicable (%d)', 'Not applicable (%d)', count( $rows ), 'product-publish-guard' ),
@@ -311,7 +311,7 @@ final class Editor_Meta_Box {
 			)
 		) . '</h4>';
 
-		echo '<ul class="wcpg-checklist__items wcpg-checklist__items--skipped">';
+		echo '<ul class="sit-wcpg-checklist__items sit-wcpg-checklist__items--skipped">';
 
 		foreach ( $rows as $row ) {
 			$this->render_item( $row );
@@ -335,15 +335,15 @@ final class Editor_Meta_Box {
 		$status = $row->get_status();
 		$icon   = self::ICONS[ $status ] ?? self::ICONS[ Status::SKIPPED ];
 
-		echo '<li class="wcpg-checklist__item wcpg-checklist__item--' . esc_attr( $status ) . '">';
-		echo '<span class="wcpg-checklist__icon" aria-hidden="true">' . esc_html( $icon ) . '</span>';
+		echo '<li class="sit-wcpg-checklist__item sit-wcpg-checklist__item--' . esc_attr( $status ) . '">';
+		echo '<span class="sit-wcpg-checklist__icon" aria-hidden="true">' . esc_html( $icon ) . '</span>';
 		echo '<span class="screen-reader-text">' . esc_html( self::status_label( $status ) ) . '</span> ';
-		echo '<span class="wcpg-checklist__label">' . esc_html( $row->get_label() ) . '</span>';
+		echo '<span class="sit-wcpg-checklist__label">' . esc_html( $row->get_label() ) . '</span>';
 
 		$message = $row->get_message();
 
 		if ( Status::PASS !== $status && '' !== $message ) {
-			echo '<span class="wcpg-checklist__message">' . esc_html( $message ) . '</span>';
+			echo '<span class="sit-wcpg-checklist__message">' . esc_html( $message ) . '</span>';
 		}
 
 		echo '</li>';

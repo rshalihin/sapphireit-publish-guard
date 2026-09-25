@@ -37,7 +37,7 @@ final class Rules_Provider_Test extends TestCase {
 	 * @return void
 	 */
 	protected function set_up() {
-		$GLOBALS['wcpg_test_actions'] = array();
+		$GLOBALS['sit_wcpg_test_actions'] = array();
 
 		$this->registry = new Rule_Registry();
 
@@ -52,7 +52,7 @@ final class Rules_Provider_Test extends TestCase {
 	 * @return void
 	 */
 	protected function tear_down() {
-		unset( $GLOBALS['wcpg_test_actions'] );
+		unset( $GLOBALS['sit_wcpg_test_actions'] );
 	}
 
 	/**
@@ -171,10 +171,10 @@ final class Rules_Provider_Test extends TestCase {
 	 * @return void
 	 */
 	public function test_it_opens_the_registry_to_other_plugins() {
-		$fired = $GLOBALS['wcpg_test_actions'];
+		$fired = $GLOBALS['sit_wcpg_test_actions'];
 
 		$this->assertCount( 1, $fired );
-		$this->assertSame( 'wcpg_register_rules', $fired[0]['hook'] );
+		$this->assertSame( 'sit_wcpg_register_rules', $fired[0]['hook'] );
 		$this->assertSame( array( $this->registry ), $fired[0]['args'] );
 	}
 

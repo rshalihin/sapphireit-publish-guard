@@ -42,7 +42,7 @@ final class Checklist_Service {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	public const CACHE_GROUP = 'wcpg';
+	public const CACHE_GROUP = 'sit_wcpg';
 
 	/**
 	 * Object-cache lifetime in seconds.

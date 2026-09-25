@@ -83,7 +83,7 @@ final class Checklist_Service_Test extends WP_UnitTestCase {
 		$product->set_description( str_repeat( 'Sentence about the product. ', 20 ) );
 		$product->set_short_description( str_repeat( 'Short blurb. ', 10 ) );
 		$product->set_regular_price( '19.99' );
-		$product->set_sku( 'WCPG-TEST-1' );
+		$product->set_sku( 'SIT-WCPG-TEST-1' );
 		$product->set_stock_status( 'instock' );
 		$product->save();
 
