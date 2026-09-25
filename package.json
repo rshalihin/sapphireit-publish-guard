@@ -10,16 +10,27 @@
 		"format": "wp-scripts format",
 		"lint:js": "wp-scripts lint-js",
 		"lint:css": "wp-scripts lint-style",
-		"test:unit:js": "wp-scripts test-unit-js",
+		"test:unit:js": "wp-scripts test-unit-jest",
 		"env:start": "wp-env start",
 		"env:stop": "wp-env stop",
 		"env:floor": "cp .wp-env.floor.json .wp-env.override.json && wp-env start --update",
 		"env:current": "rm -f .wp-env.override.json && wp-env start --update",
-		"makepot": "wp i18n make-pot . languages/product-publish-guard.pot"
+		"makepot": "wp i18n make-pot . languages/product-publish-guard.pot --domain=product-publish-guard --exclude=node_modules,vendor,tests,assets,bin,dist,.claude",
+		"package": "npm run build && npm run makepot && php bin/build-zip.php"
 	},
 	"devDependencies": {
+		"@testing-library/react": "^16.3.3",
+		"@wordpress/api-fetch": "^7.56.0",
+		"@wordpress/components": "^41.0.0",
+		"@wordpress/date": "^5.56.0",
+		"@wordpress/dom-ready": "^4.56.0",
+		"@wordpress/element": "^8.8.0",
 		"@wordpress/env": "^11.16.0",
-		"@wordpress/scripts": "^36.0.0"
+		"@wordpress/i18n": "^6.29.0",
+		"@wordpress/scripts": "^36.0.0",
+		"globals": "^17.12.0",
+		"jest": "^30.5.2",
+		"jest-environment-jsdom": "^30.5.2"
 	},
 	"engines": {
 		"node": ">=20"

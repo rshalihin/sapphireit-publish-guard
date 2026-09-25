@@ -42,7 +42,7 @@ final class Checklist_Service {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	public const CACHE_GROUP = 'wcpg';
+	public const CACHE_GROUP = 'sit_wcpg';
 
 	/**
 	 * Object-cache lifetime in seconds.
@@ -170,6 +170,22 @@ final class Checklist_Service {
 			? Product_Context::from_product( $product )
 			: Product_Context::from_product_with_overrides( $product, $overrides );
 
+		return $this->validator->validate( $context );
+	}
+
+	/**
+	 * Validate a context the caller has already assembled.
+	 *
+	 * The publish guard's entry point: its context describes a write that is still in
+	 * flight, and may have no stored product behind it at all, so it is never memoized
+	 * or cached.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param Product_Context $context The product as it is about to be saved.
+	 * @return Validation_Result
+	 */
+	public function validate_context( Product_Context $context ): Validation_Result {
 		return $this->validator->validate( $context );
 	}
 

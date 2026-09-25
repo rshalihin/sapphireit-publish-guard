@@ -189,13 +189,13 @@ final class Editor_Meta_Box_Test extends WP_UnitTestCase {
 		$output = $this->render( $this->box( $this->mixed_registry() ), $this->product() );
 
 		$this->assertStringContainsString( 'id="' . Editor_Meta_Box::MOUNT_ID . '"', $output );
-		$this->assertStringContainsString( 'wcpg-checklist__fallback', $output );
+		$this->assertStringContainsString( 'sit-wcpg-checklist__fallback', $output );
 
 		// One row per rule, each carrying its status as a class.
-		$this->assertStringContainsString( 'wcpg-checklist__item--pass', $output );
-		$this->assertStringContainsString( 'wcpg-checklist__item--fail', $output );
-		$this->assertStringContainsString( 'wcpg-checklist__item--warning', $output );
-		$this->assertStringContainsString( 'wcpg-checklist__item--skipped', $output );
+		$this->assertStringContainsString( 'sit-wcpg-checklist__item--pass', $output );
+		$this->assertStringContainsString( 'sit-wcpg-checklist__item--fail', $output );
+		$this->assertStringContainsString( 'sit-wcpg-checklist__item--warning', $output );
+		$this->assertStringContainsString( 'sit-wcpg-checklist__item--skipped', $output );
 
 		// Labels for every rule, and messages only for the rows that did not pass.
 		$this->assertStringContainsString( 'Fake alpha', $output );
@@ -241,8 +241,8 @@ final class Editor_Meta_Box_Test extends WP_UnitTestCase {
 
 		$this->assertStringContainsString( 'Not applicable (1)', $output );
 		$this->assertLessThan(
-			strpos( $output, 'wcpg-checklist__items--skipped' ),
-			strpos( $output, 'wcpg-checklist__item--fail' ),
+			strpos( $output, 'sit-wcpg-checklist__items--skipped' ),
+			strpos( $output, 'sit-wcpg-checklist__item--fail' ),
 			'Skipped rows must come after the rows that were evaluated.'
 		);
 	}
@@ -258,7 +258,7 @@ final class Editor_Meta_Box_Test extends WP_UnitTestCase {
 		$output = $this->render( new Editor_Meta_Box( new Settings() ), $this->product() );
 
 		foreach ( array( 'Content', 'Media', 'Pricing', 'Organization', 'Inventory' ) as $heading ) {
-			$this->assertStringContainsString( '<h4 class="wcpg-checklist__group">' . $heading . '</h4>', $output );
+			$this->assertStringContainsString( '<h4 class="sit-wcpg-checklist__group">' . $heading . '</h4>', $output );
 		}
 	}
 
@@ -273,7 +273,7 @@ final class Editor_Meta_Box_Test extends WP_UnitTestCase {
 		$output = $this->render( $this->box( $this->mixed_registry() ), $this->product() );
 
 		$this->assertSame(
-			substr_count( $output, '<li class="wcpg-checklist__item ' ),
+			substr_count( $output, '<li class="sit-wcpg-checklist__item ' ),
 			substr_count( $output, '<span class="screen-reader-text">' ),
 			'Every row carries exactly one visually hidden status label.'
 		);

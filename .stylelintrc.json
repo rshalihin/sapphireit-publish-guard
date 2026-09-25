@@ -1,0 +1,12 @@
+{
+  "extends": "@wordpress/stylelint-config/scss",
+  "rules": {
+    "selector-class-pattern": [
+      "^sit-wcpg-[a-z0-9]+(-[a-z0-9]+)*(__[a-z0-9]+(-[a-z0-9]+)*)?(--[a-z0-9]+(-[a-z0-9]+)*)?$",
+      {
+        "resolveNestedSelectors": true,
+        "message": "Class names must be BEM and carry the sit-wcpg- prefix (coding-plan.md section 10.6)."
+      }
+    ]
+  }
+}

@@ -4,8 +4,8 @@
  *
  * The plugin persists exactly two things:
  *
- * 1. the `wcpg_settings` option, and
- * 2. short-lived `wcpg_blocked_{user_id}` transients used to carry a "publishing was
+ * 1. the `sit_wcpg_settings` option, and
+ * 2. short-lived `sit_wcpg_blocked_{user_id}` transients used to carry a "publishing was
  *    blocked" notice across the post-save redirect.
  *
  * There are no custom tables, no post meta, no custom capabilities and no role edits,
@@ -18,14 +18,14 @@
 
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
-delete_option( 'wcpg_settings' );
+delete_option( 'sit_wcpg_settings' );
 
 /*
  * Notice transients expire after 60 seconds on their own, so this loop is belt and
  * braces for a site uninstalled within a minute of a blocked publish. Only users who
  * can edit products can ever have one.
  */
-$wcpg_user_ids = get_users(
+$sit_wcpg_user_ids = get_users(
 	array(
 		'capability' => 'edit_products',
 		'fields'     => 'ID',
@@ -33,8 +33,8 @@ $wcpg_user_ids = get_users(
 	)
 );
 
-foreach ( $wcpg_user_ids as $wcpg_user_id ) {
-	delete_transient( 'wcpg_blocked_' . (int) $wcpg_user_id );
+foreach ( $sit_wcpg_user_ids as $sit_wcpg_user_id ) {
+	delete_transient( 'sit_wcpg_blocked_' . (int) $sit_wcpg_user_id );
 }
 
-unset( $wcpg_user_ids, $wcpg_user_id );
+unset( $sit_wcpg_user_ids, $sit_wcpg_user_id );

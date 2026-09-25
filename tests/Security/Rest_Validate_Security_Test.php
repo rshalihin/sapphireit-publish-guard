@@ -13,9 +13,9 @@ namespace ProductPublishGuard\Tests\Security;
 use ProductPublishGuard\Rest\Validate_Controller;
 use ProductPublishGuard\Settings\Settings;
 use ProductPublishGuard\Support\Checklist_Service;
+use Spy_REST_Server;
 use WC_Product_Simple;
 use WP_REST_Request;
-use WP_REST_Server;
 use WP_UnitTestCase;
 
 /**
@@ -31,15 +31,15 @@ final class Rest_Validate_Security_Test extends WP_UnitTestCase {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	private const LIMITED_ROLE = 'wcpg_limited_editor';
+	private const LIMITED_ROLE = 'sit_wcpg_limited_editor';
 
 	/**
 	 * The REST server this test dispatches through.
 	 *
 	 * @since 1.0.0
-	 * @var WP_REST_Server
+	 * @var Spy_REST_Server
 	 */
-	private WP_REST_Server $server;
+	private Spy_REST_Server $server;
 
 	/**
 	 * Boot a REST server with the plugin's route on it, logged out.
@@ -57,7 +57,7 @@ final class Rest_Validate_Security_Test extends WP_UnitTestCase {
 
 		add_role(
 			self::LIMITED_ROLE,
-			'WCPG limited editor',
+			'SIT-WCPG limited editor',
 			array(
 				'read'                    => true,
 				'upload_files'            => true,
@@ -69,7 +69,7 @@ final class Rest_Validate_Security_Test extends WP_UnitTestCase {
 
 		global $wp_rest_server;
 
-		$wp_rest_server = new WP_REST_Server();
+		$wp_rest_server = new Spy_REST_Server();
 		$this->server   = $wp_rest_server;
 
 		do_action( 'rest_api_init', $this->server );
@@ -107,7 +107,7 @@ final class Rest_Validate_Security_Test extends WP_UnitTestCase {
 		$product = new WC_Product_Simple();
 		$product->set_name( 'A perfectly ordinary product' );
 		$product->set_regular_price( '19.99' );
-		$product->set_sku( 'WCPG-SEC-' . wp_rand( 1000, 9999 ) );
+		$product->set_sku( 'SIT-WCPG-SEC-' . wp_rand( 1000, 9999 ) );
 		$product->set_status( 'publish' );
 		$product->save();
 
@@ -133,7 +133,7 @@ final class Rest_Validate_Security_Test extends WP_UnitTestCase {
 	 * @return \WP_REST_Response
 	 */
 	private function dispatch( int $product_id, ?array $draft = null ) {
-		$request = new WP_REST_Request( 'POST', '/wcpg/v1/products/' . $product_id . '/validate' );
+		$request = new WP_REST_Request( 'POST', '/' . Validate_Controller::REST_NAMESPACE . '/products/' . $product_id . '/validate' );
 
 		$request->set_header( 'Content-Type', 'application/json' );
 		$request->set_body( wp_json_encode( null === $draft ? array() : array( 'draft' => $draft ) ) );
@@ -155,7 +155,7 @@ final class Rest_Validate_Security_Test extends WP_UnitTestCase {
 		$data     = $response->get_data();
 
 		$this->assertContains( $response->get_status(), array( 401, 403 ) );
-		$this->assertSame( 'wcpg_forbidden', $data['code'] );
+		$this->assertSame( 'sit_wcpg_forbidden', $data['code'] );
 		$this->assertArrayNotHasKey( 'results', $data );
 		$this->assertArrayNotHasKey( 'counts', $data );
 		$this->assertArrayNotHasKey( 'is_ready', $data );
@@ -176,7 +176,7 @@ final class Rest_Validate_Security_Test extends WP_UnitTestCase {
 		$response = $this->dispatch( $product->get_id() );
 
 		$this->assertSame( 403, $response->get_status() );
-		$this->assertSame( 'wcpg_forbidden', $response->get_data()['code'] );
+		$this->assertSame( 'sit_wcpg_forbidden', $response->get_data()['code'] );
 		$this->assertArrayNotHasKey( 'results', $response->get_data() );
 	}
 
@@ -200,7 +200,7 @@ final class Rest_Validate_Security_Test extends WP_UnitTestCase {
 		$refused = $this->dispatch( $their_one->get_id() );
 
 		$this->assertSame( 403, $refused->get_status() );
-		$this->assertSame( 'wcpg_forbidden', $refused->get_data()['code'] );
+		$this->assertSame( 'sit_wcpg_forbidden', $refused->get_data()['code'] );
 
 		// The same role on its own product is allowed, so the refusal above is about
 		// ownership and not about the role lacking product capabilities altogether.
@@ -266,6 +266,7 @@ final class Rest_Validate_Security_Test extends WP_UnitTestCase {
 
 		$this->assertTrue( rest_cookie_check_errors( null ) );
 		$this->assertSame( $admin, get_current_user_id(), 'A correct REST nonce leaves the user signed in.' );
+		$this->assertArrayHasKey( 'X-WP-Nonce', $this->server->sent_headers, 'Core refreshes the nonce on success.' );
 
 		unset( $_REQUEST['_wpnonce'], $GLOBALS['wp_rest_auth_cookie'] );
 	}
@@ -388,7 +389,7 @@ final class Rest_Validate_Security_Test extends WP_UnitTestCase {
 
 		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
 
-		$request = new WP_REST_Request( 'POST', '/wcpg/v1/products/' . $product->get_id() . '/validate' );
+		$request = new WP_REST_Request( 'POST', '/' . Validate_Controller::REST_NAMESPACE . '/products/' . $product->get_id() . '/validate' );
 
 		$request->set_header( 'Content-Type', 'application/json' );
 		$request->set_body( wp_json_encode( array( 'draft' => 'a string, not an object' ) ) );
@@ -415,7 +416,7 @@ final class Rest_Validate_Security_Test extends WP_UnitTestCase {
 		$product->set_name( $payload );
 		$product->set_description( $payload );
 		$product->set_short_description( $payload );
-		$product->set_sku( 'WCPG-XSS-1' );
+		$product->set_sku( 'SIT-WCPG-XSS-1' );
 		$product->save();
 
 		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );

@@ -22,7 +22,11 @@
 		"sort-packages": true
 	},
 	"scripts": {
-		"lint": "phpcs",
+		"lint": [
+			"phpcs",
+			"@lint:prefix"
+		],
+		"lint:prefix": "@php bin/check-prefix.php",
 		"lint:fix": "phpcbf",
 		"test": "phpunit",
 		"test:unit": "phpunit --testsuite unit"

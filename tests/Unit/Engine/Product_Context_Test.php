@@ -26,9 +26,9 @@ final class Product_Context_Test extends TestCase {
 	 * @return void
 	 */
 	protected function set_up() {
-		$GLOBALS['wcpg_test_terms']     = array();
-		$GLOBALS['wcpg_test_options']   = array();
-		$GLOBALS['wcpg_test_image_ids'] = array();
+		$GLOBALS['sit_wcpg_test_terms']     = array();
+		$GLOBALS['sit_wcpg_test_options']   = array();
+		$GLOBALS['sit_wcpg_test_image_ids'] = array();
 	}
 
 	/**
@@ -131,6 +131,45 @@ final class Product_Context_Test extends TestCase {
 		$this->assertSame( 'STORED-1', $context->get_sku() );
 		$this->assertSame( 55, $context->get_product_id() );
 		$this->assertSame( 'draft', $context->get_post_status() );
+	}
+
+	/**
+	 * A save request merges exactly like a draft snapshot.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	public function test_a_save_request_merges_over_the_stored_product() {
+		$context = Product_Context::from_save_request(
+			$this->stored_product(),
+			array(
+				'regular_price' => '',
+				'post_status'   => 'publish',
+			)
+		);
+
+		$this->assertSame( '', $context->get_regular_price() );
+		$this->assertSame( 'publish', $context->get_post_status() );
+		$this->assertSame( 'Stored description', $context->get_description() );
+	}
+
+	/**
+	 * A save request for a product that was never stored falls back to empty values.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	public function test_a_save_request_without_a_stored_product_defaults_to_empty() {
+		$context = Product_Context::from_save_request( null, array( 'title' => 'Brand new' ) );
+
+		$this->assertSame( 'Brand new', $context->get_title() );
+		$this->assertSame( 0, $context->get_product_id() );
+		$this->assertSame( '', $context->get_description() );
+		$this->assertSame( '', $context->get_regular_price() );
+		$this->assertSame( array(), $context->get_category_ids() );
+		$this->assertNull( $context->get_product() );
 	}
 
 	/**
@@ -326,7 +365,7 @@ final class Product_Context_Test extends TestCase {
 	 * @return void
 	 */
 	public function test_featured_image_validity_is_checked_against_the_media_library() {
-		$GLOBALS['wcpg_test_image_ids'] = array( 9 );
+		$GLOBALS['sit_wcpg_test_image_ids'] = array( 9 );
 
 		$valid   = Product_Context::from_product( $this->stored_product() );
 		$missing = Product_Context::from_product( $this->stored_product( array( 'image_id' => 404 ) ) );
@@ -343,7 +382,7 @@ final class Product_Context_Test extends TestCase {
 	 * @return void
 	 */
 	public function test_term_ids_come_from_the_product_or_the_override() {
-		$GLOBALS['wcpg_test_terms'] = array(
+		$GLOBALS['sit_wcpg_test_terms'] = array(
 			'product_cat' => array( 3, 4 ),
 			'product_tag' => array( 7 ),
 		);
@@ -404,7 +443,7 @@ final class Product_Context_Test extends TestCase {
 	 * @return void
 	 */
 	public function test_default_category_comes_from_the_option() {
-		$GLOBALS['wcpg_test_options'] = array( 'default_product_cat' => '15' );
+		$GLOBALS['sit_wcpg_test_options'] = array( 'default_product_cat' => '15' );
 
 		$context = Product_Context::from_product( $this->stored_product() );
 
@@ -458,14 +497,14 @@ final class Product_Context_Test extends TestCase {
 	 * @return void
 	 */
 	public function test_values_are_memoized() {
-		$GLOBALS['wcpg_test_terms'] = array( 'product_cat' => array( 3 ) );
+		$GLOBALS['sit_wcpg_test_terms'] = array( 'product_cat' => array( 3 ) );
 
 		$context = Product_Context::from_product( $this->stored_product() );
 
 		$this->assertSame( array( 3 ), $context->get_category_ids() );
 
 		// Changing the source after the first read must not change the answer.
-		$GLOBALS['wcpg_test_terms'] = array( 'product_cat' => array( 99 ) );
+		$GLOBALS['sit_wcpg_test_terms'] = array( 'product_cat' => array( 99 ) );
 
 		$this->assertSame( array( 3 ), $context->get_category_ids() );
 	}

@@ -9,8 +9,11 @@ namespace ProductPublishGuard;
 
 use ProductPublishGuard\Admin\Assets;
 use ProductPublishGuard\Admin\Editor_Meta_Box;
+use ProductPublishGuard\Admin\Notices;
+use ProductPublishGuard\Admin\Product_List_Column;
 use ProductPublishGuard\Engine\Rule_Registry;
 use ProductPublishGuard\Engine\Validator;
+use ProductPublishGuard\Publishing\Publish_Guard;
 use ProductPublishGuard\Rest\Validate_Controller;
 use ProductPublishGuard\Rules\Rules_Provider;
 use ProductPublishGuard\Settings\Settings;
@@ -78,6 +81,22 @@ final class Plugin {
 	private ?Checklist_Service $checklist = null;
 
 	/**
+	 * Lazily constructed notice queue.
+	 *
+	 * @since 1.0.0
+	 * @var Notices|null
+	 */
+	private ?Notices $notices = null;
+
+	/**
+	 * Lazily constructed publishing guard.
+	 *
+	 * @since 1.0.0
+	 * @var Publish_Guard|null
+	 */
+	private ?Publish_Guard $publish_guard = null;
+
+	/**
 	 * Private constructor: use instance().
 	 *
 	 * @since 1.0.0
@@ -132,6 +151,12 @@ final class Plugin {
 		 */
 		( new Validate_Controller() )->register();
 
+		/*
+		 * Not gated on is_admin() either: REST, importers and cron are exactly the paths a
+		 * UI-only guard would miss (section 6.3). Registering adds hooks and nothing else.
+		 */
+		$this->publish_guard()->register();
+
 		if ( is_admin() ) {
 			/*
 			 * Constructing these is cheap: they only add hooks. Everything expensive —
@@ -142,6 +167,8 @@ final class Plugin {
 			( new Settings_Page( $this->settings() ) )->register();
 			( new Assets( $this->settings() ) )->register();
 			( new Editor_Meta_Box( $this->settings() ) )->register();
+			( new Product_List_Column( $this->settings() ) )->register();
+			$this->notices()->register();
 		}
 	}
 
@@ -159,7 +186,7 @@ final class Plugin {
 		load_plugin_textdomain(
 			'product-publish-guard',
 			false,
-			dirname( plugin_basename( WCPG_FILE ) ) . '/languages'
+			dirname( plugin_basename( SIT_WCPG_FILE ) ) . '/languages'
 		);
 	}
 
@@ -181,7 +208,7 @@ final class Plugin {
 	/**
 	 * Get the populated rule registry.
 	 *
-	 * Population fires `wcpg_register_rules`, so third-party rules are available to
+	 * Population fires `sit_wcpg_register_rules`, so third-party rules are available to
 	 * every caller of this method.
 	 *
 	 * @since 1.0.0
@@ -225,5 +252,35 @@ final class Plugin {
 		}
 
 		return $this->checklist;
+	}
+
+	/**
+	 * Get the notice queue.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return Notices
+	 */
+	public function notices(): Notices {
+		if ( null === $this->notices ) {
+			$this->notices = new Notices();
+		}
+
+		return $this->notices;
+	}
+
+	/**
+	 * Get the publishing guard.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return Publish_Guard
+	 */
+	public function publish_guard(): Publish_Guard {
+		if ( null === $this->publish_guard ) {
+			$this->publish_guard = new Publish_Guard( $this->settings(), $this->notices() );
+		}
+
+		return $this->publish_guard;
 	}
 }

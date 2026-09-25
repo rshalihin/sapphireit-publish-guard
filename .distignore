@@ -1,24 +1,41 @@
-# Everything listed here is excluded from the release zip.
+# Everything listed here is excluded from the release zip (bin/build-zip.php).
+# One path per line, relative to the plugin root; `*` and `?` wildcards are allowed.
+# Dotfiles and dot-directories are excluded at any depth whether or not they are listed;
+# the ones below are named anyway so the list documents what exists.
 # Verified in Phase 12: assets/, tests/, node_modules/, vendor/, dotfiles and .claude/.
 
+# Plan, agent notes and version control.
 .claude
+CLAUDE.md
 .git
 .github
 .gitignore
+.gitattributes
 .distignore
+
+# Tooling configuration and caches.
 .editorconfig
 .phpcs.cache
+.phpunit.result.cache
+.stylelintrc.json
 .wp-env.json
 .wp-env.floor.json
 .wp-env.override.json
-assets
-node_modules
-tests
-vendor
+babel.config.js
+eslint.config.cjs
+jest.config.js
+webpack.config.js
+phpcs.xml.dist
+phpunit.xml.dist
 composer.json
 composer.lock
 package.json
 package-lock.json
-phpcs.xml.dist
-phpunit.xml.dist
-webpack.config.js
+
+# Sources, dev dependencies, tests and dev scripts.
+assets
+bin
+dist
+node_modules
+tests
+vendor

@@ -11,9 +11,9 @@ use ProductPublishGuard\Engine\Status;
 use ProductPublishGuard\Rest\Validate_Controller;
 use ProductPublishGuard\Settings\Settings;
 use ProductPublishGuard\Support\Checklist_Service;
+use Spy_REST_Server;
 use WC_Product_Simple;
 use WP_REST_Request;
-use WP_REST_Server;
 use WP_UnitTestCase;
 
 /**
@@ -28,9 +28,9 @@ final class Rest_Validate_Test extends WP_UnitTestCase {
 	 * The REST server this test dispatches through.
 	 *
 	 * @since 1.0.0
-	 * @var WP_REST_Server
+	 * @var Spy_REST_Server
 	 */
-	private WP_REST_Server $server;
+	private Spy_REST_Server $server;
 
 	/**
 	 * Boot a REST server with the plugin's route on it, as an administrator.
@@ -50,7 +50,7 @@ final class Rest_Validate_Test extends WP_UnitTestCase {
 
 		global $wp_rest_server;
 
-		$wp_rest_server = new WP_REST_Server();
+		$wp_rest_server = new Spy_REST_Server();
 		$this->server   = $wp_rest_server;
 
 		do_action( 'rest_api_init', $this->server );
@@ -86,7 +86,7 @@ final class Rest_Validate_Test extends WP_UnitTestCase {
 		$product->set_description( str_repeat( 'Sentence about the product. ', 20 ) );
 		$product->set_short_description( str_repeat( 'Short blurb. ', 10 ) );
 		$product->set_regular_price( '19.99' );
-		$product->set_sku( 'WCPG-REST-1' );
+		$product->set_sku( 'SIT-WCPG-REST-1' );
 		$product->set_stock_status( 'instock' );
 		$product->save();
 
@@ -106,7 +106,7 @@ final class Rest_Validate_Test extends WP_UnitTestCase {
 	 * @return \WP_REST_Response
 	 */
 	private function dispatch( int $product_id, ?array $draft = null ) {
-		$request = new WP_REST_Request( 'POST', '/wcpg/v1/products/' . $product_id . '/validate' );
+		$request = new WP_REST_Request( 'POST', '/' . Validate_Controller::REST_NAMESPACE . '/products/' . $product_id . '/validate' );
 
 		$request->set_header( 'Content-Type', 'application/json' );
 		$request->set_body( wp_json_encode( null === $draft ? array() : array( 'draft' => $draft ) ) );
@@ -142,9 +142,11 @@ final class Rest_Validate_Test extends WP_UnitTestCase {
 	public function test_the_route_is_registered(): void {
 		$routes = $this->server->get_routes( Validate_Controller::REST_NAMESPACE );
 
-		$this->assertArrayHasKey( '/wcpg/v1/products/(?P<id>[\d]+)/validate', $routes );
+		$route = '/' . Validate_Controller::REST_NAMESPACE . Validate_Controller::ROUTE;
 
-		$handler = $routes['/wcpg/v1/products/(?P<id>[\d]+)/validate'][0];
+		$this->assertArrayHasKey( $route, $routes );
+
+		$handler = $routes[ $route ][0];
 
 		$this->assertSame( array( 'POST' => true ), $handler['methods'] );
 		$this->assertNotSame( '__return_true', $handler['permission_callback'] );
@@ -367,7 +369,7 @@ final class Rest_Validate_Test extends WP_UnitTestCase {
 		$response = $this->dispatch( $post_id );
 
 		$this->assertSame( 404, $response->get_status() );
-		$this->assertSame( 'wcpg_not_found', $response->get_data()['code'] );
+		$this->assertSame( 'sit_wcpg_not_found', $response->get_data()['code'] );
 		$this->assertArrayNotHasKey( 'results', $response->get_data() );
 	}
 
@@ -382,7 +384,7 @@ final class Rest_Validate_Test extends WP_UnitTestCase {
 		$response = $this->dispatch( 999999 );
 
 		$this->assertSame( 404, $response->get_status() );
-		$this->assertSame( 'wcpg_not_found', $response->get_data()['code'] );
+		$this->assertSame( 'sit_wcpg_not_found', $response->get_data()['code'] );
 	}
 
 	/**
@@ -437,7 +439,7 @@ final class Rest_Validate_Test extends WP_UnitTestCase {
 		$reloaded = wc_get_product( $id );
 
 		$this->assertSame( 'A perfectly ordinary product', $reloaded->get_name() );
-		$this->assertSame( 'WCPG-REST-1', $reloaded->get_sku() );
+		$this->assertSame( 'SIT-WCPG-REST-1', $reloaded->get_sku() );
 		$this->assertSame( '19.99', $reloaded->get_regular_price() );
 		$this->assertSame( '', $reloaded->get_sale_price() );
 		$this->assertSame( 'instock', $reloaded->get_stock_status() );
@@ -463,7 +465,7 @@ final class Rest_Validate_Test extends WP_UnitTestCase {
 				'sku'                      => '',
 				'weight'                   => '5',
 				'post_status'              => 'publish',
-				'wcpg_settings'            => array( 'enabled' => false ),
+				Settings::OPTION_NAME      => array( 'enabled' => false ),
 				'has_valid_featured_image' => true,
 			)
 		);

@@ -72,8 +72,8 @@
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
 		<properties>
 			<property name="prefixes" type="array">
-				<element value="wcpg"/>
-				<element value="WCPG"/>
+				<element value="sit_wcpg"/>
+				<element value="SIT_WCPG"/>
 				<element value="ProductPublishGuard"/>
 			</property>
 		</properties>

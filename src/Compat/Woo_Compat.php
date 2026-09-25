@@ -40,6 +40,6 @@ final class Woo_Compat {
 			return;
 		}
 
-		FeaturesUtil::declare_compatibility( 'custom_order_tables', WCPG_FILE, true );
+		FeaturesUtil::declare_compatibility( 'custom_order_tables', SIT_WCPG_FILE, true );
 	}
 }

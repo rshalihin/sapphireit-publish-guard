@@ -54,7 +54,7 @@ final class Rule_Message_Safety_Test extends TestCase {
 	 * @return void
 	 */
 	protected function set_up() {
-		$GLOBALS['wcpg_test_actions'] = array();
+		$GLOBALS['sit_wcpg_test_actions'] = array();
 
 		$this->registry = new Rule_Registry();
 
@@ -69,7 +69,7 @@ final class Rule_Message_Safety_Test extends TestCase {
 	 * @return void
 	 */
 	protected function tear_down() {
-		unset( $GLOBALS['wcpg_test_actions'] );
+		unset( $GLOBALS['sit_wcpg_test_actions'] );
 	}
 
 	/**
@@ -227,7 +227,7 @@ final class Rule_Message_Safety_Test extends TestCase {
 	 * @return void
 	 */
 	public function test_no_rule_interpolates_a_string_placeholder() {
-		$files = glob( WCPG_PATH . 'src/Rules/*.php' );
+		$files = glob( SIT_WCPG_PATH . 'src/Rules/*.php' );
 
 		$this->assertNotEmpty( $files );
 

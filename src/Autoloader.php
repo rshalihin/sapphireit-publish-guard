@@ -54,7 +54,7 @@ final class Autoloader {
 		}
 
 		$relative = substr( $class_name, strlen( self::PREFIX ) );
-		$path     = WCPG_PATH . 'src/' . str_replace( '\\', '/', $relative ) . '.php';
+		$path     = SIT_WCPG_PATH . 'src/' . str_replace( '\\', '/', $relative ) . '.php';
 
 		if ( file_exists( $path ) ) {
 			require_once $path;

@@ -90,7 +90,7 @@ if ( ! function_exists( 'do_action' ) ) {
 	/**
 	 * Fire an action; no listeners are registered in the unit suite.
 	 *
-	 * Calls are recorded in `$GLOBALS['wcpg_test_actions']` so the provider test can
+	 * Calls are recorded in `$GLOBALS['sit_wcpg_test_actions']` so the provider test can
 	 * assert that the rule extension point is opened.
 	 *
 	 * @param string $hook_name Action name.
@@ -98,7 +98,7 @@ if ( ! function_exists( 'do_action' ) ) {
 	 * @return void
 	 */
 	function do_action( $hook_name, ...$args ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
-		$GLOBALS['wcpg_test_actions'][] = array(
+		$GLOBALS['sit_wcpg_test_actions'][] = array(
 			'hook' => $hook_name,
 			'args' => $args,
 		);
@@ -154,13 +154,13 @@ if ( ! function_exists( 'wp_attachment_is_image' ) ) {
 	/**
 	 * Whether an attachment id is an image.
 	 *
-	 * Controlled by `$GLOBALS['wcpg_test_image_ids']`.
+	 * Controlled by `$GLOBALS['sit_wcpg_test_image_ids']`.
 	 *
 	 * @param int $post Attachment id.
 	 * @return bool
 	 */
 	function wp_attachment_is_image( $post = null ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
-		$ids = isset( $GLOBALS['wcpg_test_image_ids'] ) ? (array) $GLOBALS['wcpg_test_image_ids'] : array();
+		$ids = isset( $GLOBALS['sit_wcpg_test_image_ids'] ) ? (array) $GLOBALS['sit_wcpg_test_image_ids'] : array();
 
 		return in_array( (int) $post, array_map( 'intval', $ids ), true );
 	}
@@ -170,7 +170,7 @@ if ( ! function_exists( 'get_the_terms' ) ) {
 	/**
 	 * Terms attached to a post.
 	 *
-	 * Controlled by `$GLOBALS['wcpg_test_terms'][ $taxonomy ]`, a list of term ids.
+	 * Controlled by `$GLOBALS['sit_wcpg_test_terms'][ $taxonomy ]`, a list of term ids.
 	 *
 	 * @param int|object $post     Post or post id.
 	 * @param string     $taxonomy Taxonomy name.
@@ -179,7 +179,7 @@ if ( ! function_exists( 'get_the_terms' ) ) {
 	function get_the_terms( $post, $taxonomy ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
 		unset( $post );
 
-		$terms = isset( $GLOBALS['wcpg_test_terms'][ $taxonomy ] ) ? (array) $GLOBALS['wcpg_test_terms'][ $taxonomy ] : array();
+		$terms = isset( $GLOBALS['sit_wcpg_test_terms'][ $taxonomy ] ) ? (array) $GLOBALS['sit_wcpg_test_terms'][ $taxonomy ] : array();
 
 		if ( array() === $terms ) {
 			return false;
@@ -198,14 +198,14 @@ if ( ! function_exists( 'get_option' ) ) {
 	/**
 	 * Read an option.
 	 *
-	 * Controlled by `$GLOBALS['wcpg_test_options']`.
+	 * Controlled by `$GLOBALS['sit_wcpg_test_options']`.
 	 *
 	 * @param string $option        Option name.
 	 * @param mixed  $default_value Value when the option is unset.
 	 * @return mixed
 	 */
 	function get_option( $option, $default_value = false ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
-		return $GLOBALS['wcpg_test_options'][ $option ] ?? $default_value;
+		return $GLOBALS['sit_wcpg_test_options'][ $option ] ?? $default_value;
 	}
 }
 
@@ -249,7 +249,7 @@ if ( ! function_exists( 'add_settings_error' ) ) {
 	/**
 	 * Record a settings notice.
 	 *
-	 * Collected in `$GLOBALS['wcpg_test_settings_errors']` so the sanitizer tests can
+	 * Collected in `$GLOBALS['sit_wcpg_test_settings_errors']` so the sanitizer tests can
 	 * assert that clamping is reported rather than done silently.
 	 *
 	 * @param string $setting Slug the notice belongs to.
@@ -259,11 +259,83 @@ if ( ! function_exists( 'add_settings_error' ) ) {
 	 * @return void
 	 */
 	function add_settings_error( $setting, $code, $message, $type = 'error' ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
-		$GLOBALS['wcpg_test_settings_errors'][] = array(
+		$GLOBALS['sit_wcpg_test_settings_errors'][] = array(
 			'setting' => $setting,
 			'code'    => $code,
 			'message' => $message,
 			'type'    => $type,
 		);
+	}
+}
+
+if ( ! function_exists( 'wp_unslash' ) ) {
+	/**
+	 * Remove slashes, recursively.
+	 *
+	 * @param mixed $value Value to unslash.
+	 * @return mixed
+	 */
+	function wp_unslash( $value ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+		if ( is_array( $value ) ) {
+			return array_map( 'wp_unslash', $value );
+		}
+
+		return is_string( $value ) ? stripslashes( $value ) : $value;
+	}
+}
+
+if ( ! function_exists( 'sanitize_text_field' ) ) {
+	/**
+	 * Strip tags and line breaks, collapse whitespace and trim.
+	 *
+	 * @param string $str Value to sanitize.
+	 * @return string
+	 */
+	function sanitize_text_field( $str ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+		return trim( (string) preg_replace( '/\s+/', ' ', wp_strip_all_tags( (string) $str, true ) ) );
+	}
+}
+
+if ( ! function_exists( 'wp_verify_nonce' ) ) {
+	/**
+	 * Verify a nonce.
+	 *
+	 * The nonce `valid-{action}` verifies; anything else does not.
+	 *
+	 * @param string $nonce  Nonce value.
+	 * @param string $action Nonce action.
+	 * @return int|false
+	 */
+	function wp_verify_nonce( $nonce, $action = -1 ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+		return 'valid-' . $action === $nonce ? 1 : false;
+	}
+}
+
+if ( ! function_exists( 'get_taxonomy' ) ) {
+	/**
+	 * A taxonomy object carrying the `assign_terms` capability name.
+	 *
+	 * @param string $taxonomy Taxonomy name.
+	 * @return object
+	 */
+	function get_taxonomy( $taxonomy ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+		return (object) array(
+			'name' => $taxonomy,
+			'cap'  => (object) array( 'assign_terms' => 'assign_' . $taxonomy ),
+		);
+	}
+}
+
+if ( ! function_exists( 'current_user_can' ) ) {
+	/**
+	 * Whether the current user has a capability.
+	 *
+	 * Everything is allowed unless listed in `$GLOBALS['sit_wcpg_test_denied_caps']`.
+	 *
+	 * @param string $capability Capability name.
+	 * @return bool
+	 */
+	function current_user_can( $capability ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+		return ! in_array( $capability, (array) ( $GLOBALS['sit_wcpg_test_denied_caps'] ?? array() ), true );
 	}
 }

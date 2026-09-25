@@ -4,7 +4,11 @@
 
 # Tooling caches and local overrides.
 /.phpcs.cache
+/.phpunit.result.cache
 /.wp-env.override.json
 
 # build/ is deliberately NOT ignored: there is no CI here, and the plugin must be
 # installable from a clean checkout (decision E, .claude/plan/verification-notes.md).
+
+# Release zip, produced by `npm run package`.
+/dist/

@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * The save path is core's: the form posts to `options.php`, which checks the nonce
  * emitted by `settings_fields()` and the capability supplied through the
- * `option_page_capability_wcpg_settings` filter *before* the sanitize callback runs.
+ * `option_page_capability_sit_wcpg_settings` filter *before* the sanitize callback runs.
  * The plugin adds no endpoint of its own here.
  *
  * Rule rows are built from the registry rather than from a hard-coded list, so a rule
@@ -36,7 +36,7 @@ final class Settings_Page {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	public const OPTION_GROUP = 'wcpg_settings';
+	public const OPTION_GROUP = 'sit_wcpg_settings';
 
 	/**
 	 * Admin page slug.
@@ -44,7 +44,7 @@ final class Settings_Page {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	public const MENU_SLUG = 'wcpg-settings';
+	public const MENU_SLUG = 'sit-wcpg-settings';
 
 	/**
 	 * Capability required to view and save the settings.
@@ -166,7 +166,7 @@ final class Settings_Page {
 	public function render_page(): void {
 		/*
 		 * The menu capability is not a complete guard on its own: a direct request to
-		 * `admin.php?page=wcpg-settings` reaches the callback in some configurations,
+		 * `admin.php?page=sit-wcpg-settings` reaches the callback in some configurations,
 		 * so the check is repeated here where the decision actually matters.
 		 */
 		if ( ! current_user_can( self::CAPABILITY ) ) {
@@ -240,7 +240,7 @@ final class Settings_Page {
 			return;
 		}
 
-		echo '<table class="widefat striped wcpg-settings-rules"><thead><tr>';
+		echo '<table class="widefat striped sit-wcpg-settings-rules"><thead><tr>';
 		echo '<th scope="col">' . esc_html__( 'Check', 'product-publish-guard' ) . '</th>';
 		echo '<th scope="col">' . esc_html__( 'Enabled', 'product-publish-guard' ) . '</th>';
 		echo '<th scope="col">' . esc_html__( 'Severity', 'product-publish-guard' ) . '</th>';
@@ -317,7 +317,7 @@ final class Settings_Page {
 		);
 
 		foreach ( Settings::threshold_limits() as $key => $limits ) {
-			$field_id = 'wcpg-threshold-' . str_replace( '_', '-', (string) $key );
+			$field_id = 'sit-wcpg-threshold-' . str_replace( '_', '-', (string) $key );
 
 			echo '<tr><th scope="row"><label for="' . esc_attr( $field_id ) . '">';
 			echo esc_html( Settings::threshold_label( (string) $key ) );
@@ -405,7 +405,7 @@ final class Settings_Page {
 	/**
 	 * Build the form field name for a path inside the option.
 	 *
-	 * Every field on this screen posts inside `wcpg_settings[…]`, which is what makes
+	 * Every field on this screen posts inside `sit_wcpg_settings[…]`, which is what makes
 	 * the whole form arrive at the sanitizer as one array.
 	 *
 	 * @since 1.0.0
@@ -456,7 +456,7 @@ final class Settings_Page {
 	 * @return void
 	 */
 	private function render_radio( array $keys, string $value, string $current, string $label ): void {
-		echo '<label class="wcpg-settings-choice"><input type="radio" name="' . esc_attr( $this->field_name( $keys ) ) . '"';
+		echo '<label class="sit-wcpg-settings-choice"><input type="radio" name="' . esc_attr( $this->field_name( $keys ) ) . '"';
 		echo ' value="' . esc_attr( $value ) . '"';
 		checked( $value, $current );
 		echo ' /> ' . esc_html( $label ) . '</label> ';

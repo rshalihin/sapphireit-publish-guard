@@ -1,0 +1,154 @@
+/**
+ * Product Readiness panel (the `side` meta box on the product editor).
+ *
+ * Styles both renderings of the checklist: the server-rendered no-JS list and the React
+ * panel that replaces it, which reuse the same BEM classes so the box does not change
+ * shape when React takes over.
+ *
+ * The three status colours are the only hard-coded palette (coding-plan.md section
+ * 10.4); status is always also carried by a glyph and a visually hidden label.
+ */
+
+$sit-wcpg-pass: #00a32a;
+$sit-wcpg-warning: #996800;
+$sit-wcpg-fail: #d63638;
+$sit-wcpg-muted: #646970;
+$sit-wcpg-rule: #dcdcde;
+
+.sit-wcpg-checklist {
+	font-size: 13px;
+	line-height: 1.5;
+}
+
+.sit-wcpg-checklist__summary {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0 6px;
+	margin: 0 0 8px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid $sit-wcpg-rule;
+}
+
+.sit-wcpg-checklist__summary--pass .sit-wcpg-checklist__state {
+	color: $sit-wcpg-pass;
+}
+
+.sit-wcpg-checklist__summary--fail .sit-wcpg-checklist__state {
+	color: $sit-wcpg-fail;
+}
+
+.sit-wcpg-checklist__counts,
+.sit-wcpg-checklist__issues {
+	flex-basis: 100%;
+	color: $sit-wcpg-muted;
+}
+
+.sit-wcpg-checklist__spinner {
+	display: inline-flex;
+	margin-left: auto;
+}
+
+.sit-wcpg-checklist__body {
+	transition: opacity 0.15s ease-in-out;
+}
+
+// A request is in flight: keep the last result visible, dimmed — never blank it.
+.sit-wcpg-checklist__body--stale {
+	opacity: 0.6;
+}
+
+.sit-wcpg-checklist__group {
+	margin: 12px 0 4px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: $sit-wcpg-muted;
+}
+
+.sit-wcpg-checklist__items {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.sit-wcpg-checklist__item {
+	position: relative;
+	margin: 0 0 6px;
+	padding-left: 20px;
+}
+
+.sit-wcpg-checklist__icon {
+	display: inline-block;
+	width: 14px;
+	font-weight: 700;
+	text-align: center;
+}
+
+.sit-wcpg-checklist__item .sit-wcpg-checklist__icon {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.sit-wcpg-checklist__item--pass .sit-wcpg-checklist__icon {
+	color: $sit-wcpg-pass;
+}
+
+.sit-wcpg-checklist__item--warning .sit-wcpg-checklist__icon {
+	color: $sit-wcpg-warning;
+}
+
+.sit-wcpg-checklist__item--fail .sit-wcpg-checklist__icon {
+	color: $sit-wcpg-fail;
+}
+
+.sit-wcpg-checklist__item--skipped {
+	color: $sit-wcpg-muted;
+}
+
+.sit-wcpg-checklist__message {
+	display: block;
+	color: $sit-wcpg-muted;
+}
+
+.sit-wcpg-checklist__fix {
+	display: inline-block;
+	margin-top: 2px;
+}
+
+.sit-wcpg-checklist__skipped {
+	margin-top: 12px;
+
+	> .sit-wcpg-checklist__group {
+		margin-top: 0;
+		cursor: pointer;
+	}
+}
+
+.sit-wcpg-checklist__empty {
+	margin: 0;
+	color: $sit-wcpg-muted;
+}
+
+.sit-wcpg-checklist__footer {
+	margin-top: 10px;
+	padding-top: 8px;
+	border-top: 1px solid $sit-wcpg-rule;
+}
+
+.sit-wcpg-checklist__notice {
+	margin: 0 0 8px;
+}
+
+.sit-wcpg-checklist__footer-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.sit-wcpg-checklist__time {
+	color: $sit-wcpg-muted;
+}

@@ -16,6 +16,8 @@ use ProductPublishGuard\Settings\Settings;
 use ProductPublishGuard\Support\Checklist_Service;
 use ProductPublishGuard\Tests\Stubs\Fake_Rule;
 use WC_Product_Simple;
+use WC_Product_Variable;
+use WC_Product_Variation;
 use WP_UnitTestCase;
 
 /**
@@ -83,7 +85,7 @@ final class Checklist_Service_Test extends WP_UnitTestCase {
 		$product->set_description( str_repeat( 'Sentence about the product. ', 20 ) );
 		$product->set_short_description( str_repeat( 'Short blurb. ', 10 ) );
 		$product->set_regular_price( '19.99' );
-		$product->set_sku( 'WCPG-TEST-1' );
+		$product->set_sku( 'SIT-WCPG-TEST-1' );
 		$product->set_stock_status( 'instock' );
 		$product->save();
 
@@ -98,6 +100,13 @@ final class Checklist_Service_Test extends WP_UnitTestCase {
 	 * @return void
 	 */
 	public function test_a_real_product_produces_the_expected_result(): void {
+		/*
+		 * The test library deletes every term after each test class, WooCommerce's default
+		 * category included, so the store default is recreated for this test.
+		 */
+		$default_category = self::factory()->term->create( array( 'taxonomy' => 'product_cat' ) );
+		update_option( 'default_product_cat', $default_category );
+
 		$product = $this->product();
 		$result  = Plugin::instance()->checklist()->validate_post( $product->get_id() );
 
@@ -116,13 +125,22 @@ final class Checklist_Service_Test extends WP_UnitTestCase {
 		$this->assertSame( Status::PASS, $statuses['price'] );
 		$this->assertSame( Status::PASS, $statuses['sku'] );
 
-		// No featured image and no category: both ship as required rules.
+		// No featured image: a required rule, so a failure.
 		$this->assertSame( Status::FAIL, $statuses['featured_image'] );
-		$this->assertSame( Status::FAIL, $statuses['category'] );
+
+		/*
+		 * No category was set, but WooCommerce's data store assigns the default one on save
+		 * (`WC_Product_Data_Store_CPT::update_terms()`), so the rule sees the default term
+		 * alone: a warning, never a block.
+		 */
+		$this->assertSame(
+			array( $default_category ),
+			wp_get_post_terms( $product->get_id(), 'product_cat', array( 'fields' => 'ids' ) )
+		);
+		$this->assertSame( Status::WARNING, $statuses['category'] );
 
 		$this->assertFalse( $result->is_ready() );
-		$this->assertContains( 'featured_image', $result->get_required_failures() );
-		$this->assertContains( 'category', $result->get_required_failures() );
+		$this->assertSame( array( 'featured_image' ), $result->get_required_failures() );
 	}
 
 	/**
@@ -145,6 +163,66 @@ final class Checklist_Service_Test extends WP_UnitTestCase {
 		$this->assertSame( 1, $counts['passed'] );
 		$this->assertSame( 1, $counts['failed'] );
 		$this->assertSame( 1, $counts['skipped'] );
+	}
+
+	/**
+	 * Manual rows 3 and 4: on a real variable product, with or without variations, the
+	 * price rule is not applicable and leaves the counts, while the other rules still run.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @dataProvider data_variation_counts
+	 *
+	 * @param int $variations Priced variations to create.
+	 * @return void
+	 */
+	public function test_a_variable_product_skips_only_the_price_rule( int $variations ): void {
+		$product = new WC_Product_Variable();
+		$product->set_name( 'A variable product' );
+		$product->set_description( str_repeat( 'Sentence about the product. ', 20 ) );
+		$product->save();
+
+		for ( $i = 0; $i < $variations; $i++ ) {
+			$variation = new WC_Product_Variation();
+			$variation->set_parent_id( $product->get_id() );
+			$variation->set_regular_price( (string) ( 10 + $i ) );
+			$variation->save();
+		}
+
+		WC_Product_Variable::sync( $product->get_id() );
+
+		$result   = Plugin::instance()->checklist()->validate_post( $product->get_id() );
+		$statuses = array();
+
+		foreach ( $result->get_results() as $row ) {
+			$statuses[ $row->get_rule_id() ] = $row->get_status();
+		}
+
+		$this->assertSame( 'variable', $result->get_product_type() );
+		$this->assertSame( Status::SKIPPED, $statuses['price'] );
+		$this->assertSame( Status::PASS, $statuses['title'] );
+		$this->assertSame( Status::PASS, $statuses['description'] );
+		$this->assertNotContains( 'price', $result->get_required_failures() );
+
+		$skipped = count( array_keys( $statuses, Status::SKIPPED, true ) );
+		$counts  = $result->get_counts();
+
+		$this->assertSame( $skipped, $counts['skipped'] );
+		$this->assertSame( count( $statuses ) - $skipped, $counts['evaluated'] );
+	}
+
+	/**
+	 * Variable products with and without variations.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array<string, array{int}>
+	 */
+	public function data_variation_counts(): array {
+		return array(
+			'priced variations' => array( 2 ),
+			'no variations'     => array( 0 ),
+		);
 	}
 
 	/**

@@ -37,8 +37,8 @@ final class Settings_Sanitizer_Test extends TestCase {
 	 * @return void
 	 */
 	protected function set_up() {
-		$GLOBALS['wcpg_test_options']         = array();
-		$GLOBALS['wcpg_test_settings_errors'] = array();
+		$GLOBALS['sit_wcpg_test_options']         = array();
+		$GLOBALS['sit_wcpg_test_settings_errors'] = array();
 
 		$registry = new Rule_Registry();
 		$registry->register( new Fake_Rule( 'title', 'pass', 10, true, false, Severity::REQUIRED, true ) );
@@ -55,7 +55,7 @@ final class Settings_Sanitizer_Test extends TestCase {
 	 * @return void
 	 */
 	protected function tear_down() {
-		unset( $GLOBALS['wcpg_test_options'], $GLOBALS['wcpg_test_settings_errors'] );
+		unset( $GLOBALS['sit_wcpg_test_options'], $GLOBALS['sit_wcpg_test_settings_errors'] );
 	}
 
 	/**
@@ -257,9 +257,9 @@ final class Settings_Sanitizer_Test extends TestCase {
 
 		$this->sanitizer->sanitize( $payload );
 
-		$this->assertCount( 1, $GLOBALS['wcpg_test_settings_errors'] );
-		$this->assertSame( Settings::OPTION_NAME, $GLOBALS['wcpg_test_settings_errors'][0]['setting'] );
-		$this->assertStringContainsString( '20', $GLOBALS['wcpg_test_settings_errors'][0]['message'] );
+		$this->assertCount( 1, $GLOBALS['sit_wcpg_test_settings_errors'] );
+		$this->assertSame( Settings::OPTION_NAME, $GLOBALS['sit_wcpg_test_settings_errors'][0]['setting'] );
+		$this->assertStringContainsString( '20', $GLOBALS['sit_wcpg_test_settings_errors'][0]['message'] );
 	}
 
 	/**
@@ -272,7 +272,7 @@ final class Settings_Sanitizer_Test extends TestCase {
 	public function test_an_in_range_threshold_reports_nothing(): void {
 		$this->sanitizer->sanitize( $this->full_payload() );
 
-		$this->assertSame( array(), $GLOBALS['wcpg_test_settings_errors'] );
+		$this->assertSame( array(), $GLOBALS['sit_wcpg_test_settings_errors'] );
 	}
 
 	/**
@@ -322,7 +322,7 @@ final class Settings_Sanitizer_Test extends TestCase {
 	 * @return void
 	 */
 	public function test_a_non_array_payload_produces_a_complete_array(): void {
-		$clean = $this->sanitizer->sanitize( 'wcpg_settings=pwned' );
+		$clean = $this->sanitizer->sanitize( 'sit_wcpg_settings=pwned' );
 
 		$this->assertSame( Settings::VERSION, $clean['version'] );
 		$this->assertFalse( $clean['enabled'] );

@@ -1,0 +1,50 @@
+/**
+ * Shared admin stylesheet: the products list Readiness column and the settings page.
+ *
+ * Enqueued as `sit-wcpg-admin` on those two screens only (coding-plan.md section 11.1).
+ * The status colours match editor.scss; status is always also carried by a glyph and a
+ * text label, never by colour alone.
+ */
+
+$sit-wcpg-pass: #00a32a;
+$sit-wcpg-warning: #996800;
+$sit-wcpg-fail: #d63638;
+$sit-wcpg-muted: #646970;
+
+// Products list — the Readiness cell.
+.sit-wcpg-readiness {
+	white-space: nowrap;
+
+	a {
+		color: inherit;
+		text-decoration: none;
+
+		&:hover .sit-wcpg-readiness__label,
+		&:focus .sit-wcpg-readiness__label {
+			text-decoration: underline;
+		}
+	}
+}
+
+.sit-wcpg-readiness__icon {
+	display: inline-block;
+	width: 1em;
+	font-weight: 700;
+	text-align: center;
+}
+
+.sit-wcpg-readiness--pass {
+	color: $sit-wcpg-pass;
+}
+
+.sit-wcpg-readiness--warning {
+	color: $sit-wcpg-warning;
+}
+
+.sit-wcpg-readiness--fail {
+	color: $sit-wcpg-fail;
+}
+
+.sit-wcpg-readiness--none {
+	color: $sit-wcpg-muted;
+}

@@ -82,7 +82,7 @@ final class Validator {
 		 * @param Validation_Result $validation The aggregated result.
 		 * @param Product_Context   $context    The context that was validated.
 		 */
-		$filtered = apply_filters( 'wcpg_validation_result', $validation, $context );
+		$filtered = apply_filters( 'sit_wcpg_validation_result', $validation, $context );
 
 		return $filtered instanceof Validation_Result ? $filtered : $validation;
 	}

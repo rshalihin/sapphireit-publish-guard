@@ -34,7 +34,7 @@ class Settings {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	public const OPTION_NAME = 'wcpg_settings';
+	public const OPTION_NAME = 'sit_wcpg_settings';
 
 	/**
 	 * Schema version of the stored array. Written by the code, never read from input.
