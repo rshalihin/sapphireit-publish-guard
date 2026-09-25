@@ -13,9 +13,9 @@ namespace ProductPublishGuard\Tests\Security;
 use ProductPublishGuard\Rest\Validate_Controller;
 use ProductPublishGuard\Settings\Settings;
 use ProductPublishGuard\Support\Checklist_Service;
+use Spy_REST_Server;
 use WC_Product_Simple;
 use WP_REST_Request;
-use WP_REST_Server;
 use WP_UnitTestCase;
 
 /**
@@ -37,9 +37,9 @@ final class Rest_Validate_Security_Test extends WP_UnitTestCase {
 	 * The REST server this test dispatches through.
 	 *
 	 * @since 1.0.0
-	 * @var WP_REST_Server
+	 * @var Spy_REST_Server
 	 */
-	private WP_REST_Server $server;
+	private Spy_REST_Server $server;
 
 	/**
 	 * Boot a REST server with the plugin's route on it, logged out.
@@ -69,7 +69,7 @@ final class Rest_Validate_Security_Test extends WP_UnitTestCase {
 
 		global $wp_rest_server;
 
-		$wp_rest_server = new WP_REST_Server();
+		$wp_rest_server = new Spy_REST_Server();
 		$this->server   = $wp_rest_server;
 
 		do_action( 'rest_api_init', $this->server );
@@ -133,7 +133,7 @@ final class Rest_Validate_Security_Test extends WP_UnitTestCase {
 	 * @return \WP_REST_Response
 	 */
 	private function dispatch( int $product_id, ?array $draft = null ) {
-		$request = new WP_REST_Request( 'POST', '/sit-wcpg/v1/products/' . $product_id . '/validate' );
+		$request = new WP_REST_Request( 'POST', '/' . Validate_Controller::REST_NAMESPACE . '/products/' . $product_id . '/validate' );
 
 		$request->set_header( 'Content-Type', 'application/json' );
 		$request->set_body( wp_json_encode( null === $draft ? array() : array( 'draft' => $draft ) ) );
@@ -266,6 +266,7 @@ final class Rest_Validate_Security_Test extends WP_UnitTestCase {
 
 		$this->assertTrue( rest_cookie_check_errors( null ) );
 		$this->assertSame( $admin, get_current_user_id(), 'A correct REST nonce leaves the user signed in.' );
+		$this->assertArrayHasKey( 'X-WP-Nonce', $this->server->sent_headers, 'Core refreshes the nonce on success.' );
 
 		unset( $_REQUEST['_wpnonce'], $GLOBALS['wp_rest_auth_cookie'] );
 	}
@@ -388,7 +389,7 @@ final class Rest_Validate_Security_Test extends WP_UnitTestCase {
 
 		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
 
-		$request = new WP_REST_Request( 'POST', '/sit-wcpg/v1/products/' . $product->get_id() . '/validate' );
+		$request = new WP_REST_Request( 'POST', '/' . Validate_Controller::REST_NAMESPACE . '/products/' . $product->get_id() . '/validate' );
 
 		$request->set_header( 'Content-Type', 'application/json' );
 		$request->set_body( wp_json_encode( array( 'draft' => 'a string, not an object' ) ) );

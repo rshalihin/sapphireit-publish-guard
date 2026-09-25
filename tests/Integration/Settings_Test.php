@@ -10,6 +10,7 @@ namespace ProductPublishGuard\Tests\Integration;
 use ProductPublishGuard\Engine\Rule_Registry;
 use ProductPublishGuard\Engine\Severity;
 use ProductPublishGuard\Settings\Settings;
+use ProductPublishGuard\Settings\Settings_Page;
 use ProductPublishGuard\Settings\Settings_Sanitizer;
 use ProductPublishGuard\Tests\Stubs\Fake_Rule;
 use WP_UnitTestCase;
@@ -167,7 +168,7 @@ final class Settings_Test extends WP_UnitTestCase {
 	 */
 	public function test_the_registered_sanitizer_filters_a_direct_update_option(): void {
 		register_setting(
-			'sit_wcpg_settings',
+			Settings_Page::OPTION_GROUP,
 			Settings::OPTION_NAME,
 			array(
 				'type'              => 'array',
@@ -189,7 +190,7 @@ final class Settings_Test extends WP_UnitTestCase {
 
 		$stored = get_option( Settings::OPTION_NAME );
 
-		unregister_setting( 'sit_wcpg_settings', Settings::OPTION_NAME );
+		unregister_setting( Settings_Page::OPTION_GROUP, Settings::OPTION_NAME );
 
 		$this->assertSame( Settings::VERSION, $stored['version'] );
 		$this->assertArrayNotHasKey( 'injected', $stored );

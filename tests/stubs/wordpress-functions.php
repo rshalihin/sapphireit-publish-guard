@@ -267,3 +267,75 @@ if ( ! function_exists( 'add_settings_error' ) ) {
 		);
 	}
 }
+
+if ( ! function_exists( 'wp_unslash' ) ) {
+	/**
+	 * Remove slashes, recursively.
+	 *
+	 * @param mixed $value Value to unslash.
+	 * @return mixed
+	 */
+	function wp_unslash( $value ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+		if ( is_array( $value ) ) {
+			return array_map( 'wp_unslash', $value );
+		}
+
+		return is_string( $value ) ? stripslashes( $value ) : $value;
+	}
+}
+
+if ( ! function_exists( 'sanitize_text_field' ) ) {
+	/**
+	 * Strip tags and line breaks, collapse whitespace and trim.
+	 *
+	 * @param string $str Value to sanitize.
+	 * @return string
+	 */
+	function sanitize_text_field( $str ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+		return trim( (string) preg_replace( '/\s+/', ' ', wp_strip_all_tags( (string) $str, true ) ) );
+	}
+}
+
+if ( ! function_exists( 'wp_verify_nonce' ) ) {
+	/**
+	 * Verify a nonce.
+	 *
+	 * The nonce `valid-{action}` verifies; anything else does not.
+	 *
+	 * @param string $nonce  Nonce value.
+	 * @param string $action Nonce action.
+	 * @return int|false
+	 */
+	function wp_verify_nonce( $nonce, $action = -1 ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+		return 'valid-' . $action === $nonce ? 1 : false;
+	}
+}
+
+if ( ! function_exists( 'get_taxonomy' ) ) {
+	/**
+	 * A taxonomy object carrying the `assign_terms` capability name.
+	 *
+	 * @param string $taxonomy Taxonomy name.
+	 * @return object
+	 */
+	function get_taxonomy( $taxonomy ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+		return (object) array(
+			'name' => $taxonomy,
+			'cap'  => (object) array( 'assign_terms' => 'assign_' . $taxonomy ),
+		);
+	}
+}
+
+if ( ! function_exists( 'current_user_can' ) ) {
+	/**
+	 * Whether the current user has a capability.
+	 *
+	 * Everything is allowed unless listed in `$GLOBALS['sit_wcpg_test_denied_caps']`.
+	 *
+	 * @param string $capability Capability name.
+	 * @return bool
+	 */
+	function current_user_can( $capability ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+		return ! in_array( $capability, (array) ( $GLOBALS['sit_wcpg_test_denied_caps'] ?? array() ), true );
+	}
+}

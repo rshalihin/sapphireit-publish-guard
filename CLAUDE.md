@@ -1,9 +1,14 @@
 # Product Publish Guard — working rules
 
-The plan documents in `.claude/plan/` are the authority (`coding-plan.md` first). When a
-decision changes, update the plan documents **before** the code.
+The plan documents in `.claude/plan/` are the authority. When a decision changes, update the
+plan documents **before** the code.
 
-## Naming contract (coding-plan.md §10.6)
+The coding plan is split. To implement Phase N, read only:
+`coding-plan.md` (binding core + § index) → `phases/phase-NN-*.md` → the sections that phase file
+lists (`sections/NN-*.md`) → the `## Phase N` block of `implementation-checklist.md`. Do not read
+the whole plan. A `§N.M` reference resolves through the index in `coding-plan.md`.
+
+## Naming contract (coding-plan.md §10.6 → sections/10-coding-standards.md)
 
 One prefix, two spellings. Use exactly the form for the context:
 

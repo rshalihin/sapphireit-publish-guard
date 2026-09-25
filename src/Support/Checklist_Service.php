@@ -174,6 +174,22 @@ final class Checklist_Service {
 	}
 
 	/**
+	 * Validate a context the caller has already assembled.
+	 *
+	 * The publish guard's entry point: its context describes a write that is still in
+	 * flight, and may have no stored product behind it at all, so it is never memoized
+	 * or cached.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param Product_Context $context The product as it is about to be saved.
+	 * @return Validation_Result
+	 */
+	public function validate_context( Product_Context $context ): Validation_Result {
+		return $this->validator->validate( $context );
+	}
+
+	/**
 	 * The compact readiness summary for one product.
 	 *
 	 * This is the **only** read path for consumers outside the editor — the products list

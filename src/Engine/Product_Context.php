@@ -124,6 +124,23 @@ final class Product_Context {
 	}
 
 	/**
+	 * Build a context from an in-flight save request.
+	 *
+	 * Same merge semantics as `from_product_with_overrides()`, but the stored product may
+	 * be absent: a product inserted for the first time has nothing stored yet, and every
+	 * accessor then falls back to its empty value.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param \WC_Product|null $product   The stored product, or null for a new post.
+	 * @param array            $overrides `Save_Request_Reader` output; only present keys win.
+	 * @return Product_Context
+	 */
+	public static function from_save_request( ?\WC_Product $product, array $overrides ): Product_Context {
+		return new self( $product, self::normalize( $overrides ) );
+	}
+
+	/**
 	 * Build a context from a plain array, with no product behind it.
 	 *
 	 * Intended for unit tests: every accessor is pre-seeded, so no WordPress or

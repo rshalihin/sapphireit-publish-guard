@@ -134,6 +134,45 @@ final class Product_Context_Test extends TestCase {
 	}
 
 	/**
+	 * A save request merges exactly like a draft snapshot.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	public function test_a_save_request_merges_over_the_stored_product() {
+		$context = Product_Context::from_save_request(
+			$this->stored_product(),
+			array(
+				'regular_price' => '',
+				'post_status'   => 'publish',
+			)
+		);
+
+		$this->assertSame( '', $context->get_regular_price() );
+		$this->assertSame( 'publish', $context->get_post_status() );
+		$this->assertSame( 'Stored description', $context->get_description() );
+	}
+
+	/**
+	 * A save request for a product that was never stored falls back to empty values.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	public function test_a_save_request_without_a_stored_product_defaults_to_empty() {
+		$context = Product_Context::from_save_request( null, array( 'title' => 'Brand new' ) );
+
+		$this->assertSame( 'Brand new', $context->get_title() );
+		$this->assertSame( 0, $context->get_product_id() );
+		$this->assertSame( '', $context->get_description() );
+		$this->assertSame( '', $context->get_regular_price() );
+		$this->assertSame( array(), $context->get_category_ids() );
+		$this->assertNull( $context->get_product() );
+	}
+
+	/**
 	 * An override present but empty still wins: clearing a field is a real edit.
 	 *
 	 * @since 1.0.0

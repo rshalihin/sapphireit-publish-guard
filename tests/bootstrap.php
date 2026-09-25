@@ -24,10 +24,31 @@ if ( ! $sit_wcpg_wp_tests ) {
 if ( $sit_wcpg_wp_tests && file_exists( $sit_wcpg_wp_tests . '/includes/functions.php' ) ) {
 	require_once $sit_wcpg_wp_tests . '/includes/functions.php';
 
+	/*
+	 * The test install activates no plugins, so WooCommerce is loaded by hand, ahead of
+	 * this plugin: the requirements check at `plugins_loaded` refuses to boot without it.
+	 * `wp-env` mounts it beside this plugin, so it is looked for in the plugins directory.
+	 */
 	tests_add_filter(
 		'muplugins_loaded',
 		static function () use ( $sit_wcpg_root ) {
+			require WP_PLUGIN_DIR . '/woocommerce/woocommerce.php';
 			require $sit_wcpg_root . '/product-publish-guard.php';
+		}
+	);
+
+	/*
+	 * The test database starts empty, so WooCommerce's tables, options and roles (the
+	 * shop manager the capability tests act as) are installed, then the role cache is
+	 * reloaded so the new roles are visible.
+	 */
+	tests_add_filter(
+		'setup_theme',
+		static function () {
+			\WC_Install::install();
+
+			$GLOBALS['wp_roles'] = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Forces core to rebuild the role list WooCommerce just extended.
+			wp_roles();
 		}
 	);
 
@@ -39,6 +60,7 @@ if ( $sit_wcpg_wp_tests && file_exists( $sit_wcpg_wp_tests . '/includes/function
 	 * rules are known, rather than asserting against the eleven shipped ones.
 	 */
 	require_once __DIR__ . '/stubs/class-fake-rule.php';
+	require_once __DIR__ . '/Integration/Publish_Guard_Test_Case.php';
 
 	return;
 }

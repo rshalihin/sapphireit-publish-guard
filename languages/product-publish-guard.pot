@@ -1,0 +1,687 @@
+# Copyright (C) 2026 Product Publish Guard Team
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Product Publish Guard 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/product-publish-guard\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-09-25T17:34:55+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.9.0\n"
+"X-Domain: product-publish-guard\n"
+
+#. Plugin Name of the plugin
+msgid "Product Publish Guard"
+msgstr ""
+
+#. Plugin URI of the plugin
+msgid "https://example.com/product-publish-guard"
+msgstr ""
+
+#. Description of the plugin
+msgid "A pre-publish quality checklist for WooCommerce products, with optional server-side publishing enforcement."
+msgstr ""
+
+#. Author of the plugin
+msgid "Product Publish Guard Team"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://example.com"
+msgstr ""
+
+#: src/Admin/Editor_Meta_Box.php:143
+msgid "Product Readiness"
+msgstr ""
+
+#: src/Admin/Editor_Meta_Box.php:172
+msgid "The checklist will appear once this product has been saved."
+msgstr ""
+
+#: src/Admin/Editor_Meta_Box.php:191
+msgid "Content"
+msgstr ""
+
+#: src/Admin/Editor_Meta_Box.php:192
+msgid "Media"
+msgstr ""
+
+#: src/Admin/Editor_Meta_Box.php:193
+msgid "Pricing"
+msgstr ""
+
+#: src/Admin/Editor_Meta_Box.php:194
+msgid "Organization"
+msgstr ""
+
+#: src/Admin/Editor_Meta_Box.php:195
+msgid "Inventory"
+msgstr ""
+
+#: src/Admin/Editor_Meta_Box.php:248
+#: build/editor.js:2
+msgid "Ready to publish"
+msgstr ""
+
+#: src/Admin/Editor_Meta_Box.php:249
+#: build/editor.js:2
+msgid "Not ready to publish"
+msgstr ""
+
+#. translators: %d: number of checks that did not pass.
+#: src/Admin/Editor_Meta_Box.php:262
+#: build/editor.js:3
+msgid "%d issue"
+msgid_plural "%d issues"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of checks that do not apply to this product.
+#: src/Admin/Editor_Meta_Box.php:309
+#: build/editor.js:4
+msgid "Not applicable (%d)"
+msgid_plural "Not applicable (%d)"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/Editor_Meta_Box.php:389
+#: build/editor.js:2
+msgid "Passed"
+msgstr ""
+
+#: src/Admin/Editor_Meta_Box.php:391
+#: src/Engine/Severity.php:76
+#: build/editor.js:2
+msgid "Warning"
+msgstr ""
+
+#: src/Admin/Editor_Meta_Box.php:393
+#: build/editor.js:2
+msgid "Failed"
+msgstr ""
+
+#: src/Admin/Editor_Meta_Box.php:395
+#: build/editor.js:2
+msgid "Not applicable"
+msgstr ""
+
+#: src/Admin/Notices.php:189
+msgid "Product saved, but not published."
+msgstr ""
+
+#: src/Admin/Notices.php:270
+msgid "This product was not published because required checks failed:"
+msgstr ""
+
+#: src/Admin/Notices.php:271
+msgid "This product was published although required checks failed, because you are allowed to override the publishing guard:"
+msgstr ""
+
+#. translators: %d: number of products.
+#: src/Admin/Notices.php:276
+msgid "%d product was not published because required checks failed:"
+msgid_plural "%d products were not published because required checks failed:"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of products.
+#: src/Admin/Notices.php:286
+msgid "%d product was published although required checks failed, because you are allowed to override the publishing guard:"
+msgid_plural "%d products were published although required checks failed, because you are allowed to override the publishing guard:"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: product id.
+#: src/Admin/Notices.php:356
+msgid "Product #%d"
+msgstr ""
+
+#: src/Admin/Notices.php:357
+msgid "A new product"
+msgstr ""
+
+#: src/Admin/Product_List_Column.php:138
+msgid "Readiness"
+msgstr ""
+
+#. translators: %d: number of failed required checks.
+#: src/Admin/Product_List_Column.php:258
+msgid "%d error"
+msgid_plural "%d errors"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of checks with a warning.
+#: src/Admin/Product_List_Column.php:268
+msgid "%d warning"
+msgid_plural "%d warnings"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/Product_List_Column.php:275
+msgid "Ready"
+msgstr ""
+
+#: src/Admin/Product_List_Column.php:353
+msgid "No readiness state"
+msgstr ""
+
+#: src/Compat/Requirements.php:158
+msgid "Product Publish Guard has been stopped."
+msgstr ""
+
+#. translators: 1: minimum required PHP version, 2: PHP version running on this site.
+#: src/Compat/Requirements.php:184
+msgid "PHP %1$s or newer is required. This site runs PHP %2$s. Ask your host to upgrade PHP."
+msgstr ""
+
+#. translators: 1: minimum required WordPress version, 2: WordPress version on this site.
+#: src/Compat/Requirements.php:192
+msgid "WordPress %1$s or newer is required. This site runs WordPress %2$s. Update WordPress from Dashboard, then Updates."
+msgstr ""
+
+#. translators: 1: minimum required WooCommerce version, 2: WooCommerce version on this site.
+#: src/Compat/Requirements.php:200
+msgid "WooCommerce %1$s or newer is required. This site runs WooCommerce %2$s. Update WooCommerce from Plugins."
+msgstr ""
+
+#: src/Compat/Requirements.php:207
+msgid "WooCommerce is not active. Activate WooCommerce to use the product checklist."
+msgstr ""
+
+#: src/Engine/Rule_Registry.php:55
+msgid "A rule must have a non-empty id."
+msgstr ""
+
+#. translators: %s is the duplicate rule identifier.
+#: src/Engine/Rule_Registry.php:65
+msgid "A rule with the id \"%s\" is already registered."
+msgstr ""
+
+#: src/Engine/Severity.php:74
+msgid "Required"
+msgstr ""
+
+#. translators: 1: number of checks that passed, 2: number of checks evaluated.
+#: src/Engine/Validation_Result.php:291
+msgid "%1$d of %2$d check passed"
+msgid_plural "%1$d of %2$d checks passed"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Rest/Validate_Controller.php:197
+msgid "Product identifier."
+msgstr ""
+
+#: src/Rest/Validate_Controller.php:206
+msgid "Unsaved editor values. Only the keys present override the stored product."
+msgstr ""
+
+#: src/Rest/Validate_Controller.php:273
+msgid "You are not allowed to check this product."
+msgstr ""
+
+#: src/Rest/Validate_Controller.php:304
+msgid "The checklist could not be calculated."
+msgstr ""
+
+#: src/Rest/Validate_Controller.php:333
+msgid "Expected an object."
+msgstr ""
+
+#: src/Rest/Validate_Controller.php:365
+msgid "Expected a list of identifiers."
+msgstr ""
+
+#: src/Rest/Validate_Controller.php:371
+msgid "Expected a number or null."
+msgstr ""
+
+#: src/Rest/Validate_Controller.php:375
+msgid "Expected a single value."
+msgstr ""
+
+#: src/Rest/Validate_Controller.php:379
+msgid "Not one of the registered product types."
+msgstr ""
+
+#: src/Rest/Validate_Controller.php:383
+msgid "Not one of the registered stock statuses."
+msgstr ""
+
+#: src/Rest/Validate_Controller.php:390
+msgid "Expected a price."
+msgstr ""
+
+#: src/Rest/Validate_Controller.php:602
+msgid "No product was found with that identifier."
+msgstr ""
+
+#. translators: 1: parameter name, 2: reason the value was rejected.
+#: src/Rest/Validate_Controller.php:621
+msgid "Invalid parameter: %1$s. %2$s"
+msgstr ""
+
+#: src/Rules/Category_Rule.php:46
+msgid "Product category"
+msgstr ""
+
+#: src/Rules/Category_Rule.php:57
+msgid "Checks that the product is in at least one category, and warns when the only category is the store default."
+msgstr ""
+
+#: src/Rules/Category_Rule.php:92
+msgid "Choose a category"
+msgstr ""
+
+#: src/Rules/Category_Rule.php:113
+msgid "Assign at least one product category."
+msgstr ""
+
+#: src/Rules/Category_Rule.php:117
+msgid "This product only uses the default category."
+msgstr ""
+
+#: src/Rules/Description_Rule.php:48
+msgid "Description"
+msgstr ""
+
+#: src/Rules/Description_Rule.php:59
+msgid "Checks that the product has a description, and warns when it is shorter than the minimum length."
+msgstr ""
+
+#: src/Rules/Description_Rule.php:94
+msgid "Edit the description"
+msgstr ""
+
+#: src/Rules/Description_Rule.php:118
+msgid "The product description is empty."
+msgstr ""
+
+#. translators: 1: current description length in characters, 2: recommended minimum length in characters.
+#: src/Rules/Description_Rule.php:126
+msgid "The product description is %1$d character; at least %2$d are recommended."
+msgid_plural "The product description is %1$d characters; at least %2$d are recommended."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Rules/Featured_Image_Rule.php:47
+msgid "Featured image"
+msgstr ""
+
+#: src/Rules/Featured_Image_Rule.php:58
+msgid "Checks that the product has a featured image and that the image is still in the media library."
+msgstr ""
+
+#: src/Rules/Featured_Image_Rule.php:93
+msgid "Set a featured image"
+msgstr ""
+
+#: src/Rules/Featured_Image_Rule.php:118
+msgid "This product has no featured image."
+msgstr ""
+
+#: src/Rules/Featured_Image_Rule.php:122
+msgid "The featured image is missing from the media library."
+msgstr ""
+
+#: src/Rules/Image_Count_Rule.php:49
+msgid "Product images"
+msgstr ""
+
+#: src/Rules/Image_Count_Rule.php:60
+msgid "Checks the total number of images on the product, counting the featured image and the gallery together."
+msgstr ""
+
+#: src/Rules/Image_Count_Rule.php:106
+msgid "Add product images"
+msgstr ""
+
+#: src/Rules/Image_Count_Rule.php:130
+msgid "No minimum number of images is configured."
+msgstr ""
+
+#. translators: 1: number of images on the product, 2: recommended minimum number of images.
+#: src/Rules/Image_Count_Rule.php:137
+msgid "This product has %1$d image; at least %2$d are recommended."
+msgid_plural "This product has %1$d images; at least %2$d are recommended."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Rules/Price_Rule.php:54
+msgid "Regular price"
+msgstr ""
+
+#: src/Rules/Price_Rule.php:65
+msgid "Checks that the product has a valid regular price. Variable and grouped products are skipped."
+msgstr ""
+
+#: src/Rules/Price_Rule.php:100
+msgid "Set the regular price"
+msgstr ""
+
+#: src/Rules/Price_Rule.php:126
+msgid "Set a regular price."
+msgstr ""
+
+#: src/Rules/Price_Rule.php:130
+msgid "The regular price is not a valid number."
+msgstr ""
+
+#: src/Rules/Price_Rule.php:147
+msgid "A grouped product takes its price from the products it contains."
+msgstr ""
+
+#: src/Rules/Price_Rule.php:150
+msgid "Variable product pricing is validated per variation, which is not part of this version."
+msgstr ""
+
+#: src/Rules/Sale_Price_Rule.php:48
+msgid "Sale price"
+msgstr ""
+
+#: src/Rules/Sale_Price_Rule.php:59
+msgid "Checks that a sale price, when one is set, is valid, lower than the regular price and has a sensible date range."
+msgstr ""
+
+#: src/Rules/Sale_Price_Rule.php:105
+msgid "Review the sale price"
+msgstr ""
+
+#: src/Rules/Sale_Price_Rule.php:125
+msgid "This product is not on sale."
+msgstr ""
+
+#: src/Rules/Sale_Price_Rule.php:129
+msgid "The sale price is not a valid number."
+msgstr ""
+
+#: src/Rules/Sale_Price_Rule.php:133
+msgid "The sale price cannot be negative."
+msgstr ""
+
+#: src/Rules/Sale_Price_Rule.php:139
+msgid "The sale price is not lower than the regular price."
+msgstr ""
+
+#: src/Rules/Sale_Price_Rule.php:147
+msgid "The sale end date is earlier than the sale start date."
+msgstr ""
+
+#: src/Rules/Short_Description_Rule.php:47
+msgid "Short description"
+msgstr ""
+
+#: src/Rules/Short_Description_Rule.php:58
+msgid "Checks that the product has a short description, and warns when it is shorter than the minimum length."
+msgstr ""
+
+#: src/Rules/Short_Description_Rule.php:104
+msgid "Edit the short description"
+msgstr ""
+
+#: src/Rules/Short_Description_Rule.php:128
+msgid "The short description is empty."
+msgstr ""
+
+#. translators: 1: current short description length in characters, 2: recommended minimum length in characters.
+#: src/Rules/Short_Description_Rule.php:136
+msgid "The short description is %1$d character; at least %2$d are recommended."
+msgid_plural "The short description is %1$d characters; at least %2$d are recommended."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Rules/Sku_Rule.php:47
+msgid "SKU"
+msgstr ""
+
+#: src/Rules/Sku_Rule.php:58
+msgid "Checks that the product has a SKU."
+msgstr ""
+
+#: src/Rules/Sku_Rule.php:104
+msgid "Add a SKU"
+msgstr ""
+
+#: src/Rules/Sku_Rule.php:122
+msgid "Add a SKU for this product."
+msgstr ""
+
+#: src/Rules/Stock_Status_Rule.php:55
+msgid "Stock status"
+msgstr ""
+
+#: src/Rules/Stock_Status_Rule.php:66
+msgid "Checks that the product has a stock status, and that a managed quantity agrees with it."
+msgstr ""
+
+#: src/Rules/Stock_Status_Rule.php:112
+msgid "Review the stock status"
+msgstr ""
+
+#: src/Rules/Stock_Status_Rule.php:132
+msgid "Select a stock status."
+msgstr ""
+
+#: src/Rules/Stock_Status_Rule.php:136
+msgid "This product is marked out of stock."
+msgstr ""
+
+#. translators: %d is the managed stock quantity.
+#: src/Rules/Stock_Status_Rule.php:145
+msgid "Stock management is on but the quantity is %d."
+msgstr ""
+
+#: src/Rules/Tags_Rule.php:48
+msgid "Product tags"
+msgstr ""
+
+#: src/Rules/Tags_Rule.php:59
+msgid "Checks that the product has at least one tag."
+msgstr ""
+
+#: src/Rules/Tags_Rule.php:105
+msgid "Add a tag"
+msgstr ""
+
+#: src/Rules/Tags_Rule.php:126
+msgid "Add at least one product tag."
+msgstr ""
+
+#: src/Rules/Title_Rule.php:46
+msgid "Product title"
+msgstr ""
+
+#: src/Rules/Title_Rule.php:57
+msgid "Checks that the product has a title of its own."
+msgstr ""
+
+#: src/Rules/Title_Rule.php:92
+msgid "Edit the title"
+msgstr ""
+
+#: src/Rules/Title_Rule.php:112
+msgid "Add a product title."
+msgstr ""
+
+#: src/Settings/Settings.php:184
+msgid "Minimum description length"
+msgstr ""
+
+#: src/Settings/Settings.php:186
+msgid "Minimum short description length"
+msgstr ""
+
+#: src/Settings/Settings.php:188
+msgid "Minimum number of images"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:115
+#: src/Settings/Settings_Page.php:116
+#: src/Settings/Settings_Page.php:179
+msgid "Product Checklist"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:136
+msgid "Product readiness checklist configuration."
+msgstr ""
+
+#: src/Settings/Settings_Page.php:173
+msgid "You do not have permission to manage these settings."
+msgstr ""
+
+#: src/Settings/Settings_Page.php:208
+msgid "Checklist"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:214
+msgid "Enable the product readiness checklist"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:215
+msgid "When this is off, no checks run and nothing is enforced."
+msgstr ""
+
+#: src/Settings/Settings_Page.php:230
+msgid "Rules"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:232
+msgid "A required check must pass before a product can be published. A warning is advisory and never blocks publishing."
+msgstr ""
+
+#: src/Settings/Settings_Page.php:238
+msgid "No checks are registered."
+msgstr ""
+
+#: src/Settings/Settings_Page.php:244
+msgid "Check"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:245
+msgid "Enabled"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:246
+msgid "Severity"
+msgstr ""
+
+#. translators: %s: the name of the check being enabled.
+#: src/Settings/Settings_Page.php:287
+msgid "Run the %s check"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:310
+msgid "Content thresholds"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:314
+#: src/Settings/Settings_Page.php:315
+msgid "Characters. Set to 0 to turn the length warning off."
+msgstr ""
+
+#: src/Settings/Settings_Page.php:316
+msgid "Images, counting the featured image. Set to 0 or 1 to turn this check off."
+msgstr ""
+
+#: src/Settings/Settings_Page.php:352
+msgid "All signed-in requests"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:353
+msgid "Admin editor screens only"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:356
+msgid "Publishing"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:359
+msgid "Enforcement"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:364
+msgid "Prevent publishing when required checks fail"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:365
+msgid "Enforced on the server, so it also covers quick edit, bulk edit and the REST API."
+msgstr ""
+
+#: src/Settings/Settings_Page.php:371
+msgid "Allow users who can manage WooCommerce to publish anyway"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:372
+msgid "Off by default, which means nobody can publish past a failing required check."
+msgstr ""
+
+#: src/Settings/Settings_Page.php:377
+msgid "Enforcement applies to"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:389
+msgid "Scheduled publishing run by WP-Cron and requests made through WP-CLI are always excluded."
+msgstr ""
+
+#: src/Settings/Settings_Page.php:393
+msgid "Products list"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:398
+msgid "Show the Readiness column in the products list"
+msgstr ""
+
+#. translators: 1: threshold setting label, 2: the value that was stored instead.
+#: src/Settings/Settings_Sanitizer.php:218
+msgid "%1$s was outside the allowed range and has been saved as %2$d."
+msgstr ""
+
+#: build/editor.js:1
+msgid "Your session expired — reload the page to continue checking."
+msgstr ""
+
+#: build/editor.js:1
+msgid "Try again"
+msgstr ""
+
+#: build/editor.js:1
+msgid "Could not refresh the checklist."
+msgstr ""
+
+#. translators: %s: time of day the checklist was last checked.
+#: build/editor.js:2
+msgid "Checked at %s"
+msgstr ""
+
+#: build/editor.js:2
+msgid "Re-check"
+msgstr ""
+
+#: build/editor.js:2
+msgid "Checking…"
+msgstr ""
+
+#: build/editor.js:3
+msgid "Required checks are failing. Publish this product anyway?"
+msgstr ""
+
+#: build/editor.js:3
+msgid "Required checks are failing, so this product will be saved as a draft instead of being published. Save it anyway?"
+msgstr ""
+
+#: build/editor.js:3
+msgid "No checks are enabled."
+msgstr ""
+
+#: build/editor.js:4
+msgid "Required checks are failing. You can still publish, because you are allowed to override this check."
+msgstr ""
+
+#: build/editor.js:4
+msgid "Required checks are failing. If you publish now, the product will be saved as a draft instead."
+msgstr ""

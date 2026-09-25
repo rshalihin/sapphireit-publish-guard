@@ -9,6 +9,7 @@ namespace ProductPublishGuard\Tests\Unit;
 
 use ProductPublishGuard\Admin\Assets;
 use ProductPublishGuard\Admin\Editor_Meta_Box;
+use ProductPublishGuard\Admin\Product_List_Column;
 use ProductPublishGuard\Admin\Screen;
 use ProductPublishGuard\Rest\Validate_Controller;
 use ProductPublishGuard\Settings\Settings;
@@ -74,6 +75,7 @@ final class Naming_Contract_Test extends TestCase {
 			'option name'  => array( Settings::OPTION_NAME ),
 			'option group' => array( Settings_Page::OPTION_GROUP ),
 			'meta box id'  => array( Editor_Meta_Box::ID ),
+			'list column'  => array( Product_List_Column::COLUMN ),
 			'cache group'  => array( Checklist_Service::CACHE_GROUP ),
 		);
 	}
@@ -118,5 +120,21 @@ final class Naming_Contract_Test extends TestCase {
 	 */
 	public function test_payload_global_carries_the_camel_prefix() {
 		$this->assertMatchesRegularExpression( '/^sitWcpg[A-Z][A-Za-z0-9]*$/', Assets::PAYLOAD_GLOBAL );
+	}
+
+	/**
+	 * The editor entry cannot import PHP constants, so it repeats the mount id and the
+	 * payload global once; this keeps the two sides from drifting apart.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	public function test_editor_entry_matches_the_php_constants() {
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local source file.
+		$source = (string) file_get_contents( dirname( __DIR__, 2 ) . '/assets/js/editor/index.js' );
+
+		$this->assertStringContainsString( "const MOUNT_ID = '" . Editor_Meta_Box::MOUNT_ID . "';", $source );
+		$this->assertStringContainsString( "const PAYLOAD_GLOBAL = '" . Assets::PAYLOAD_GLOBAL . "';", $source );
 	}
 }

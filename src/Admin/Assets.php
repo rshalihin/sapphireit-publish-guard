@@ -142,7 +142,11 @@ final class Assets {
 
 		$asset = $this->read_asset_file( 'editor' );
 
-		$this->enqueue_style( self::EDITOR_HANDLE, 'editor.css', $asset['version'] );
+		/*
+		 * The panel renders `@wordpress/components` (Button, Notice, Spinner), whose
+		 * stylesheet the classic product editor does not load on its own.
+		 */
+		$this->enqueue_style( self::EDITOR_HANDLE, 'editor.css', $asset['version'], array( 'wp-components' ) );
 
 		if ( ! file_exists( SIT_WCPG_PATH . 'build/editor.js' ) ) {
 			return;
@@ -182,9 +186,15 @@ final class Assets {
 		$result = $this->checklist()->validate_post( $product_id );
 
 		return array(
-			'productId' => $product_id,
-			'result'    => $result instanceof Validation_Result ? $result->to_array() : null,
-			'settings'  => array(
+			'productId'  => $product_id,
+
+			/*
+			 * The saved status: enforcement applies only to transitions into publish, so
+			 * the publish warning is pointless on a product that is already live.
+			 */
+			'postStatus' => (string) get_post_status( $product_id ),
+			'result'     => $result instanceof Validation_Result ? $result->to_array() : null,
+			'settings'   => array(
 				'blocksPublishing' => $this->settings->blocks_publishing(),
 
 				/*
@@ -194,8 +204,8 @@ final class Assets {
 				 */
 				'canOverride'      => $this->settings->allows_admin_override() && current_user_can( 'manage_woocommerce' ),
 			),
-			'restPath'  => '/' . Validate_Controller::REST_NAMESPACE . '/products/' . $product_id . '/validate',
-			'groups'    => Editor_Meta_Box::group_labels(),
+			'restPath'   => '/' . Validate_Controller::REST_NAMESPACE . '/products/' . $product_id . '/validate',
+			'groups'     => Editor_Meta_Box::group_labels(),
 		);
 	}
 
@@ -204,17 +214,18 @@ final class Assets {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string $handle   Stylesheet handle.
-	 * @param string $file     File name inside `build/`.
-	 * @param string $version  Version string for cache busting.
+	 * @param string   $handle  Stylesheet handle.
+	 * @param string   $file    File name inside `build/`.
+	 * @param string   $version Version string for cache busting.
+	 * @param string[] $deps    Stylesheet handles this one depends on.
 	 * @return void
 	 */
-	private function enqueue_style( string $handle, string $file, string $version ): void {
+	private function enqueue_style( string $handle, string $file, string $version, array $deps = array() ): void {
 		if ( ! file_exists( SIT_WCPG_PATH . 'build/' . $file ) ) {
 			return;
 		}
 
-		wp_enqueue_style( $handle, SIT_WCPG_URL . 'build/' . $file, array(), $version );
+		wp_enqueue_style( $handle, SIT_WCPG_URL . 'build/' . $file, $deps, $version );
 	}
 
 	/**
