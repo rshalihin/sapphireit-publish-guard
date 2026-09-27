@@ -205,11 +205,11 @@ Executed per `prefix-migration-plan.md`, on branch `chore/prefix-sit-wcpg`. No b
 ## Phase 11 — Test completion & performance verification
 
 - [x] Close any gaps in §12.1 and §12.2 — every listed case present; added `Assets_Test` (§11.1 matrix) and tests for matrix rows 3/4, 11/15 and 16
-- [ ] Run the full §12.4 manual matrix at minimum versions — 19 rows pass by automation or smoke run; rows 7, 8, 9, 14, 16, 26, 27 still need their browser part; row 25 open
+- [ ] Run the full §12.4 manual matrix at minimum versions — 19 rows pass by automation or smoke run; rows 7, 8, 9, 14, 16, 26, 27 still need their browser part; row 25 needs a real WC 9.x block-editor pass (notice implemented 2026-09-27)
 - [ ] Run the full §12.4 manual matrix on current WP/WC — same state as the floor
 - [x] Profile the editor screen and a 50-product list — +2 queries on the list (budget ≤ 5); meta box adds 0 queries after the payload (`test-report.md` §6)
 - [x] Write `.claude/plan/test-report.md`
-- [ ] **Gate:** 100 % of the manual matrix passes; both suites green on both version targets — suites green on both targets (unit 185, integration 118, security 25); matrix not yet 100 %
+- [ ] **Gate:** 100 % of the manual matrix passes; both suites green on both version targets — suites green on both targets (unit 185, integration 125, security 25, as of 2026-09-27); matrix not yet 100 %
 
 ### Deviations
 
@@ -221,7 +221,7 @@ Executed per `prefix-migration-plan.md`, on branch `chore/prefix-sit-wcpg`. No b
 - **SIT-WCPG-TEST-1:** `tests/bootstrap.php` never loaded WooCommerce, so the integration suite could not have booted the plugin. It now loads WooCommerce and installs it (tables and roles).
 - **SIT-WCPG-TEST-3/4:** WooCommerce assigns the default category on save, so "no category" really means the default-only warning. The WP test library deletes that default term after each class, and tests that depend on it must create their own.
 - **SIT-WCPG-TEST-5:** REST tests use `Spy_REST_Server`; core sends a header on a valid cookie nonce.
-- **SIT-WCPG-TEST-8 (open, product):** the block-editor "panel unavailable" notice of row 25 / §16.17 does not exist, because `Requirements::is_product_block_editor_active()` is never called. Enforcement is unaffected (Layer B). Decide: implement it, or amend §12.4 row 25 and §16.17.
+- **SIT-WCPG-TEST-8 (fixed 2026-09-27, see Post-V1):** the block-editor "panel unavailable" notice of row 25 / §16.17 does not exist, because `Requirements::is_product_block_editor_active()` is never called. Enforcement is unaffected (Layer B). Decide: implement it, or amend §12.4 row 25 and §16.17.
 
 ## Phase 12 — Documentation, i18n and packaging
 
@@ -231,7 +231,7 @@ Executed per `prefix-migration-plan.md`, on branch `chore/prefix-sit-wcpg`. No b
 - [x] `npm run build` — `build/editor.js` 14.1 KB minified (budget 40 KB), React external. Built in the working tree, not a fresh clone
 - [x] Verify `.distignore` excludes `assets/`, `tests/`, `node_modules/`, `vendor/`, dotfiles, `.claude/` — plus `bin/`, `dist/` and all tooling config; `bin/build-zip.php` also drops every dotfile at any depth
 - [x] Build the zip (`npm run package` → `dist/product-publish-guard.zip`, 51 files); install on a clean site; run manual rows 1, 2, 22, 24 — installed with `wp plugin install <zip>` on clean floor and current sites; all four rows pass (row 2 with the amended expectation below)
-- [ ] **Gate:** every item in §16 (Definition of Done) is checked off — **not met**: §16.11 (Phase 11 matrix still has 7 browser-only rows and row 25 open), §16.13 (browser console check), §16.17 (SIT-WCPG-TEST-8)
+- [ ] **Gate:** every item in §16 (Definition of Done) is checked off — **not met**: §16.11 (8 matrix rows still need a browser pass, row 25 on a real WC 9.x block editor), §16.13 (browser console check), §16.17 (notice implemented and tested; real WC 9.x block-editor check outstanding)
 
 ### Deviations
 
@@ -245,7 +245,7 @@ Executed per `prefix-migration-plan.md`, on branch `chore/prefix-sit-wcpg`. No b
 
 ## Post-V1 fixes and decisions (2026-09-27)
 
-- [x] **Decision SIT-WCPG-TEST-8 → implement the notice.** Plan first (§1 A7 already required it; added §7.2.1, §4 row, §6 `admin_notices` row), then `src/Admin/Block_Editor_Notice.php`, wired in `Plugin::boot()` under `is_admin()`. Integration test `tests/Integration/Block_Editor_Notice_Test.php` (7 cases) — **not run**, the WP test harness is not set up in this session. Verified against the live site instead (see `test-report.md` row 25). POT regenerated (158 strings). README limitation updated.
+- [x] **Decision SIT-WCPG-TEST-8 → implement the notice.** Plan first (§1 A7 already required it; added §7.2.1, §4 row, §6 `admin_notices` row), then `src/Admin/Block_Editor_Notice.php`, wired in `Plugin::boot()` under `is_admin()`. Integration test `tests/Integration/Block_Editor_Notice_Test.php` (7 cases) — **run 2026-09-27, 7/7 pass on floor (PHP 8.0 / WP 6.5 / WC 9.0.0) and current (PHP 8.3 / WP 7.1.2 / WC 11.1.1)**; full suites green on both (unit 185, integration 125, security 25), `composer lint` clean. Verified against the live site instead (see `test-report.md` row 25). POT regenerated (158 strings). README limitation updated.
 - [x] **Decision SIT-WCPG-PKG-1 → amend row 2.** §12.4 row 2 now expects 2 required failures plus the default-category warning; §5.6 unchanged.
 - [x] **Bug: short-description edits never reached the checklist, even with Re-check.** WooCommerce renders the short description with `wp_editor( …, 'excerpt' )`, so in Visual mode `#excerpt` holds the value from page load until save. §8.2 said "plain textarea", which was wrong; amended (and `verification-notes.md` §14). `snapshot.js` now reads `tinymce.get('excerpt')` like `content`, and `field-watcher.js` binds both TinyMCE instances. Jest regression case added (43 pass). `build/` rebuilt.
 - [ ] Browser check of the fix on a real product (Visual and Text tabs of the short description).

@@ -1,6 +1,6 @@
 # Product Publish Guard — V1 Test Report (Phase 11)
 
-**Date:** 2026-09-25 · **Branch:** `chore/prefix-sit-wcpg` · **Plan refs:** §11, §12, §16
+**Date:** 2026-09-25 (updated 2026-09-27) · **Branch:** `chore/prefix-sit-wcpg` · **Plan refs:** §11, §12, §16
 
 ## 1. Verdict
 
@@ -9,9 +9,9 @@
 | Unit + integration suites green on the **floor** target | **Met** |
 | Unit + integration suites green on the **current** target | **Met** |
 | §12.3 security suite green (Phase 10 carry-over) | **Met** on both targets |
-| 100 % of the §12.4 manual matrix passes | **Not met.** 19 rows pass, 7 pass their automated part and still need a browser check, 1 has an open defect (row 25). See §5. |
+| 100 % of the §12.4 manual matrix passes | **Not met.** 19 rows pass. 8 pass their automated part but still need a browser check, and row 25 also needs a real WC 9.x block-editor pass. No defects are open. See §5. |
 
-Phase 11 therefore stays **open** until the browser pass in §7 is done and SIT-WCPG-TEST-8 is decided.
+Phase 11 therefore stays **open** until the browser pass in §7 is done. SIT-WCPG-TEST-8 was decided and fixed on 2026-09-27 (§4).
 
 ## 2. Environments
 
@@ -33,8 +33,8 @@ needs as well, so the suites are expected to behave the same there. That is stil
 
 | Suite | Floor | Current |
 |---|---|---|
-| PHP unit (`--testsuite unit`) | OK — 185 tests, 2050 assertions | OK — 185 tests, 2050 assertions |
-| PHP integration (`--testsuite integration`) | OK — 118 tests, 493 assertions | OK — 118 tests, 494 assertions |
+| PHP unit (`--testsuite unit`) | OK — 185 tests, 2063 assertions | OK — 185 tests, 2063 assertions |
+| PHP integration (`--testsuite integration`) | OK — 125 tests, 506 assertions | OK — 125 tests, 507 assertions |
 | PHP security (`--testsuite security`) | OK — 25 tests, 96 assertions | OK — 25 tests, 96 assertions |
 | JS unit (Jest) | OK — 42 tests, 3 suites (target-independent) | |
 | `composer lint` (PHPCS + prefix guard) | 0 errors, 0 warnings | |
@@ -72,11 +72,11 @@ but noted "not yet run").
 Every §12.1 and §12.2 case listed in the plan was checked against the suite by name. All were already present
 apart from the additions above.
 
-### Product defect (open)
+### Product defect (fixed)
 
 | ID | Finding | Status |
 |---|---|---|
-| **SIT-WCPG-TEST-8** | Row 25 expects a notice explaining that the panel is unavailable under the WooCommerce product **block** editor. `Requirements::is_product_block_editor_active()` exists but **nothing calls it**, so no such notice is ever shown. The block editor is reachable on the WC 9.0 floor (a WooCommerce feature toggle). WC 11 force-disables it. **Enforcement is not affected**: the block editor saves through `/wc/v3/products`, which Layer B blocks (`Publish_Guard_Crud_Test::test_the_woocommerce_rest_api_cannot_publish_a_failing_product`, `Publishing_Security_Test`). | **Fixed 2026-09-27:** notice implemented (`src/Admin/Block_Editor_Notice.php`, plan §7.2.1). Integration test `Block_Editor_Notice_Test` written, not yet run (no WP test harness). Checked against the live site (WP 7.1.2 / WC 11.1.2): not shown under the classic editor; with the block editor forced on through `use_block_editor_for_post_type`, shown on the products list and settings page only; zero PHP diagnostics. |
+| **SIT-WCPG-TEST-8** | Row 25 expects a notice explaining that the panel is unavailable under the WooCommerce product **block** editor. `Requirements::is_product_block_editor_active()` exists but **nothing calls it**, so no such notice is ever shown. The block editor is reachable on the WC 9.0 floor (a WooCommerce feature toggle). WC 11 force-disables it. **Enforcement is not affected**: the block editor saves through `/wc/v3/products`, which Layer B blocks (`Publish_Guard_Crud_Test::test_the_woocommerce_rest_api_cannot_publish_a_failing_product`, `Publishing_Security_Test`). | **Fixed 2026-09-27:** notice implemented (`src/Admin/Block_Editor_Notice.php`, plan §7.2.1). Integration test `Block_Editor_Notice_Test` (7 cases) run 2026-09-27 on both targets: all pass. Checked against the live site (WP 7.1.2 / WC 11.1.2): not shown under the classic editor; with the block editor forced on through `use_block_editor_for_post_type`, shown on the products list and settings page only; zero PHP diagnostics. |
 
 ## 5. §12.4 manual matrix
 
@@ -114,7 +114,7 @@ browser check (§7). **Open** = defect.
 | 26 | Expired nonce | Pass\* | Jest `useValidation`: "stops automatic checks after the session expired, but not Re-check". Browser: the message as rendered. |
 | 27 | Visual and Text editor modes | Pass\* | Jest `buildSnapshot`: "reads the visual editor when it is showing", "falls back to the textarea in Text mode". Browser: with real TinyMCE. |
 
-**Totals:** 19 Pass · 7 Pass\* · 1 Open.
+**Totals:** 19 Pass · 8 Pass\* · 0 Open.
 
 ## 6. Performance
 
@@ -175,11 +175,14 @@ under Query Monitor. These belong to the browser pass in §7.
 
 ## 7. Remaining work to close Phase 11
 
-1. Decide SIT-WCPG-TEST-8 (row 25): implement the block-editor notice, or amend §12.4 row 25 and §16.17.
+1. ~~Decide SIT-WCPG-TEST-8 (row 25).~~ Done 2026-09-27: the block-editor notice is implemented, and its integration
+   test passes on both targets (§4).
 2. Run a browser pass on a clean site at each target (both profiles in `.wp-env*.json`) for rows 7, 8, 9, 14, 16, 26
    and 27. While there, confirm there are no console errors or React warnings on the product editor (§16.13) and
    take a Query Monitor reading of the 50-product list (row 22).
-3. Optionally, repeat §3 under `wp-env` once Docker is available, to confirm parity with the local harness.
+3. Row 25: on the WC 9.x floor with the product block editor enabled, confirm that the notice shows and that
+   publishing a failing product is still refused.
+4. Optionally, repeat §3 under `wp-env` once Docker is available, to confirm parity with the local harness.
 
 ## 8. Reproducing
 
