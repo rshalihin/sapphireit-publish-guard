@@ -16,6 +16,10 @@ product-publish-guard/
 ├── webpack.config.js                  # extends @wordpress/scripts config (2 entries)
 ├── .wp-env.json                       # test environment (WP + WooCommerce)
 ├── .distignore                        # excluded from the release zip
+├── .wordpress-org/                    # WP.org listing assets (banner, icon; SVN /assets) — never shipped
+│   ├── icon.svg  icon-128x128.png  icon-256x256.png
+│   ├── banner-772x250.png  banner-1544x500.png
+│   └── src/                           # SVG sources the PNGs are rendered from
 ├── bin/                               # DEV ONLY (not shipped)
 │   ├── check-prefix.php               # `composer lint:prefix`
 │   └── build-zip.php                  # `npm run package` → dist/product-publish-guard.zip (Phase 12)
