@@ -1,6 +1,6 @@
 # Product Publish Guard — V1 Test Report (Phase 11)
 
-**Date:** 2026-09-25 · **Branch:** `chore/prefix-sit-wcpg` · **Plan refs:** §11, §12, §16
+**Date:** 2026-09-25 (updated 2026-09-27) · **Branch:** `chore/prefix-sit-wcpg` · **Plan refs:** §11, §12, §16
 
 ## 1. Verdict
 
@@ -9,9 +9,9 @@
 | Unit + integration suites green on the **floor** target | **Met** |
 | Unit + integration suites green on the **current** target | **Met** |
 | §12.3 security suite green (Phase 10 carry-over) | **Met** on both targets |
-| 100 % of the §12.4 manual matrix passes | **Not met.** 19 rows pass, 7 pass their automated part and still need a browser check, 1 has an open defect (row 25). See §5. |
+| 100 % of the §12.4 manual matrix passes | **Not met.** 19 rows pass. 8 pass their automated part but still need a browser check, and row 25 also needs a real WC 9.x block-editor pass. No defects are open. See §5. |
 
-Phase 11 therefore stays **open** until the browser pass in §7 is done and SIT-WCPG-TEST-8 is decided.
+Phase 11 therefore stays **open** until the browser pass in §7 is done. SIT-WCPG-TEST-8 was decided and fixed on 2026-09-27 (§4).
 
 ## 2. Environments
 
@@ -72,7 +72,7 @@ but noted "not yet run").
 Every §12.1 and §12.2 case listed in the plan was checked against the suite by name. All were already present
 apart from the additions above.
 
-### Product defect (open)
+### Product defect (fixed)
 
 | ID | Finding | Status |
 |---|---|---|
@@ -114,7 +114,7 @@ browser check (§7). **Open** = defect.
 | 26 | Expired nonce | Pass\* | Jest `useValidation`: "stops automatic checks after the session expired, but not Re-check". Browser: the message as rendered. |
 | 27 | Visual and Text editor modes | Pass\* | Jest `buildSnapshot`: "reads the visual editor when it is showing", "falls back to the textarea in Text mode". Browser: with real TinyMCE. |
 
-**Totals:** 19 Pass · 7 Pass\* · 1 Open.
+**Totals:** 19 Pass · 8 Pass\* · 0 Open.
 
 ## 6. Performance
 
@@ -175,11 +175,14 @@ under Query Monitor. These belong to the browser pass in §7.
 
 ## 7. Remaining work to close Phase 11
 
-1. Decide SIT-WCPG-TEST-8 (row 25): implement the block-editor notice, or amend §12.4 row 25 and §16.17.
+1. ~~Decide SIT-WCPG-TEST-8 (row 25).~~ Done 2026-09-27: the block-editor notice is implemented, and its integration
+   test passes on both targets (§4).
 2. Run a browser pass on a clean site at each target (both profiles in `.wp-env*.json`) for rows 7, 8, 9, 14, 16, 26
    and 27. While there, confirm there are no console errors or React warnings on the product editor (§16.13) and
    take a Query Monitor reading of the 50-product list (row 22).
-3. Optionally, repeat §3 under `wp-env` once Docker is available, to confirm parity with the local harness.
+3. Row 25: on the WC 9.x floor with the product block editor enabled, confirm that the notice shows and that
+   publishing a failing product is still refused.
+4. Optionally, repeat §3 under `wp-env` once Docker is available, to confirm parity with the local harness.
 
 ## 8. Reproducing
 
