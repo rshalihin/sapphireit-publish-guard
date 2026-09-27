@@ -8,7 +8,9 @@
 |---|---|---|---|
 | `plugins_loaded` | 5 | `Requirements::check()` then `Plugin::boot()`. Late enough that WooCommerce has defined `WC_VERSION`; early enough to register everything else. | If requirements fail, only an `admin_notices` callback is registered. |
 | `before_woocommerce_init` | 10 | `FeaturesUtil::declare_compatibility( 'custom_order_tables', … , true )` — HPOS compatible. Nothing else is declared. | Prevents WooCommerce's "incompatible plugin" warning on the HPOS screen. (The block-editor declaration was dropped: the feature id no longer exists.) |
-| `init` | 10 | `load_plugin_textdomain()`. **Not earlier** — WP 6.7+ warns when translations load before `init`. | — |
+
+No `load_plugin_textdomain()` call: WordPress.org-hosted plugins have their translations loaded just in
+time (WP 4.6+), and Plugin Check warns on the call.
 
 ### 6.2 Admin surfaces
 

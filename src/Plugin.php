@@ -144,8 +144,6 @@ final class Plugin {
 
 		$this->booted = true;
 
-		add_action( 'init', array( $this, 'load_textdomain' ) );
-
 		/*
 		 * Not gated on is_admin(): a REST request is not an admin request. All this does
 		 * is add one `rest_api_init` callback, which no other kind of request ever fires.
@@ -172,24 +170,6 @@ final class Plugin {
 			( new Block_Editor_Notice( $this->settings() ) )->register();
 			$this->notices()->register();
 		}
-	}
-
-	/**
-	 * Load the plugin's translations.
-	 *
-	 * Hooked to `init` and never earlier: WordPress 6.7 emits a `_doing_it_wrong()`
-	 * notice for translations loaded before `after_setup_theme`.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return void
-	 */
-	public function load_textdomain(): void {
-		load_plugin_textdomain(
-			'product-publish-guard',
-			false,
-			dirname( plugin_basename( SIT_WCPG_FILE ) ) . '/languages'
-		);
 	}
 
 	/**

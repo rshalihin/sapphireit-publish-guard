@@ -32,6 +32,6 @@
 		"test:unit": "phpunit --testsuite unit"
 	},
 	"support": {
-		"issues": "https://example.com/product-publish-guard/issues"
+		"issues": "https://github.com/rshalihin/product-publish-guard/issues"
 	}
 }

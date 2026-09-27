@@ -71,7 +71,7 @@ product-publish-guard/
 │       ├── Editor_Meta_Box.php
 │       ├── Product_List_Column.php
 │       └── Notices.php
-├── assets/                            # SOURCES (not shipped)
+├── assets/                            # SOURCES (shipped: WordPress.org requires human-readable source)
 │   ├── js/editor/                     # React sources (see §4.3)
 │   ├── scss/editor.scss
 │   └── scss/admin.scss

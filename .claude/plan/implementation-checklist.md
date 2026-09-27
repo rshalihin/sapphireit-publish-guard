@@ -229,7 +229,7 @@ Executed per `prefix-migration-plan.md`, on branch `chore/prefix-sit-wcpg`. No b
 - [x] Finalize `README.md` (hook reference §14, enforcement model §6.3, documented limitations)
 - [x] Generate `languages/product-publish-guard.pot`; verify every string is translatable with translator comments — 155 strings, 0 placeholder strings without a `translators:` comment, no make-pot warnings
 - [x] `npm run build` — `build/editor.js` 14.1 KB minified (budget 40 KB), React external. Built in the working tree, not a fresh clone
-- [x] Verify `.distignore` excludes `assets/`, `tests/`, `node_modules/`, `vendor/`, dotfiles, `.claude/` — plus `bin/`, `dist/` and all tooling config; `bin/build-zip.php` also drops every dotfile at any depth
+- [x] Verify `.distignore` excludes `tests/`, `node_modules/`, `vendor/`, dotfiles, `.claude/` — plus `bin/`, `dist/` and all tooling config; `bin/build-zip.php` also drops every dotfile at any depth. `assets/` is shipped (WordPress.org source requirement) and `readme.txt` has a "Source Code" section linking the public repo
 - [x] Build the zip (`npm run package` → `dist/product-publish-guard.zip`, 51 files); install on a clean site; run manual rows 1, 2, 22, 24 — installed with `wp plugin install <zip>` on clean floor and current sites; all four rows pass (row 2 with the amended expectation below)
 - [ ] **Gate:** every item in §16 (Definition of Done) is checked off — **not met**: §16.11 (8 matrix rows still need a browser pass, row 25 on a real WC 9.x block editor), §16.13 (browser console check), §16.17 (notice implemented and tested; real WC 9.x block-editor check outstanding)
 

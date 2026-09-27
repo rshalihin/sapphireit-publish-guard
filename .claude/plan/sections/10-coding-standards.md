@@ -18,7 +18,7 @@
 ### 10.2 i18n
 
 * Text domain `product-publish-guard` on every user-facing string, always as a **literal** (never a variable or constant) so scanners can find it.
-* `load_plugin_textdomain()` on `init`.
+* No `load_plugin_textdomain()` call — just-in-time loading covers WordPress.org-hosted plugins, and Plugin Check warns on it.
 * `_n()` for anything countable ("2 warnings"); `_x()` where a string is ambiguous; a translator comment (`/* translators: %d is the character count. */`) immediately above every placeholder string.
 * `wp_set_script_translations( 'sit-wcpg-editor', 'product-publish-guard', SIT_WCPG_PATH . 'languages' )`.
 * Strings that reach the browser are translated **server-side** where they are data (rule labels, messages, summary label) and **client-side** with `@wordpress/i18n` where they are UI chrome (buttons, loading/error text). No string is translated in both places.

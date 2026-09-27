@@ -2,7 +2,8 @@
 # One path per line, relative to the plugin root; `*` and `?` wildcards are allowed.
 # Dotfiles and dot-directories are excluded at any depth whether or not they are listed;
 # the ones below are named anyway so the list documents what exists.
-# Verified in Phase 12: assets/, tests/, node_modules/, vendor/, dotfiles and .claude/.
+# Verified in Phase 12: tests/, node_modules/, vendor/, dotfiles and .claude/.
+# assets/ is shipped on purpose: WordPress.org requires the human-readable source of build/.
 
 # Plan, agent notes and version control.
 .claude
@@ -32,10 +33,12 @@ composer.lock
 package.json
 package-lock.json
 
-# Sources, dev dependencies, tests and dev scripts.
-assets
+# Dev dependencies, tests and dev scripts.
 bin
 dist
 node_modules
 tests
 vendor
+
+# Empty companion of the style-only `admin` entry; nothing enqueues it.
+build/admin.js

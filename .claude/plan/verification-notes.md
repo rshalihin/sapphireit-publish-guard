@@ -142,7 +142,7 @@ whenever `wp-api-fetch` is registered. Declaring `wp-api-fetch` as a dependency 
 `wp-includes/l10n.php:1444` fires `_doing_it_wrong()` (since 6.7.0) when a domain is loaded before
 `after_setup_theme`, telling authors to translate at `init` or later. The plan's "load on `init`" rule is correct.
 Additionally: with modern WP, `load_plugin_textdomain()` is optional for plugins hosted on w.org — just-in-time
-loading covers it — but calling it on `init` is harmless and keeps the plugin self-contained. **No change.**
+loading covers it — and Plugin Check warns on the call. **Changed (release prep):** the call was removed.
 
 **13. Cache-priming signatures — CONFIRMED.**
 - `update_post_caches( &$posts, $post_type = 'post', $update_term_cache = true, $update_meta_cache = true )` — `wp-includes/post.php:7998`.

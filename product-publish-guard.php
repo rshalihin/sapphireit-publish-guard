@@ -1,14 +1,14 @@
 <?php
 /**
  * Plugin Name:          Product Publish Guard
- * Plugin URI:           https://example.com/product-publish-guard
+ * Plugin URI:           https://github.com/rshalihin/product-publish-guard
  * Description:          A pre-publish quality checklist for WooCommerce products, with optional server-side publishing enforcement.
  * Version:              1.0.0
  * Requires at least:    6.5
  * Requires PHP:         8.0
  * Requires Plugins:     woocommerce
- * Author:               Product Publish Guard Team
- * Author URI:           https://example.com
+ * Author:               Md. Readush Shalihin
+ * Author URI:           https://profiles.wordpress.org/sapphireit/
  * License:              GPL-2.0-or-later
  * License URI:          https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:          product-publish-guard

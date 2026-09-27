@@ -1,5 +1,5 @@
 === Product Publish Guard ===
-Contributors: productpublishguard
+Contributors: sapphireit
 Tags: woocommerce, products, checklist, quality control, publishing
 Requires at least: 6.5
 Tested up to: 7.1
@@ -98,6 +98,19 @@ The readiness column adds two database queries for a whole page of products, wha
 2. The readiness column in the products list.
 3. The settings screen under WooCommerce, then Product Checklist.
 4. The notice shown when a product could not be published.
+
+== Source Code ==
+
+The editor script in `build/` is compiled. Its human-readable React and SCSS sources ship with the plugin in the `assets/` folder, and the full development repository is public at [https://github.com/rshalihin/product-publish-guard](https://github.com/rshalihin/product-publish-guard).
+
+To rebuild the compiled files from source, install Node.js and npm, then run:
+
+1. `git clone https://github.com/rshalihin/product-publish-guard.git`
+2. `cd product-publish-guard`
+3. `npm install`
+4. `npm run build`
+
+The build uses `@wordpress/scripts` and writes the compiled files to `build/`.
 
 == Changelog ==
 
