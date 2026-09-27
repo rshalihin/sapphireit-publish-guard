@@ -33,8 +33,8 @@ needs as well, so the suites are expected to behave the same there. That is stil
 
 | Suite | Floor | Current |
 |---|---|---|
-| PHP unit (`--testsuite unit`) | OK — 185 tests, 2050 assertions | OK — 185 tests, 2050 assertions |
-| PHP integration (`--testsuite integration`) | OK — 118 tests, 493 assertions | OK — 118 tests, 494 assertions |
+| PHP unit (`--testsuite unit`) | OK — 185 tests, 2063 assertions | OK — 185 tests, 2063 assertions |
+| PHP integration (`--testsuite integration`) | OK — 125 tests, 506 assertions | OK — 125 tests, 507 assertions |
 | PHP security (`--testsuite security`) | OK — 25 tests, 96 assertions | OK — 25 tests, 96 assertions |
 | JS unit (Jest) | OK — 42 tests, 3 suites (target-independent) | |
 | `composer lint` (PHPCS + prefix guard) | 0 errors, 0 warnings | |
@@ -76,7 +76,7 @@ apart from the additions above.
 
 | ID | Finding | Status |
 |---|---|---|
-| **SIT-WCPG-TEST-8** | Row 25 expects a notice explaining that the panel is unavailable under the WooCommerce product **block** editor. `Requirements::is_product_block_editor_active()` exists but **nothing calls it**, so no such notice is ever shown. The block editor is reachable on the WC 9.0 floor (a WooCommerce feature toggle). WC 11 force-disables it. **Enforcement is not affected**: the block editor saves through `/wc/v3/products`, which Layer B blocks (`Publish_Guard_Crud_Test::test_the_woocommerce_rest_api_cannot_publish_a_failing_product`, `Publishing_Security_Test`). | **Fixed 2026-09-27:** notice implemented (`src/Admin/Block_Editor_Notice.php`, plan §7.2.1). Integration test `Block_Editor_Notice_Test` written, not yet run (no WP test harness). Checked against the live site (WP 7.1.2 / WC 11.1.2): not shown under the classic editor; with the block editor forced on through `use_block_editor_for_post_type`, shown on the products list and settings page only; zero PHP diagnostics. |
+| **SIT-WCPG-TEST-8** | Row 25 expects a notice explaining that the panel is unavailable under the WooCommerce product **block** editor. `Requirements::is_product_block_editor_active()` exists but **nothing calls it**, so no such notice is ever shown. The block editor is reachable on the WC 9.0 floor (a WooCommerce feature toggle). WC 11 force-disables it. **Enforcement is not affected**: the block editor saves through `/wc/v3/products`, which Layer B blocks (`Publish_Guard_Crud_Test::test_the_woocommerce_rest_api_cannot_publish_a_failing_product`, `Publishing_Security_Test`). | **Fixed 2026-09-27:** notice implemented (`src/Admin/Block_Editor_Notice.php`, plan §7.2.1). Integration test `Block_Editor_Notice_Test` (7 cases) run 2026-09-27 on both targets: all pass. Checked against the live site (WP 7.1.2 / WC 11.1.2): not shown under the classic editor; with the block editor forced on through `use_block_editor_for_post_type`, shown on the products list and settings page only; zero PHP diagnostics. |
 
 ## 5. §12.4 manual matrix
 
