@@ -117,6 +117,7 @@ product-publish-guard/
 | `src/Admin/Assets.php` | Conditional enqueue (§11.1). Reads `build/editor.asset.php` for deps/version. `wp_set_script_translations()`. Prints the bootstrap payload via `wp_add_inline_script()` with `wp_json_encode()`, never string concatenation. | `enqueue( $hook_suffix )` | `admin_enqueue_scripts` |
 | `src/Admin/Editor_Meta_Box.php` | Registers the meta box; renders the mount node plus a server-rendered, fully escaped no-JS fallback list. | `register()`, `render( WP_Post )` | `add_meta_boxes_product` |
 | `src/Admin/Product_List_Column.php` | Column registration, cache priming on `the_posts`, cell rendering. | `add_column()`, `prime_caches()`, `render_column()` | `manage_edit-product_columns`, `the_posts`, `manage_product_posts_custom_column` |
+| `src/Admin/Block_Editor_Notice.php` | The A7 / §7.2.1 warning that the checklist panel is unavailable while WooCommerce's product block editor is on. Screen, setting and capability are checked before the (cheap) editor detection. *Added 2026-09-27.* | `register()`, `render()` | `admin_notices` |
 | `src/Admin/Notices.php` | Per-user transient queue (`sit_wcpg_blocked_{user_id}`, §6.3.1) for "publishing blocked" and "override used" events; renders on `admin_notices`; overrides `post_updated_messages` for products; adds the `sit_wcpg_blocked` redirect arg. | `queue( $user_id, $post_id, Validation_Result, $kind )`, `flag_redirect( $post_id )`, `render()` | `Publish_Guard`, `admin_notices` |
 
 ### 4.2 Files deliberately **not** created

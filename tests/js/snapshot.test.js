@@ -113,6 +113,24 @@ describe( 'buildSnapshot', () => {
 		);
 	} );
 
+	it( 'reads the short description from its own visual editor', () => {
+		// WooCommerce renders it with wp_editor( …, 'excerpt' ); the textarea is
+		// stale until save, so reading it would miss every edit.
+		const tinymce = {
+			get: ( id ) =>
+				'excerpt' === id
+					? {
+							isHidden: () => false,
+							getContent: () => '<p>Edited short text</p>',
+						}
+					: null,
+		};
+		const draft = buildSnapshot( document, { tinymce } );
+
+		expect( draft.excerpt ).toBe( '<p>Edited short text</p>' );
+		expect( draft.content ).toBe( '<p>A sturdy mug.</p>' );
+	} );
+
 	it( 'falls back to the textarea before the visual editor exists', () => {
 		const tinymce = { get: () => null };
 

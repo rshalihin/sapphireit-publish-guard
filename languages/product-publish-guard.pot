@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-25T17:34:55+00:00\n"
+"POT-Creation-Date: 2026-09-27T04:49:27+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.9.0\n"
 "X-Domain: product-publish-guard\n"
@@ -32,6 +32,18 @@ msgstr ""
 
 #. Author URI of the plugin
 msgid "https://example.com"
+msgstr ""
+
+#: src/Admin/Block_Editor_Notice.php:93
+msgid "The product checklist is not shown in the new product editor."
+msgstr ""
+
+#: src/Admin/Block_Editor_Notice.php:95
+msgid "Product Publish Guard shows its checklist in the classic product editor only. WooCommerce's new product editor is turned on, so the checklist will not appear while you edit products. Publishing rules are still enforced whenever a product is saved."
+msgstr ""
+
+#: src/Admin/Block_Editor_Notice.php:97
+msgid "To see the checklist again, turn the new product editor off under WooCommerce, Settings, Advanced, Features."
 msgstr ""
 
 #: src/Admin/Editor_Meta_Box.php:143

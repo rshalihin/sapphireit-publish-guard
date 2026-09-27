@@ -12,3 +12,7 @@
 
 # Release zip, produced by `npm run package`.
 /dist/
+
+# Local environment secrets. Never committed.
+.env
+.env.*

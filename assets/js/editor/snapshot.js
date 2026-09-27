@@ -48,24 +48,32 @@ export function parseIdList( value ) {
 }
 
 /**
- * The description, from the visual editor when it is showing, else from the textarea.
+ * Ids of the `wp_editor()` instances the draft reads: core's description, and
+ * WooCommerce's short description (`wp_editor( …, 'excerpt' )`).
+ */
+export const EDITOR_IDS = [ 'content', 'excerpt' ];
+
+/**
+ * A `wp_editor()` field, from the visual editor when it is showing, else from its
+ * textarea — which TinyMCE only syncs on save.
  *
  * The TinyMCE instance is created asynchronously and is null in Text mode, so it is
  * resolved on every call and never cached.
  *
  * @param {Document} doc Document to read from.
  * @param {Window}   win Window that may hold `tinymce`.
- * @return {string|null} The description, or null when neither editor is present.
+ * @param {string}   id  Editor id, one of EDITOR_IDS.
+ * @return {string|null} The text, or null when neither editor is present.
  */
-function readContent( doc, win ) {
+function readEditor( doc, win, id ) {
 	const editor =
-		win.tinymce && win.tinymce.get ? win.tinymce.get( 'content' ) : null;
+		win.tinymce && win.tinymce.get ? win.tinymce.get( id ) : null;
 
 	if ( editor && ! editor.isHidden() ) {
 		return editor.getContent();
 	}
 
-	return valueOf( doc, '#content' );
+	return valueOf( doc, `#${ id }` );
 }
 
 /**
@@ -153,8 +161,8 @@ export function buildSnapshot( doc = document, win = window ) {
 	};
 
 	set( 'title', valueOf( doc, '#title' ) );
-	set( 'content', readContent( doc, win ) );
-	set( 'excerpt', valueOf( doc, '#excerpt' ) );
+	set( 'content', readEditor( doc, win, 'content' ) );
+	set( 'excerpt', readEditor( doc, win, 'excerpt' ) );
 	set( 'product_type', valueOf( doc, '#product-type' ) );
 	set( 'regular_price', valueOf( doc, '#_regular_price' ) );
 	set( 'sale_price', valueOf( doc, '#_sale_price' ) );

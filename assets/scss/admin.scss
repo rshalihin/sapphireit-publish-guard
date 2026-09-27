@@ -48,3 +48,10 @@ $sit-wcpg-muted: #646970;
 .sit-wcpg-readiness--none {
 	color: $sit-wcpg-muted;
 }
+
+// Column width. The list table and its header classes are core's (`column-{key}` is
+// built from Product_List_Column::COLUMN), so they cannot follow the BEM prefix pattern.
+/* stylelint-disable-next-line selector-class-pattern -- core list-table classes */
+table.wp-list-table .manage-column.column-sit_wcpg_readiness {
+	width: 100px;
+}

@@ -1,0 +1,17 @@
+# LF everywhere, on every platform. PHPCS (Generic.Files.LineEndings) and Prettier
+# both require "\n"; without this, core.autocrlf=true on Windows checks files out
+# as CRLF and `composer lint` / `npm run lint:js` fail on untouched files.
+* text=auto eol=lf
+
+# Binary files: never normalize or diff as text.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.ico  binary
+*.woff binary
+*.woff2 binary
+*.ttf  binary
+*.mo   binary
+*.zip  binary

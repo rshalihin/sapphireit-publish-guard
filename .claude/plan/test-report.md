@@ -76,7 +76,7 @@ apart from the additions above.
 
 | ID | Finding | Status |
 |---|---|---|
-| **SIT-WCPG-TEST-8** | Row 25 expects a notice explaining that the panel is unavailable under the WooCommerce product **block** editor. `Requirements::is_product_block_editor_active()` exists but **nothing calls it**, so no such notice is ever shown. The block editor is reachable on the WC 9.0 floor (a WooCommerce feature toggle). WC 11 force-disables it. **Enforcement is not affected**: the block editor saves through `/wc/v3/products`, which Layer B blocks (`Publish_Guard_Crud_Test::test_the_woocommerce_rest_api_cannot_publish_a_failing_product`, `Publishing_Security_Test`). | **Open**, needs a decision: implement the notice (a Phase 5/7 item), or amend §12.4 row 25 and §16.17. |
+| **SIT-WCPG-TEST-8** | Row 25 expects a notice explaining that the panel is unavailable under the WooCommerce product **block** editor. `Requirements::is_product_block_editor_active()` exists but **nothing calls it**, so no such notice is ever shown. The block editor is reachable on the WC 9.0 floor (a WooCommerce feature toggle). WC 11 force-disables it. **Enforcement is not affected**: the block editor saves through `/wc/v3/products`, which Layer B blocks (`Publish_Guard_Crud_Test::test_the_woocommerce_rest_api_cannot_publish_a_failing_product`, `Publishing_Security_Test`). | **Fixed 2026-09-27:** notice implemented (`src/Admin/Block_Editor_Notice.php`, plan §7.2.1). Integration test `Block_Editor_Notice_Test` written, not yet run (no WP test harness). Checked against the live site (WP 7.1.2 / WC 11.1.2): not shown under the classic editor; with the block editor forced on through `use_block_editor_for_post_type`, shown on the products list and settings page only; zero PHP diagnostics. |
 
 ## 5. §12.4 manual matrix
 
@@ -110,7 +110,7 @@ browser check (§7). **Open** = defect.
 | 22 | Products list with 50 products | Pass | +2 queries against the baseline (budget ≤ 5) on both targets. See §6.1 and `Product_List_Column_Test::test_a_full_page_stays_within_the_query_budget`. Measured in-process rather than with Query Monitor. |
 | 23 | No assets on non-product screens | Pass | `Assets_Test` (8 other screens, plus the editor, list and settings rows of §11.1) |
 | 24 | WooCommerce deactivated | Pass | Smoke boot of the real plugin file with WooCommerce absent, on both targets: no PHP error raised by the plugin, `Requirements` failure `wc_missing`, notice "Product Publish Guard has been stopped. WooCommerce is not active. Activate WooCommerce to use the product checklist.", and the only hooks registered are the bootstrap, the compatibility declaration and the notice. The plugin is inert. |
-| 25 | Product block editor active (older WC) | **Open** | Enforcement: Pass (Layer B over `/wc/v3`). Notice: **missing**, SIT-WCPG-TEST-8. |
+| 25 | Product block editor active (older WC) | Pass\* | Enforcement: Pass (Layer B over `/wc/v3`). Notice: implemented 2026-09-27 (SIT-WCPG-TEST-8), verified with the editor simulated on WC 11. \*A real WC 9.x block-editor pass is still to do. |
 | 26 | Expired nonce | Pass\* | Jest `useValidation`: "stops automatic checks after the session expired, but not Re-check". Browser: the message as rendered. |
 | 27 | Visual and Text editor modes | Pass\* | Jest `buildSnapshot`: "reads the visual editor when it is showing", "falls back to the textarea in Text mode". Browser: with real TinyMCE. |
 
@@ -227,4 +227,5 @@ dashboard loads no plugin assets. `debug.log` stayed empty.
 
 **SIT-WCPG-PKG-1 (open):** row 2's "3 required failures" cannot occur on a real site. WooCommerce's
 `force_default_term` puts `default_product_cat` back whenever the categories are cleared, so the category rule warns
-"only the default category" (row 10) instead of failing. Needs a decision: amend row 2, or change §5.6.
+"only the default category" (row 10) instead of failing. **Decided 2026-09-27:** row 2 amended to expect 2 required
+failures plus the default-category warning (`sections/12-testing.md`); §5.6 unchanged. Closed.

@@ -13,7 +13,7 @@
 
 import $ from 'jquery';
 
-import { buildSnapshot, signature } from './snapshot';
+import { EDITOR_IDS, buildSnapshot, signature } from './snapshot';
 
 export const DEBOUNCE_MS = 800;
 
@@ -108,7 +108,7 @@ export function watchFields( { onSnapshot, doc = document, win = window } ) {
 	function bindEditor( editor ) {
 		if (
 			! editor ||
-			'content' !== editor.id ||
+			! EDITOR_IDS.includes( editor.id ) ||
 			boundEditors.has( editor )
 		) {
 			return;
@@ -138,7 +138,7 @@ export function watchFields( { onSnapshot, doc = document, win = window } ) {
 	);
 
 	if ( win.tinymce && win.tinymce.get ) {
-		bindEditor( win.tinymce.get( 'content' ) );
+		EDITOR_IDS.forEach( ( id ) => bindEditor( win.tinymce.get( id ) ) );
 	}
 
 	if ( win.MutationObserver ) {

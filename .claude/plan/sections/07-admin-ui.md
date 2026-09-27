@@ -44,6 +44,13 @@
 * Hidden entirely when `product_list.show_column` is off, the checklist is disabled (`enabled` off, matching the meta box), or the user lacks `edit_products`. *(Checklist-disabled case amended in Phase 9.)*
 * No sorting, no filtering (§13).
 
+### 7.2.1 Block-editor notice (A7) — *added 2026-09-27, SIT-WCPG-TEST-8*
+
+* When `Requirements::is_product_block_editor_active()` is true (older WooCommerce with the product block editor turned on; never on WC 11), `Admin/Block_Editor_Notice.php` prints one `notice-warning` on `admin_notices`.
+* Shown only on the products list and the plugin settings screen: those are the classic screens a merchant still reaches, and the block editor itself is a `wc-admin` React page.
+* Shown only when the checklist is enabled and the user has `edit_products`. Not dismissible (no persisted state, §13.15); it disappears when the editor is switched back.
+* Text: the checklist panel is available only in the classic product editor; the new product editor is on, so the panel will not appear there; publishing rules are still enforced when products are saved; switch back under WooCommerce → Settings → Advanced → Features. Static, translated, escaped; no product data.
+
 ### 7.3 Settings page — `WooCommerce → Product Checklist`
 
 ```text

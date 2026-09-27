@@ -8,6 +8,7 @@
 namespace ProductPublishGuard;
 
 use ProductPublishGuard\Admin\Assets;
+use ProductPublishGuard\Admin\Block_Editor_Notice;
 use ProductPublishGuard\Admin\Editor_Meta_Box;
 use ProductPublishGuard\Admin\Notices;
 use ProductPublishGuard\Admin\Product_List_Column;
@@ -168,6 +169,7 @@ final class Plugin {
 			( new Assets( $this->settings() ) )->register();
 			( new Editor_Meta_Box( $this->settings() ) )->register();
 			( new Product_List_Column( $this->settings() ) )->register();
+			( new Block_Editor_Notice( $this->settings() ) )->register();
 			$this->notices()->register();
 		}
 	}

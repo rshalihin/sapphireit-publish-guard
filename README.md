@@ -103,8 +103,8 @@ demoted. Otherwise, a settings change could take a whole catalogue offline.
   broken after it was scheduled.
 * **Product block editor.** The checklist panel exists only in the classic product
   editor. Under the product block editor (an optional feature in older WooCommerce,
-  force-disabled for products in WooCommerce 11), the panel does not appear and **no
-  notice currently explains why** (tracked as SIT-WCPG-TEST-8). Enforcement still applies,
+  force-disabled for products in WooCommerce 11), the panel does not appear; a warning on
+  the products list and the settings page explains why. Enforcement still applies,
   because that editor saves through `/wc/v3/products`, which Layer B covers.
 * **Bulk Edit relative prices.** Bulk Edit's "increase / decrease by" price modes are not
   modelled. A product with no price that such an edit would raise from zero is judged on

@@ -178,7 +178,9 @@ Required behaviour, unchanged from the plan but now explicit: read the visual ed
 `window.tinymce && tinymce.get('content') && ! tinymce.get('content').isHidden()`, otherwise fall back to the
 `#content` textarea; subscribe to both the TinyMCE `change`/`keyup`/`SetContent` events and the textarea's `input`;
 and never assume the instance exists at mount — resolve it lazily on each snapshot. Same for `#excerpt`
-(a plain textarea). Verify interactively during Phase 7.
+— **corrected 2026-09-27:** it is *not* a plain textarea; WooCommerce renders it with `wp_editor( …, 'excerpt' )`,
+so it is a second TinyMCE instance and must be read through `tinymce.get('excerpt')` exactly like `content`.
+Verify interactively during Phase 7.
 
 **16. Featured image / gallery DOM — CONFIRMED, with a correction to the plan.**
 `wp-admin/includes/post.php:1704` renders

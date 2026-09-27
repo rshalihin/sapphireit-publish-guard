@@ -21,7 +21,7 @@
 | `manage_product_posts_custom_column` | server | Renders the cell. | `$column, $post_id` | `Checklist_Service::get_summary_for_post_id()` → escaped icon + label. |
 | `admin_menu` | server | Settings submenu under WooCommerce. | — | `add_submenu_page( 'woocommerce', …, 'manage_woocommerce', 'sit-wcpg-settings', … )`. |
 | `admin_init` | server | `register_setting( 'sit_wcpg_settings', 'sit_wcpg_settings', [ 'sanitize_callback' => … ] )` and `add_filter( 'option_page_capability_sit_wcpg_settings', … )`. | — | — |
-| `admin_notices` | server | Publishing-blocked feedback + requirement failures. | — | `Notices::render()`. |
+| `admin_notices` | server | Publishing-blocked feedback + requirement failures + the block-editor notice (§7.2.1). | — | `Notices::render()`; `Block_Editor_Notice::render()`. |
 | `post_updated_messages` | server | Replaces "Product published." after a blocked publish, which would otherwise be an outright lie. | messages array | Swap in "Product saved as a draft — publishing was blocked." |
 | `redirect_post_location` | server | Adds `sit_wcpg_blocked=1` so the notice trigger survives the post-save redirect deterministically. | `$location, $post_id` | Append the arg when a block occurred in this request. |
 | `rest_api_init` | server | Register `sit-wcpg/v1`. | — | `Validate_Controller::register_routes()`. |

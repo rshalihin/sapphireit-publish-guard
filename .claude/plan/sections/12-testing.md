@@ -79,7 +79,7 @@ Run every row on a clean install at the minimum versions, then again on current 
 | # | Case | Expected |
 |---|---|---|
 | 1 | Simple product, all fields complete | All checks pass, "Ready", publishes normally |
-| 2 | Simple product, incomplete (no image, price or category) | 3 required failures; publish blocked; stays a draft; notice lists all three |
+| 2 | Simple product, incomplete (no image, price or category) | 2 required failures (image, price) plus the `category` "only the default category" warning; publish blocked; stays a draft; notice lists both failures. *Amended 2026-09-27 (SIT-WCPG-PKG-1): WooCommerce re-assigns `default_product_cat` whenever a product's categories are cleared, so "no category" cannot reach the save — see row 10.* |
 | 3 | Variable product with priced variations | `price` shows "Not applicable"; other rules evaluate; excluded from counts |
 | 4 | Variable product with no variations | Same as #3 (V1 adds no variation rule) |
 | 5 | Draft product | Checklist works; list column shows the readiness state |

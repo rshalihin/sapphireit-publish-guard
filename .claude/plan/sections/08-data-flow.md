@@ -49,7 +49,7 @@ DOM change (title / editor / price / sku / stock / terms / images)
 |---|---|---|
 | `title` | `#title` | plain input |
 | `content` | `tinymce.get('content')` when present and not hidden, else `#content` | the instance is created asynchronously and is `null` in Text mode — resolve it lazily on **every** snapshot, never cache it at mount |
-| `excerpt` | `#excerpt` | plain textarea |
+| `excerpt` | `tinymce.get('excerpt')` when present and not hidden, else `#excerpt` | **not** a plain textarea: WooCommerce renders the short description with `wp_editor( …, 'excerpt' )` (`class-wc-meta-box-product-short-description.php`), so in Visual mode the textarea is only synced on save. Same lazy resolution as `content`; the watcher binds both instances. *Amended 2026-09-27 after a live report that short-description edits never reached the checklist.* |
 | `product_type` | `#product-type` | also re-snapshot on the `woocommerce-product-type-change` jQuery event — a type change alters which rules apply |
 | `regular_price` / `sale_price` | `#_regular_price` / `#_sale_price` | ids confirmed in `html-product-data-general.php` |
 | `sku` | `#_sku` | confirmed in `html-product-data-inventory.php` |
