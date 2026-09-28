@@ -45,7 +45,7 @@ final class Tags_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_label(): string {
-		return __( 'Product tags', 'product-publish-guard' );
+		return __( 'Product tags', 'sapphireit-publish-guard' );
 	}
 
 	/**
@@ -56,7 +56,7 @@ final class Tags_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks that the product has at least one tag.', 'product-publish-guard' );
+		return __( 'Checks that the product has at least one tag.', 'sapphireit-publish-guard' );
 	}
 
 	/**
@@ -102,7 +102,7 @@ final class Tags_Rule extends Abstract_Rule {
 	public function get_fix_target(): array {
 		return array(
 			'selector' => '#tagsdiv-product_tag',
-			'label'    => __( 'Add a tag', 'product-publish-guard' ),
+			'label'    => __( 'Add a tag', 'sapphireit-publish-guard' ),
 			'panel'    => '',
 		);
 	}
@@ -123,7 +123,7 @@ final class Tags_Rule extends Abstract_Rule {
 		$data  = array( 'tag_count' => $count );
 
 		if ( 0 === $count ) {
-			return $this->fail( __( 'Add at least one product tag.', 'product-publish-guard' ), $data );
+			return $this->fail( __( 'Add at least one product tag.', 'sapphireit-publish-guard' ), $data );
 		}
 
 		return $this->pass( '', $data );

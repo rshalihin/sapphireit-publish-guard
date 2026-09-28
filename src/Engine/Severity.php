@@ -71,9 +71,9 @@ final class Severity {
 	public static function label( string $severity ): string {
 		switch ( $severity ) {
 			case self::REQUIRED:
-				return __( 'Required', 'product-publish-guard' );
+				return __( 'Required', 'sapphireit-publish-guard' );
 			case self::WARNING:
-				return __( 'Warning', 'product-publish-guard' );
+				return __( 'Warning', 'sapphireit-publish-guard' );
 			default:
 				return '';
 		}

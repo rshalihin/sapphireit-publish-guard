@@ -52,7 +52,7 @@ final class Stock_Status_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_label(): string {
-		return __( 'Stock status', 'product-publish-guard' );
+		return __( 'Stock status', 'sapphireit-publish-guard' );
 	}
 
 	/**
@@ -63,7 +63,7 @@ final class Stock_Status_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks that the product has a stock status, and that a managed quantity agrees with it.', 'product-publish-guard' );
+		return __( 'Checks that the product has a stock status, and that a managed quantity agrees with it.', 'sapphireit-publish-guard' );
 	}
 
 	/**
@@ -109,7 +109,7 @@ final class Stock_Status_Rule extends Abstract_Rule {
 	public function get_fix_target(): array {
 		return array(
 			'selector' => '#_stock_status',
-			'label'    => __( 'Review the stock status', 'product-publish-guard' ),
+			'label'    => __( 'Review the stock status', 'sapphireit-publish-guard' ),
 			'panel'    => 'inventory',
 		);
 	}
@@ -129,11 +129,11 @@ final class Stock_Status_Rule extends Abstract_Rule {
 		$status = trim( $context->get_stock_status() );
 
 		if ( ! in_array( $status, self::VALID_STATUSES, true ) ) {
-			return $this->fail( __( 'Select a stock status.', 'product-publish-guard' ) );
+			return $this->fail( __( 'Select a stock status.', 'sapphireit-publish-guard' ) );
 		}
 
 		if ( 'outofstock' === $status ) {
-			return $this->warn( __( 'This product is marked out of stock.', 'product-publish-guard' ) );
+			return $this->warn( __( 'This product is marked out of stock.', 'sapphireit-publish-guard' ) );
 		}
 
 		$quantity = $context->get_stock_quantity();
@@ -142,7 +142,7 @@ final class Stock_Status_Rule extends Abstract_Rule {
 			return $this->warn(
 				sprintf(
 					/* translators: %d is the managed stock quantity. */
-					__( 'Stock management is on but the quantity is %d.', 'product-publish-guard' ),
+					__( 'Stock management is on but the quantity is %d.', 'sapphireit-publish-guard' ),
 					$quantity
 				),
 				array( 'stock_quantity' => $quantity )

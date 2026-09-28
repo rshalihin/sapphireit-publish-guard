@@ -1,5 +1,5 @@
 {
-	"name": "product-publish-guard/product-publish-guard",
+	"name": "sapphireit/sapphireit-publish-guard",
 	"description": "A pre-publish quality checklist for WooCommerce products, with optional server-side publishing enforcement.",
 	"type": "wordpress-plugin",
 	"license": "GPL-2.0-or-later",
@@ -32,6 +32,6 @@
 		"test:unit": "phpunit --testsuite unit"
 	},
 	"support": {
-		"issues": "https://github.com/rshalihin/product-publish-guard/issues"
+		"issues": "https://github.com/rshalihin/sapphireit-publish-guard/issues"
 	}
 }

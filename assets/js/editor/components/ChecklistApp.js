@@ -115,7 +115,7 @@ export function ChecklistApp( { data } ) {
 	if ( result && result.results.length === 0 ) {
 		body = (
 			<p className="sit-wcpg-checklist__empty">
-				{ __( 'No checks are enabled.', 'product-publish-guard' ) }
+				{ __( 'No checks are enabled.', 'sapphireit-publish-guard' ) }
 			</p>
 		);
 	} else if ( result ) {
@@ -142,7 +142,7 @@ export function ChecklistApp( { data } ) {
 									'Not applicable (%d)',
 									'Not applicable (%d)',
 									skipped.length,
-									'product-publish-guard'
+									'sapphireit-publish-guard'
 								),
 								skipped.length
 							) }

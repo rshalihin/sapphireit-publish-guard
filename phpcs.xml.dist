@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<ruleset name="Product Publish Guard">
-	<description>WordPress Coding Standards for the Product Publish Guard plugin.</description>
+<ruleset name="SapphireIT Publish Guard for WooCommerce">
+	<description>WordPress Coding Standards for the SapphireIT Publish Guard for WooCommerce plugin.</description>
 
 	<!-- What to scan. -->
 	<file>.</file>
@@ -48,7 +48,7 @@
 	<rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array">
-				<element value="product-publish-guard"/>
+				<element value="sapphireit-publish-guard"/>
 			</property>
 		</properties>
 	</rule>

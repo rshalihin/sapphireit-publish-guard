@@ -1,5 +1,5 @@
 {
-	"name": "product-publish-guard",
+	"name": "sapphireit-publish-guard",
 	"version": "1.0.0",
 	"description": "A pre-publish quality checklist for WooCommerce products.",
 	"license": "GPL-2.0-or-later",
@@ -15,7 +15,7 @@
 		"env:stop": "wp-env stop",
 		"env:floor": "cp .wp-env.floor.json .wp-env.override.json && wp-env start --update",
 		"env:current": "rm -f .wp-env.override.json && wp-env start --update",
-		"makepot": "wp i18n make-pot . languages/product-publish-guard.pot --domain=product-publish-guard --exclude=node_modules,vendor,tests,assets,bin,dist,.claude",
+		"makepot": "wp i18n make-pot . languages/sapphireit-publish-guard.pot --domain=sapphireit-publish-guard --slug=sapphireit-publish-guard --exclude=node_modules,vendor,tests,assets,bin,dist,.claude",
 		"package": "npm run build && npm run makepot && php bin/build-zip.php"
 	},
 	"devDependencies": {

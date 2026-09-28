@@ -292,7 +292,7 @@ final class Validation_Result {
 				'%1$d of %2$d check passed',
 				'%1$d of %2$d checks passed',
 				$this->counts['evaluated'],
-				'product-publish-guard'
+				'sapphireit-publish-guard'
 			),
 			$this->counts['passed'],
 			$this->counts['evaluated']

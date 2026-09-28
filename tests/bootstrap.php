@@ -33,7 +33,7 @@ if ( $sit_wcpg_wp_tests && file_exists( $sit_wcpg_wp_tests . '/includes/function
 		'muplugins_loaded',
 		static function () use ( $sit_wcpg_root ) {
 			require WP_PLUGIN_DIR . '/woocommerce/woocommerce.php';
-			require $sit_wcpg_root . '/product-publish-guard.php';
+			require $sit_wcpg_root . '/sapphireit-publish-guard.php';
 		}
 	);
 

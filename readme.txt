@@ -1,4 +1,4 @@
-=== Product Publish Guard ===
+=== SapphireIT Publish Guard for WooCommerce ===
 Contributors: sapphireit
 Tags: woocommerce, products, checklist, quality control, publishing
 Requires at least: 6.5
@@ -15,7 +15,7 @@ A pre-publish quality checklist for WooCommerce products, with optional server-s
 
 == Description ==
 
-Product Publish Guard checks every product against a configurable checklist before it goes live, so incomplete listings never reach customers.
+SapphireIT Publish Guard checks every product against a configurable checklist before it goes live, so incomplete listings never reach customers.
 
 **A live checklist in the product editor.** A panel in the classic WooCommerce product editor lists every check, grouped by content, media, pricing, organization and inventory. It refreshes on its own as you type, upload images or pick categories. You don't need to save first. Each failing item links to the field that fixes it.
 
@@ -45,11 +45,13 @@ Each check can be turned off, or set to **required** (it must pass before the pr
 * Assets load only on the product editor, the products list and the settings screen.
 * No outbound network requests, tracking or upsell notices.
 
+SapphireIT Publish Guard for WooCommerce is an independent plugin. It is not affiliated with or endorsed by WooCommerce or Automattic.
+
 == Installation ==
 
 1. Install and activate WooCommerce 9.0 or newer.
-2. Upload the plugin to `/wp-content/plugins/product-publish-guard`, or go to Plugins, then Add New, then Upload Plugin and choose `product-publish-guard.zip`.
-3. Activate Product Publish Guard.
+2. Upload the plugin to `/wp-content/plugins/sapphireit-publish-guard`, or go to Plugins, then Add New, then Upload Plugin and choose `sapphireit-publish-guard.zip`.
+3. Activate SapphireIT Publish Guard for WooCommerce.
 4. Go to WooCommerce, then Product Checklist. Choose which checks run, which are required, the content thresholds and the publishing behaviour.
 
 The settings screen is available to anyone who can manage WooCommerce (administrators and shop managers).
@@ -101,12 +103,12 @@ The readiness column adds two database queries for a whole page of products, wha
 
 == Source Code ==
 
-The editor script in `build/` is compiled. Its human-readable React and SCSS sources ship with the plugin in the `assets/` folder, and the full development repository is public at [https://github.com/rshalihin/product-publish-guard](https://github.com/rshalihin/product-publish-guard).
+The editor script in `build/` is compiled. Its human-readable React and SCSS sources ship with the plugin in the `assets/` folder, and the full development repository is public at [https://github.com/rshalihin/sapphireit-publish-guard](https://github.com/rshalihin/sapphireit-publish-guard).
 
 To rebuild the compiled files from source, install Node.js and npm, then run:
 
-1. `git clone https://github.com/rshalihin/product-publish-guard.git`
-2. `cd product-publish-guard`
+1. `git clone https://github.com/rshalihin/sapphireit-publish-guard.git`
+2. `cd sapphireit-publish-guard`
 3. `npm install`
 4. `npm run build`
 

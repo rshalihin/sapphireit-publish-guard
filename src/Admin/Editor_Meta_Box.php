@@ -140,7 +140,7 @@ final class Editor_Meta_Box {
 
 		add_meta_box(
 			self::ID,
-			__( 'Product Readiness', 'product-publish-guard' ),
+			__( 'Product Readiness', 'sapphireit-publish-guard' ),
 			array( $this, 'render' ),
 			Screen::POST_TYPE,
 			'side',
@@ -169,7 +169,7 @@ final class Editor_Meta_Box {
 			$this->render_fallback( $result );
 		} else {
 			echo '<p class="sit-wcpg-checklist__empty">'
-				. esc_html__( 'The checklist will appear once this product has been saved.', 'product-publish-guard' )
+				. esc_html__( 'The checklist will appear once this product has been saved.', 'sapphireit-publish-guard' )
 				. '</p>';
 		}
 
@@ -188,11 +188,11 @@ final class Editor_Meta_Box {
 	 */
 	public static function group_labels(): array {
 		return array(
-			'content'      => __( 'Content', 'product-publish-guard' ),
-			'media'        => __( 'Media', 'product-publish-guard' ),
-			'pricing'      => __( 'Pricing', 'product-publish-guard' ),
-			'organization' => __( 'Organization', 'product-publish-guard' ),
-			'inventory'    => __( 'Inventory', 'product-publish-guard' ),
+			'content'      => __( 'Content', 'sapphireit-publish-guard' ),
+			'media'        => __( 'Media', 'sapphireit-publish-guard' ),
+			'pricing'      => __( 'Pricing', 'sapphireit-publish-guard' ),
+			'organization' => __( 'Organization', 'sapphireit-publish-guard' ),
+			'inventory'    => __( 'Inventory', 'sapphireit-publish-guard' ),
 		);
 	}
 
@@ -245,8 +245,8 @@ final class Editor_Meta_Box {
 		$state    = $is_ready ? Status::PASS : Status::FAIL;
 
 		$headline = $is_ready
-			? __( 'Ready to publish', 'product-publish-guard' )
-			: __( 'Not ready to publish', 'product-publish-guard' );
+			? __( 'Ready to publish', 'sapphireit-publish-guard' )
+			: __( 'Not ready to publish', 'sapphireit-publish-guard' );
 
 		echo '<p class="sit-wcpg-checklist__summary sit-wcpg-checklist__summary--' . esc_attr( $state ) . '" aria-live="polite">';
 		echo '<span class="sit-wcpg-checklist__icon" aria-hidden="true">' . esc_html( self::ICONS[ $state ] ) . '</span> ';
@@ -259,7 +259,7 @@ final class Editor_Meta_Box {
 			echo '<span class="sit-wcpg-checklist__issues">' . esc_html(
 				sprintf(
 					/* translators: %d: number of checks that did not pass. */
-					_n( '%d issue', '%d issues', $issues, 'product-publish-guard' ),
+					_n( '%d issue', '%d issues', $issues, 'sapphireit-publish-guard' ),
 					$issues
 				)
 			) . '</span>';
@@ -306,7 +306,7 @@ final class Editor_Meta_Box {
 		echo '<h4 class="sit-wcpg-checklist__group sit-wcpg-checklist__group--skipped">' . esc_html(
 			sprintf(
 				/* translators: %d: number of checks that do not apply to this product. */
-				_n( 'Not applicable (%d)', 'Not applicable (%d)', count( $rows ), 'product-publish-guard' ),
+				_n( 'Not applicable (%d)', 'Not applicable (%d)', count( $rows ), 'sapphireit-publish-guard' ),
 				count( $rows )
 			)
 		) . '</h4>';
@@ -386,13 +386,13 @@ final class Editor_Meta_Box {
 	private static function status_label( string $status ): string {
 		switch ( $status ) {
 			case Status::PASS:
-				return __( 'Passed', 'product-publish-guard' );
+				return __( 'Passed', 'sapphireit-publish-guard' );
 			case Status::WARNING:
-				return __( 'Warning', 'product-publish-guard' );
+				return __( 'Warning', 'sapphireit-publish-guard' );
 			case Status::FAIL:
-				return __( 'Failed', 'product-publish-guard' );
+				return __( 'Failed', 'sapphireit-publish-guard' );
 			default:
-				return __( 'Not applicable', 'product-publish-guard' );
+				return __( 'Not applicable', 'sapphireit-publish-guard' );
 		}
 	}
 

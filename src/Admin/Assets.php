@@ -160,7 +160,7 @@ final class Assets {
 			true
 		);
 
-		wp_set_script_translations( self::EDITOR_HANDLE, 'product-publish-guard', SIT_WCPG_PATH . 'languages' );
+		wp_set_script_translations( self::EDITOR_HANDLE, 'sapphireit-publish-guard', SIT_WCPG_PATH . 'languages' );
 
 		/*
 		 * `wp_json_encode()` inside `wp_add_inline_script()`, never string concatenation

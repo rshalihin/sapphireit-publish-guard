@@ -135,7 +135,7 @@ final class Product_List_Column {
 			return $columns;
 		}
 
-		$heading = __( 'Readiness', 'product-publish-guard' );
+		$heading = __( 'Readiness', 'sapphireit-publish-guard' );
 		$result  = array();
 
 		foreach ( $columns as $key => $label ) {
@@ -255,7 +255,7 @@ final class Product_List_Column {
 				$glyph  = '✗';
 				$label  = sprintf(
 					/* translators: %d: number of failed required checks. */
-					_n( '%d error', '%d errors', $failed, 'product-publish-guard' ),
+					_n( '%d error', '%d errors', $failed, 'sapphireit-publish-guard' ),
 					$failed
 				);
 				break;
@@ -265,14 +265,14 @@ final class Product_List_Column {
 				$glyph    = '!';
 				$label    = sprintf(
 					/* translators: %d: number of checks with a warning. */
-					_n( '%d warning', '%d warnings', $warnings, 'product-publish-guard' ),
+					_n( '%d warning', '%d warnings', $warnings, 'sapphireit-publish-guard' ),
 					$warnings
 				);
 				break;
 
 			default:
 				$glyph = '✓';
-				$label = __( 'Ready', 'product-publish-guard' );
+				$label = __( 'Ready', 'sapphireit-publish-guard' );
 				break;
 		}
 
@@ -350,7 +350,7 @@ final class Product_List_Column {
 	 */
 	private function render_empty(): void {
 		echo '<span class="sit-wcpg-readiness sit-wcpg-readiness--none" aria-hidden="true">—</span>'
-			. '<span class="screen-reader-text">' . esc_html__( 'No readiness state', 'product-publish-guard' ) . '</span>';
+			. '<span class="screen-reader-text">' . esc_html__( 'No readiness state', 'sapphireit-publish-guard' ) . '</span>';
 	}
 
 	/**

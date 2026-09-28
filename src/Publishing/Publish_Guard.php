@@ -668,7 +668,7 @@ final class Publish_Guard {
 		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		error_log(
 			sprintf(
-				'Product Publish Guard: %1$s failed open after %2$s: %3$s',
+				'SapphireIT Publish Guard: %1$s failed open after %2$s: %3$s',
 				$layer,
 				get_class( $error ),
 				$error->getMessage()

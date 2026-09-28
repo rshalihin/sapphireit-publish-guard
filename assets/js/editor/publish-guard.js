@@ -53,11 +53,11 @@ export function warningText( mode ) {
 	return MODE_OVERRIDE === mode
 		? __(
 				'Required checks are failing. You can still publish, because you are allowed to override this check.',
-				'product-publish-guard'
+				'sapphireit-publish-guard'
 			)
 		: __(
 				'Required checks are failing. If you publish now, the product will be saved as a draft instead.',
-				'product-publish-guard'
+				'sapphireit-publish-guard'
 			);
 }
 
@@ -71,11 +71,11 @@ export function confirmText( mode ) {
 	return MODE_OVERRIDE === mode
 		? __(
 				'Required checks are failing. Publish this product anyway?',
-				'product-publish-guard'
+				'sapphireit-publish-guard'
 			)
 		: __(
 				'Required checks are failing, so this product will be saved as a draft instead of being published. Save it anyway?',
-				'product-publish-guard'
+				'sapphireit-publish-guard'
 			);
 }
 
