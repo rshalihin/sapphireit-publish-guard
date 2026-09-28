@@ -24,7 +24,7 @@
 			<path d="M36 0 L72 13 V43 C72 66 57 83 36 91 C15 83 0 66 0 43 V13 Z" fill="url(#shield)"/>
 			<path d="M19 45 L31 57 L54 33" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
 		</g>
-		<text x="96" y="296" font-size="76" font-weight="700" fill="#ffffff">Product Publish Guard</text>
+		<text x="96" y="296" font-size="68" font-weight="700" fill="#ffffff">SapphireIT Publish Guard</text>
 		<text x="98" y="356" font-size="32" fill="#c3cbe6">A pre-publish quality checklist</text>
 		<text x="98" y="398" font-size="32" fill="#c3cbe6">for WooCommerce products.</text>
 	</g>
