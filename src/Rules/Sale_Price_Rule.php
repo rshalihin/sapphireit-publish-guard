@@ -126,17 +126,17 @@ final class Sale_Price_Rule extends Abstract_Rule {
 		}
 
 		if ( ! is_numeric( $sale ) ) {
-			return $this->fail( __( 'The sale price is not a valid number.', 'product-publish-guard' ) );
+			return $this->fail( __( 'The sale price is not a valid number.', 'sapphireit-publish-guard' ) );
 		}
 
 		if ( (float) $sale < 0 ) {
-			return $this->fail( __( 'The sale price cannot be negative.', 'product-publish-guard' ) );
+			return $this->fail( __( 'The sale price cannot be negative.', 'sapphireit-publish-guard' ) );
 		}
 
 		$regular = trim( $context->get_regular_price() );
 
 		if ( is_numeric( $regular ) && (float) $sale >= (float) $regular ) {
-			return $this->fail( __( 'The sale price is not lower than the regular price.', 'product-publish-guard' ) );
+			return $this->fail( __( 'The sale price is not lower than the regular price.', 'sapphireit-publish-guard' ) );
 		}
 
 		$from = $context->get_sale_from();
@@ -144,7 +144,7 @@ final class Sale_Price_Rule extends Abstract_Rule {
 
 		// Both dates are normalized to `Y-m-d H:i:s`, so a string comparison is a date comparison.
 		if ( '' !== $from && '' !== $to && $to < $from ) {
-			return $this->fail( __( 'The sale end date is earlier than the sale start date.', 'product-publish-guard' ) );
+			return $this->fail( __( 'The sale end date is earlier than the sale start date.', 'sapphireit-publish-guard' ) );
 		}
 
 		return $this->pass();
