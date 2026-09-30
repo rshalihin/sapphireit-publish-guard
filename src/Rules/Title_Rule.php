@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Requires a real product title.
  *
- * "Real" excludes the placeholder WordPress writes into a freshly created auto-draft,
+ * "Real" excludes the placeholder WordPress and WooCommerce write into a freshly created auto-draft,
  * which would otherwise make an untouched new product look as though it had a title.
  *
  * @since 1.0.0
@@ -116,10 +116,12 @@ final class Title_Rule extends Abstract_Rule {
 	}
 
 	/**
-	 * Whether a title is the one WordPress gives a brand-new auto-draft.
+	 * Whether a title is the one a brand-new auto-draft is given.
 	 *
-	 * Core writes this string through the default text domain, so the localized form has
-	 * to be matched as well as the English one.
+	 * Core writes `Auto Draft` through the default text domain, so the localized form has
+	 * to be matched as well as the English one. WooCommerce then overwrites every product
+	 * auto-draft's title with the untranslated literal `AUTO-DRAFT`
+	 * (`WC_Post_Data::wp_insert_post_data()`), which is the form a new product actually has.
 	 *
 	 * @since 1.0.0
 	 *
@@ -128,7 +130,7 @@ final class Title_Rule extends Abstract_Rule {
 	 */
 	private function is_placeholder( string $title ): bool {
 		// phpcs:ignore WordPress.WP.I18n.MissingArgDomain -- Matching core's own string, which is in the default domain.
-		$placeholders = array( 'Auto Draft', __( 'Auto Draft' ) );
+		$placeholders = array( 'Auto Draft', __( 'Auto Draft' ), 'AUTO-DRAFT' );
 
 		foreach ( $placeholders as $placeholder ) {
 			if ( 0 === strcasecmp( $title, $placeholder ) ) {

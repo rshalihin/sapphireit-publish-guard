@@ -74,6 +74,19 @@ final class Title_Rule_Test extends TestCase {
 	}
 
 	/**
+	 * WooCommerce overwrites a product auto-draft's title with `AUTO-DRAFT`; that is no
+	 * title either, or an untouched new product would show the title check as passed.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	public function test_the_woocommerce_auto_draft_placeholder_fails() {
+		$this->assertSame( Status::FAIL, $this->check( 'AUTO-DRAFT' )->get_status() );
+		$this->assertSame( Status::FAIL, $this->check( ' auto-draft ' )->get_status() );
+	}
+
+	/**
 	 * A real title passes, and says nothing further.
 	 *
 	 * @since 1.0.0
