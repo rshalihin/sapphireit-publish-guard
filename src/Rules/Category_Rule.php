@@ -43,7 +43,7 @@ final class Category_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_label(): string {
-		return __( 'Product category', 'product-publish-guard' );
+		return __( 'Product category', 'sapphireit-publish-guard' );
 	}
 
 	/**
@@ -54,7 +54,7 @@ final class Category_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks that the product is in at least one category, and warns when the only category is the store default.', 'product-publish-guard' );
+		return __( 'Checks that the product is in at least one category, and warns when the only category is the store default.', 'sapphireit-publish-guard' );
 	}
 
 	/**
@@ -89,7 +89,7 @@ final class Category_Rule extends Abstract_Rule {
 	public function get_fix_target(): array {
 		return array(
 			'selector' => '#product_catdiv',
-			'label'    => __( 'Choose a category', 'product-publish-guard' ),
+			'label'    => __( 'Choose a category', 'sapphireit-publish-guard' ),
 			'panel'    => '',
 		);
 	}
@@ -110,11 +110,11 @@ final class Category_Rule extends Abstract_Rule {
 		$data  = array( 'category_count' => $count );
 
 		if ( 0 === $count ) {
-			return $this->fail( __( 'Assign at least one product category.', 'product-publish-guard' ), $data );
+			return $this->fail( __( 'Assign at least one product category.', 'sapphireit-publish-guard' ), $data );
 		}
 
 		if ( $context->is_only_default_category() ) {
-			return $this->warn( __( 'This product only uses the default category.', 'product-publish-guard' ), $data );
+			return $this->warn( __( 'This product only uses the default category.', 'sapphireit-publish-guard' ), $data );
 		}
 
 		return $this->pass( '', $data );

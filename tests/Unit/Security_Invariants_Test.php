@@ -56,7 +56,7 @@ final class Security_Invariants_Test extends TestCase {
 	private static function php_sources(): array {
 		$sources = self::sources( 'src', array( 'php' ) );
 
-		foreach ( array( 'product-publish-guard.php', 'uninstall.php' ) as $file ) {
+		foreach ( array( 'sapphireit-publish-guard.php', 'uninstall.php' ) as $file ) {
 			$sources[ $file ] = (string) file_get_contents( SIT_WCPG_PATH . $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading a local source file.
 		}
 

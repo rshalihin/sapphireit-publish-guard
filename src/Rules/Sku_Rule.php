@@ -44,7 +44,7 @@ final class Sku_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_label(): string {
-		return __( 'SKU', 'product-publish-guard' );
+		return __( 'SKU', 'sapphireit-publish-guard' );
 	}
 
 	/**
@@ -55,7 +55,7 @@ final class Sku_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks that the product has a SKU.', 'product-publish-guard' );
+		return __( 'Checks that the product has a SKU.', 'sapphireit-publish-guard' );
 	}
 
 	/**
@@ -101,7 +101,7 @@ final class Sku_Rule extends Abstract_Rule {
 	public function get_fix_target(): array {
 		return array(
 			'selector' => '#_sku',
-			'label'    => __( 'Add a SKU', 'product-publish-guard' ),
+			'label'    => __( 'Add a SKU', 'sapphireit-publish-guard' ),
 			'panel'    => 'inventory',
 		);
 	}
@@ -119,7 +119,7 @@ final class Sku_Rule extends Abstract_Rule {
 		unset( $settings );
 
 		if ( '' === trim( $context->get_sku() ) ) {
-			return $this->fail( __( 'Add a SKU for this product.', 'product-publish-guard' ) );
+			return $this->fail( __( 'Add a SKU for this product.', 'sapphireit-publish-guard' ) );
 		}
 
 		return $this->pass();

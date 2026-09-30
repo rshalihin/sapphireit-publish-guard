@@ -1,13 +1,13 @@
 <?php
 /**
- * Release packager: builds dist/product-publish-guard.zip from the working tree.
+ * Release packager: builds dist/sapphireit-publish-guard.zip from the working tree.
  *
  * What is left out is decided by `.distignore`, one entry per line, relative to the
  * plugin root: an entry excludes the file or directory at that path, and may use `*`
  * and `?` wildcards. On top of that, every dotfile and dot-directory is excluded at any
  * depth, so a new tooling cache can never leak into a release by being forgotten here.
  *
- * Every file sits under a top-level `product-publish-guard/` folder, which is what
+ * Every file sits under a top-level `sapphireit-publish-guard/` folder, which is what
  * "Upload Plugin" and `wp plugin install <zip>` expect.
  *
  * Usage: `npm run package` (builds assets and the POT first), or
@@ -27,7 +27,7 @@ if ( ! class_exists( 'ZipArchive' ) ) {
 }
 
 $sit_wcpg_root   = dirname( __DIR__ );
-$sit_wcpg_slug   = 'product-publish-guard';
+$sit_wcpg_slug   = 'sapphireit-publish-guard';
 $sit_wcpg_target = $sit_wcpg_root . '/dist/' . $sit_wcpg_slug . '.zip';
 
 // Files a release cannot work without. Missing any of them is a broken build, not a warning.

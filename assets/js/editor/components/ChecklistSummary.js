@@ -20,7 +20,7 @@ export function ChecklistSummary( { result, loading } ) {
 			<p className="sit-wcpg-checklist__summary" aria-live="polite">
 				<Spinner />
 				<strong className="sit-wcpg-checklist__state">
-					{ __( 'Checking…', 'product-publish-guard' ) }
+					{ __( 'Checking…', 'sapphireit-publish-guard' ) }
 				</strong>
 			</p>
 		);
@@ -39,8 +39,8 @@ export function ChecklistSummary( { result, loading } ) {
 			<StatusIcon status={ state } />{ ' ' }
 			<strong className="sit-wcpg-checklist__state">
 				{ result.is_ready
-					? __( 'Ready to publish', 'product-publish-guard' )
-					: __( 'Not ready to publish', 'product-publish-guard' ) }
+					? __( 'Ready to publish', 'sapphireit-publish-guard' )
+					: __( 'Not ready to publish', 'sapphireit-publish-guard' ) }
 			</strong>
 			{ loading && (
 				<span className="sit-wcpg-checklist__spinner">
@@ -58,7 +58,7 @@ export function ChecklistSummary( { result, loading } ) {
 							'%d issue',
 							'%d issues',
 							issues,
-							'product-publish-guard'
+							'sapphireit-publish-guard'
 						),
 						issues
 					) }

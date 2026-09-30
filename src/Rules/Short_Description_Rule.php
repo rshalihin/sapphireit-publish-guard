@@ -44,7 +44,7 @@ final class Short_Description_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_label(): string {
-		return __( 'Short description', 'product-publish-guard' );
+		return __( 'Short description', 'sapphireit-publish-guard' );
 	}
 
 	/**
@@ -55,7 +55,7 @@ final class Short_Description_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks that the product has a short description, and warns when it is shorter than the minimum length.', 'product-publish-guard' );
+		return __( 'Checks that the product has a short description, and warns when it is shorter than the minimum length.', 'sapphireit-publish-guard' );
 	}
 
 	/**
@@ -101,7 +101,7 @@ final class Short_Description_Rule extends Abstract_Rule {
 	public function get_fix_target(): array {
 		return array(
 			'selector' => '#excerpt',
-			'label'    => __( 'Edit the short description', 'product-publish-guard' ),
+			'label'    => __( 'Edit the short description', 'sapphireit-publish-guard' ),
 			'panel'    => '',
 		);
 	}
@@ -125,7 +125,7 @@ final class Short_Description_Rule extends Abstract_Rule {
 		);
 
 		if ( 0 === $length ) {
-			return $this->fail( __( 'The short description is empty.', 'product-publish-guard' ), $data );
+			return $this->fail( __( 'The short description is empty.', 'sapphireit-publish-guard' ), $data );
 		}
 
 		// A threshold of zero switches the advisory branch off entirely.
@@ -137,7 +137,7 @@ final class Short_Description_Rule extends Abstract_Rule {
 						'The short description is %1$d character; at least %2$d are recommended.',
 						'The short description is %1$d characters; at least %2$d are recommended.',
 						$length,
-						'product-publish-guard'
+						'sapphireit-publish-guard'
 					),
 					$length,
 					$minimum

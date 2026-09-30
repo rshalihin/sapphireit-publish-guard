@@ -90,11 +90,11 @@ final class Block_Editor_Notice {
 		}
 
 		echo '<div class="notice notice-warning"><p><strong>';
-		echo esc_html__( 'The product checklist is not shown in the new product editor.', 'product-publish-guard' );
+		echo esc_html__( 'The product checklist is not shown in the new product editor.', 'sapphireit-publish-guard' );
 		echo '</strong></p><p>';
-		echo esc_html__( 'Product Publish Guard shows its checklist in the classic product editor only. WooCommerce\'s new product editor is turned on, so the checklist will not appear while you edit products. Publishing rules are still enforced whenever a product is saved.', 'product-publish-guard' );
+		echo esc_html__( 'SapphireIT Publish Guard shows its checklist in the classic product editor only. WooCommerce\'s new product editor is turned on, so the checklist will not appear while you edit products. Publishing rules are still enforced whenever a product is saved.', 'sapphireit-publish-guard' );
 		echo '</p><p>';
-		echo esc_html__( 'To see the checklist again, turn the new product editor off under WooCommerce, Settings, Advanced, Features.', 'product-publish-guard' );
+		echo esc_html__( 'To see the checklist again, turn the new product editor off under WooCommerce, Settings, Advanced, Features.', 'sapphireit-publish-guard' );
 		echo '</p></div>';
 	}
 }

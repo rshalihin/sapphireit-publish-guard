@@ -23,13 +23,13 @@ const GLYPHS = {
 export function statusLabel( status ) {
 	switch ( status ) {
 		case 'pass':
-			return __( 'Passed', 'product-publish-guard' );
+			return __( 'Passed', 'sapphireit-publish-guard' );
 		case 'warning':
-			return __( 'Warning', 'product-publish-guard' );
+			return __( 'Warning', 'sapphireit-publish-guard' );
 		case 'fail':
-			return __( 'Failed', 'product-publish-guard' );
+			return __( 'Failed', 'sapphireit-publish-guard' );
 		default:
-			return __( 'Not applicable', 'product-publish-guard' );
+			return __( 'Not applicable', 'sapphireit-publish-guard' );
 	}
 }
 

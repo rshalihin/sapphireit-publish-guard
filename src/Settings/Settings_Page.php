@@ -112,8 +112,8 @@ final class Settings_Page {
 	public function add_menu(): void {
 		add_submenu_page(
 			'woocommerce',
-			__( 'Product Checklist', 'product-publish-guard' ),
-			__( 'Product Checklist', 'product-publish-guard' ),
+			__( 'Product Checklist', 'sapphireit-publish-guard' ),
+			__( 'Product Checklist', 'sapphireit-publish-guard' ),
 			self::CAPABILITY,
 			self::MENU_SLUG,
 			array( $this, 'render_page' )
@@ -122,6 +122,9 @@ final class Settings_Page {
 
 	/**
 	 * Register the option with the Settings API.
+	 *
+	 * Sanitized by `Settings_Sanitizer::sanitize()`, which rebuilds the option from the defaults
+	 * and allowlists and clamps every field.
 	 *
 	 * @since 1.0.0
 	 *
@@ -133,7 +136,7 @@ final class Settings_Page {
 			Settings::OPTION_NAME,
 			array(
 				'type'              => 'array',
-				'description'       => __( 'Product readiness checklist configuration.', 'product-publish-guard' ),
+				'description'       => __( 'Product readiness checklist configuration.', 'sapphireit-publish-guard' ),
 				'sanitize_callback' => array( new Settings_Sanitizer( $this->settings ), 'sanitize' ),
 				'show_in_rest'      => false,
 			)
@@ -170,13 +173,13 @@ final class Settings_Page {
 		 * so the check is repeated here where the decision actually matters.
 		 */
 		if ( ! current_user_can( self::CAPABILITY ) ) {
-			wp_die( esc_html__( 'You do not have permission to manage these settings.', 'product-publish-guard' ) );
+			wp_die( esc_html__( 'You do not have permission to manage these settings.', 'sapphireit-publish-guard' ) );
 		}
 
 		$values = $this->settings->get_all();
 
 		echo '<div class="wrap">';
-		echo '<h1>' . esc_html__( 'Product Checklist', 'product-publish-guard' ) . '</h1>';
+		echo '<h1>' . esc_html__( 'Product Checklist', 'sapphireit-publish-guard' ) . '</h1>';
 
 		settings_errors();
 
@@ -205,14 +208,14 @@ final class Settings_Page {
 	 */
 	private function render_master_switch( array $values ): void {
 		echo '<table class="form-table" role="presentation"><tbody><tr><th scope="row">';
-		echo esc_html__( 'Checklist', 'product-publish-guard' );
+		echo esc_html__( 'Checklist', 'sapphireit-publish-guard' );
 		echo '</th><td>';
 
 		$this->render_checkbox(
 			array( 'enabled' ),
 			(bool) $values['enabled'],
-			__( 'Enable the product readiness checklist', 'product-publish-guard' ),
-			__( 'When this is off, no checks run and nothing is enforced.', 'product-publish-guard' )
+			__( 'Enable the product readiness checklist', 'sapphireit-publish-guard' ),
+			__( 'When this is off, no checks run and nothing is enforced.', 'sapphireit-publish-guard' )
 		);
 
 		echo '</td></tr></tbody></table>';
@@ -227,23 +230,23 @@ final class Settings_Page {
 	 * @return void
 	 */
 	private function render_rules_section( array $values ): void {
-		echo '<h2>' . esc_html__( 'Rules', 'product-publish-guard' ) . '</h2>';
+		echo '<h2>' . esc_html__( 'Rules', 'sapphireit-publish-guard' ) . '</h2>';
 		echo '<p class="description">';
-		echo esc_html__( 'A required check must pass before a product can be published. A warning is advisory and never blocks publishing.', 'product-publish-guard' );
+		echo esc_html__( 'A required check must pass before a product can be published. A warning is advisory and never blocks publishing.', 'sapphireit-publish-guard' );
 		echo '</p>';
 
 		$rules = $this->registry()->all();
 
 		if ( empty( $rules ) ) {
-			echo '<p>' . esc_html__( 'No checks are registered.', 'product-publish-guard' ) . '</p>';
+			echo '<p>' . esc_html__( 'No checks are registered.', 'sapphireit-publish-guard' ) . '</p>';
 
 			return;
 		}
 
 		echo '<table class="widefat striped sit-wcpg-settings-rules"><thead><tr>';
-		echo '<th scope="col">' . esc_html__( 'Check', 'product-publish-guard' ) . '</th>';
-		echo '<th scope="col">' . esc_html__( 'Enabled', 'product-publish-guard' ) . '</th>';
-		echo '<th scope="col">' . esc_html__( 'Severity', 'product-publish-guard' ) . '</th>';
+		echo '<th scope="col">' . esc_html__( 'Check', 'sapphireit-publish-guard' ) . '</th>';
+		echo '<th scope="col">' . esc_html__( 'Enabled', 'sapphireit-publish-guard' ) . '</th>';
+		echo '<th scope="col">' . esc_html__( 'Severity', 'sapphireit-publish-guard' ) . '</th>';
 		echo '</tr></thead><tbody>';
 
 		foreach ( $rules as $rule ) {
@@ -284,7 +287,7 @@ final class Settings_Page {
 			array( 'rules', $rule_id, 'enabled' ),
 			$enabled,
 			/* translators: %s: the name of the check being enabled. */
-			sprintf( __( 'Run the %s check', 'product-publish-guard' ), $rule->get_label() )
+			sprintf( __( 'Run the %s check', 'sapphireit-publish-guard' ), $rule->get_label() )
 		);
 		echo '</td>';
 
@@ -307,13 +310,13 @@ final class Settings_Page {
 	 * @return void
 	 */
 	private function render_thresholds_section( array $values ): void {
-		echo '<h2>' . esc_html__( 'Content thresholds', 'product-publish-guard' ) . '</h2>';
+		echo '<h2>' . esc_html__( 'Content thresholds', 'sapphireit-publish-guard' ) . '</h2>';
 		echo '<table class="form-table" role="presentation"><tbody>';
 
 		$hints = array(
-			'min_description_chars'       => __( 'Characters. Set to 0 to turn the length warning off.', 'product-publish-guard' ),
-			'min_short_description_chars' => __( 'Characters. Set to 0 to turn the length warning off.', 'product-publish-guard' ),
-			'min_images'                  => __( 'Images, counting the featured image. Set to 0 or 1 to turn this check off.', 'product-publish-guard' ),
+			'min_description_chars'       => __( 'Characters. Set to 0 to turn the length warning off.', 'sapphireit-publish-guard' ),
+			'min_short_description_chars' => __( 'Characters. Set to 0 to turn the length warning off.', 'sapphireit-publish-guard' ),
+			'min_images'                  => __( 'Images, counting the featured image. Set to 0 or 1 to turn this check off.', 'sapphireit-publish-guard' ),
 		);
 
 		foreach ( Settings::threshold_limits() as $key => $limits ) {
@@ -349,32 +352,32 @@ final class Settings_Page {
 	 */
 	private function render_publishing_section( array $values ): void {
 		$scope_labels = array(
-			Settings::SCOPE_AUTHENTICATED => __( 'All signed-in requests', 'product-publish-guard' ),
-			Settings::SCOPE_EDITOR        => __( 'Admin editor screens only', 'product-publish-guard' ),
+			Settings::SCOPE_AUTHENTICATED => __( 'All signed-in requests', 'sapphireit-publish-guard' ),
+			Settings::SCOPE_EDITOR        => __( 'Admin editor screens only', 'sapphireit-publish-guard' ),
 		);
 
-		echo '<h2>' . esc_html__( 'Publishing', 'product-publish-guard' ) . '</h2>';
+		echo '<h2>' . esc_html__( 'Publishing', 'sapphireit-publish-guard' ) . '</h2>';
 		echo '<table class="form-table" role="presentation"><tbody>';
 
-		echo '<tr><th scope="row">' . esc_html__( 'Enforcement', 'product-publish-guard' ) . '</th><td><fieldset>';
+		echo '<tr><th scope="row">' . esc_html__( 'Enforcement', 'sapphireit-publish-guard' ) . '</th><td><fieldset>';
 
 		$this->render_checkbox(
 			array( 'publishing', 'block_on_required_failure' ),
 			(bool) $values['publishing']['block_on_required_failure'],
-			__( 'Prevent publishing when required checks fail', 'product-publish-guard' ),
-			__( 'Enforced on the server, so it also covers quick edit, bulk edit and the REST API.', 'product-publish-guard' )
+			__( 'Prevent publishing when required checks fail', 'sapphireit-publish-guard' ),
+			__( 'Enforced on the server, so it also covers quick edit, bulk edit and the REST API.', 'sapphireit-publish-guard' )
 		);
 
 		$this->render_checkbox(
 			array( 'publishing', 'allow_admin_override' ),
 			(bool) $values['publishing']['allow_admin_override'],
-			__( 'Allow users who can manage WooCommerce to publish anyway', 'product-publish-guard' ),
-			__( 'Off by default, which means nobody can publish past a failing required check.', 'product-publish-guard' )
+			__( 'Allow users who can manage WooCommerce to publish anyway', 'sapphireit-publish-guard' ),
+			__( 'Off by default, which means nobody can publish past a failing required check.', 'sapphireit-publish-guard' )
 		);
 
 		echo '</fieldset></td></tr>';
 
-		echo '<tr><th scope="row">' . esc_html__( 'Enforcement applies to', 'product-publish-guard' ) . '</th><td><fieldset>';
+		echo '<tr><th scope="row">' . esc_html__( 'Enforcement applies to', 'sapphireit-publish-guard' ) . '</th><td><fieldset>';
 
 		foreach ( Settings::scopes() as $scope ) {
 			$this->render_radio(
@@ -386,16 +389,16 @@ final class Settings_Page {
 		}
 
 		echo '<p class="description">';
-		echo esc_html__( 'Scheduled publishing run by WP-Cron and requests made through WP-CLI are always excluded.', 'product-publish-guard' );
+		echo esc_html__( 'Scheduled publishing run by WP-Cron and requests made through WP-CLI are always excluded.', 'sapphireit-publish-guard' );
 		echo '</p>';
 		echo '</fieldset></td></tr>';
 
-		echo '<tr><th scope="row">' . esc_html__( 'Products list', 'product-publish-guard' ) . '</th><td>';
+		echo '<tr><th scope="row">' . esc_html__( 'Products list', 'sapphireit-publish-guard' ) . '</th><td>';
 
 		$this->render_checkbox(
 			array( 'product_list', 'show_column' ),
 			(bool) $values['product_list']['show_column'],
-			__( 'Show the Readiness column in the products list', 'product-publish-guard' )
+			__( 'Show the Readiness column in the products list', 'sapphireit-publish-guard' )
 		);
 
 		echo '</td></tr>';

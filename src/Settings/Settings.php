@@ -181,11 +181,11 @@ class Settings {
 	public static function threshold_label( string $key ): string {
 		switch ( $key ) {
 			case 'min_description_chars':
-				return __( 'Minimum description length', 'product-publish-guard' );
+				return __( 'Minimum description length', 'sapphireit-publish-guard' );
 			case 'min_short_description_chars':
-				return __( 'Minimum short description length', 'product-publish-guard' );
+				return __( 'Minimum short description length', 'sapphireit-publish-guard' );
 			case 'min_images':
-				return __( 'Minimum number of images', 'product-publish-guard' );
+				return __( 'Minimum number of images', 'sapphireit-publish-guard' );
 			default:
 				return '';
 		}

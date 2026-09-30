@@ -43,7 +43,7 @@ final class Title_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_label(): string {
-		return __( 'Product title', 'product-publish-guard' );
+		return __( 'Product title', 'sapphireit-publish-guard' );
 	}
 
 	/**
@@ -54,7 +54,7 @@ final class Title_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks that the product has a title of its own.', 'product-publish-guard' );
+		return __( 'Checks that the product has a title of its own.', 'sapphireit-publish-guard' );
 	}
 
 	/**
@@ -89,7 +89,7 @@ final class Title_Rule extends Abstract_Rule {
 	public function get_fix_target(): array {
 		return array(
 			'selector' => '#title',
-			'label'    => __( 'Edit the title', 'product-publish-guard' ),
+			'label'    => __( 'Edit the title', 'sapphireit-publish-guard' ),
 			'panel'    => '',
 		);
 	}
@@ -109,7 +109,7 @@ final class Title_Rule extends Abstract_Rule {
 		$title = trim( $context->get_title() );
 
 		if ( '' === $title || $this->is_placeholder( $title ) ) {
-			return $this->fail( __( 'Add a product title.', 'product-publish-guard' ) );
+			return $this->fail( __( 'Add a product title.', 'sapphireit-publish-guard' ) );
 		}
 
 		return $this->pass();

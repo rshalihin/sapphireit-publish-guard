@@ -25,7 +25,7 @@ function ErrorNotice( { error, onRetry } ) {
 			>
 				{ __(
 					'Your session expired — reload the page to continue checking.',
-					'product-publish-guard'
+					'sapphireit-publish-guard'
 				) }
 			</Notice>
 		);
@@ -38,14 +38,14 @@ function ErrorNotice( { error, onRetry } ) {
 			className="sit-wcpg-checklist__notice"
 			actions={ [
 				{
-					label: __( 'Try again', 'product-publish-guard' ),
+					label: __( 'Try again', 'sapphireit-publish-guard' ),
 					onClick: onRetry,
 				},
 			] }
 		>
 			{ __(
 				'Could not refresh the checklist.',
-				'product-publish-guard'
+				'sapphireit-publish-guard'
 			) }
 		</Notice>
 	);
@@ -69,7 +69,10 @@ export function ChecklistFooter( { checkedAt, error, onRecheck } ) {
 					{ checkedAt
 						? sprintf(
 								/* translators: %s: time of day the checklist was last checked. */
-								__( 'Checked at %s', 'product-publish-guard' ),
+								__(
+									'Checked at %s',
+									'sapphireit-publish-guard'
+								),
 								dateI18n(
 									getSettings().formats.time,
 									checkedAt
@@ -83,7 +86,7 @@ export function ChecklistFooter( { checkedAt, error, onRecheck } ) {
 					className="sit-wcpg-checklist__recheck"
 					onClick={ onRecheck }
 				>
-					{ __( 'Re-check', 'product-publish-guard' ) }
+					{ __( 'Re-check', 'sapphireit-publish-guard' ) }
 				</Button>
 			</div>
 		</div>
