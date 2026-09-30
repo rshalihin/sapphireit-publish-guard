@@ -18,9 +18,9 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Checks a sale price against the regular price and its own date window.
  *
- * Every outcome here is advisory. A sale that reads oddly is a merchandising mistake,
- * not an incomplete product, and WooCommerce will happily sell the product either way —
- * so the rule points the problem out and leaves the decision with the merchant.
+ * Each problem is reported as a failure, so the merchant's severity decides whether it
+ * blocks. The rule ships as a warning: a sale that reads oddly is a merchandising mistake,
+ * not an incomplete product, and WooCommerce will happily sell the product either way.
  *
  * @since 1.0.0
  */
@@ -126,17 +126,17 @@ final class Sale_Price_Rule extends Abstract_Rule {
 		}
 
 		if ( ! is_numeric( $sale ) ) {
-			return $this->warn( __( 'The sale price is not a valid number.', 'product-publish-guard' ) );
+			return $this->fail( __( 'The sale price is not a valid number.', 'product-publish-guard' ) );
 		}
 
 		if ( (float) $sale < 0 ) {
-			return $this->warn( __( 'The sale price cannot be negative.', 'product-publish-guard' ) );
+			return $this->fail( __( 'The sale price cannot be negative.', 'product-publish-guard' ) );
 		}
 
 		$regular = trim( $context->get_regular_price() );
 
 		if ( is_numeric( $regular ) && (float) $sale >= (float) $regular ) {
-			return $this->warn( __( 'The sale price is not lower than the regular price.', 'product-publish-guard' ) );
+			return $this->fail( __( 'The sale price is not lower than the regular price.', 'product-publish-guard' ) );
 		}
 
 		$from = $context->get_sale_from();
@@ -144,7 +144,7 @@ final class Sale_Price_Rule extends Abstract_Rule {
 
 		// Both dates are normalized to `Y-m-d H:i:s`, so a string comparison is a date comparison.
 		if ( '' !== $from && '' !== $to && $to < $from ) {
-			return $this->warn( __( 'The sale end date is earlier than the sale start date.', 'product-publish-guard' ) );
+			return $this->fail( __( 'The sale end date is earlier than the sale start date.', 'product-publish-guard' ) );
 		}
 
 		return $this->pass();

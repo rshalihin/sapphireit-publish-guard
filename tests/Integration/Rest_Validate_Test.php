@@ -284,7 +284,7 @@ final class Rest_Validate_Test extends WP_UnitTestCase {
 			)->get_data()
 		);
 
-		// A sale price above the regular price is advisory, never a failure.
+		// A sale price above the regular price surfaces as a warning at the default severity.
 		$this->assertSame( Status::WARNING, $statuses['sale_price'] );
 
 		$statuses = self::statuses(

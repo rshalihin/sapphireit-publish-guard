@@ -9,13 +9,14 @@ namespace ProductPublishGuard\Tests\Unit\Rules;
 
 use ProductPublishGuard\Engine\Product_Context;
 use ProductPublishGuard\Engine\Rule_Result;
+use ProductPublishGuard\Engine\Severity;
 use ProductPublishGuard\Engine\Status;
 use ProductPublishGuard\Rules\Sale_Price_Rule;
 use ProductPublishGuard\Settings\Settings;
 use Yoast\PHPUnitPolyfills\TestCases\TestCase;
 
 /**
- * Covers the skip, the four advisory branches and the passing case.
+ * Covers the skip, the four failing branches, the severity mapping and the passing case.
  *
  * @since 1.0.0
  */
@@ -57,13 +58,13 @@ final class Sale_Price_Rule_Test extends TestCase {
 	}
 
 	/**
-	 * A sale price that is not a number warns.
+	 * A sale price that is not a number fails.
 	 *
 	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
-	public function test_a_non_numeric_sale_price_warns() {
+	public function test_a_non_numeric_sale_price_fails() {
 		$result = $this->check(
 			array(
 				'regular_price' => '20',
@@ -71,7 +72,7 @@ final class Sale_Price_Rule_Test extends TestCase {
 			)
 		);
 
-		$this->assertSame( Status::WARNING, $result->get_status() );
+		$this->assertSame( Status::FAIL, $result->get_status() );
 		$this->assertSame( 'The sale price is not a valid number.', $result->get_message() );
 	}
 
@@ -82,7 +83,7 @@ final class Sale_Price_Rule_Test extends TestCase {
 	 *
 	 * @return void
 	 */
-	public function test_a_negative_sale_price_warns() {
+	public function test_a_negative_sale_price_fails() {
 		$result = $this->check(
 			array(
 				'regular_price' => '20',
@@ -90,18 +91,18 @@ final class Sale_Price_Rule_Test extends TestCase {
 			)
 		);
 
-		$this->assertSame( Status::WARNING, $result->get_status() );
+		$this->assertSame( Status::FAIL, $result->get_status() );
 		$this->assertSame( 'The sale price cannot be negative.', $result->get_message() );
 	}
 
 	/**
-	 * A sale that is not a discount warns, whether it is higher or merely equal.
+	 * A sale that is not a discount fails, whether it is higher or merely equal.
 	 *
 	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
-	public function test_a_sale_price_at_or_above_the_regular_price_warns() {
+	public function test_a_sale_price_at_or_above_the_regular_price_fails() {
 		$expected = 'The sale price is not lower than the regular price.';
 
 		$this->assertSame(
@@ -126,13 +127,13 @@ final class Sale_Price_Rule_Test extends TestCase {
 	}
 
 	/**
-	 * A sale window that ends before it starts warns.
+	 * A sale window that ends before it starts fails.
 	 *
 	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
-	public function test_a_sale_ending_before_it_starts_warns() {
+	public function test_a_sale_ending_before_it_starts_fails() {
 		$result = $this->check(
 			array(
 				'regular_price' => '20',
@@ -142,8 +143,27 @@ final class Sale_Price_Rule_Test extends TestCase {
 			)
 		);
 
-		$this->assertSame( Status::WARNING, $result->get_status() );
+		$this->assertSame( Status::FAIL, $result->get_status() );
 		$this->assertSame( 'The sale end date is earlier than the sale start date.', $result->get_message() );
+	}
+
+	/**
+	 * The merchant's severity decides the status: a warning by default, a block when required.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	public function test_severity_decides_whether_a_bad_sale_blocks() {
+		$result = $this->check(
+			array(
+				'regular_price' => '20',
+				'sale_price'    => '25',
+			)
+		);
+
+		$this->assertSame( Status::WARNING, $result->with_severity( Severity::WARNING )->get_status() );
+		$this->assertSame( Status::FAIL, $result->with_severity( Severity::REQUIRED )->get_status() );
 	}
 
 	/**
