@@ -51,7 +51,7 @@ final class Price_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_label(): string {
-		return __( 'Regular price', 'product-publish-guard' );
+		return __( 'Regular price', 'sapphireit-publish-guard' );
 	}
 
 	/**
@@ -62,7 +62,7 @@ final class Price_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks that the product has a valid regular price. Variable and grouped products are skipped.', 'product-publish-guard' );
+		return __( 'Checks that the product has a valid regular price. Variable and grouped products are skipped.', 'sapphireit-publish-guard' );
 	}
 
 	/**
@@ -97,7 +97,7 @@ final class Price_Rule extends Abstract_Rule {
 	public function get_fix_target(): array {
 		return array(
 			'selector' => '#_regular_price',
-			'label'    => __( 'Set the regular price', 'product-publish-guard' ),
+			'label'    => __( 'Set the regular price', 'sapphireit-publish-guard' ),
 			'panel'    => 'general',
 		);
 	}
@@ -123,11 +123,11 @@ final class Price_Rule extends Abstract_Rule {
 		$price = trim( $context->get_regular_price() );
 
 		if ( '' === $price ) {
-			return $this->fail( __( 'Set a regular price.', 'product-publish-guard' ) );
+			return $this->fail( __( 'Set a regular price.', 'sapphireit-publish-guard' ) );
 		}
 
 		if ( ! is_numeric( $price ) || (float) $price < 0 ) {
-			return $this->fail( __( 'The regular price is not a valid number.', 'product-publish-guard' ) );
+			return $this->fail( __( 'The regular price is not a valid number.', 'sapphireit-publish-guard' ) );
 		}
 
 		// Zero is a price, not a missing price.
@@ -144,9 +144,9 @@ final class Price_Rule extends Abstract_Rule {
 	 */
 	private function skip_reason( string $type ): string {
 		if ( 'grouped' === $type ) {
-			return __( 'A grouped product takes its price from the products it contains.', 'product-publish-guard' );
+			return __( 'A grouped product takes its price from the products it contains.', 'sapphireit-publish-guard' );
 		}
 
-		return __( 'Variable product pricing is validated per variation, which is not part of this version.', 'product-publish-guard' );
+		return __( 'Variable product pricing is validated per variation, which is not part of this version.', 'sapphireit-publish-guard' );
 	}
 }

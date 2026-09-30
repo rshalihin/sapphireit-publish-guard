@@ -194,7 +194,7 @@ final class Validate_Controller {
 	private function get_args(): array {
 		return array(
 			'id'    => array(
-				'description'       => __( 'Product identifier.', 'product-publish-guard' ),
+				'description'       => __( 'Product identifier.', 'sapphireit-publish-guard' ),
 				'type'              => 'integer',
 				'required'          => true,
 				'sanitize_callback' => 'absint',
@@ -203,7 +203,7 @@ final class Validate_Controller {
 				},
 			),
 			'draft' => array(
-				'description'          => __( 'Unsaved editor values. Only the keys present override the stored product.', 'product-publish-guard' ),
+				'description'          => __( 'Unsaved editor values. Only the keys present override the stored product.', 'sapphireit-publish-guard' ),
 				'type'                 => 'object',
 				'required'             => false,
 				'default'              => array(),
@@ -270,7 +270,7 @@ final class Validate_Controller {
 		if ( ! current_user_can( 'edit_post', $product_id ) ) {
 			return new WP_Error(
 				'sit_wcpg_forbidden',
-				__( 'You are not allowed to check this product.', 'product-publish-guard' ),
+				__( 'You are not allowed to check this product.', 'sapphireit-publish-guard' ),
 				array( 'status' => rest_authorization_required_code() )
 			);
 		}
@@ -296,12 +296,12 @@ final class Validate_Controller {
 		} catch ( Throwable $e ) {
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-				error_log( 'Product Publish Guard: REST validation failed - ' . $e->getMessage() );
+				error_log( 'SapphireIT Publish Guard: REST validation failed - ' . $e->getMessage() );
 			}
 
 			return new WP_Error(
 				'sit_wcpg_validation_failed',
-				__( 'The checklist could not be calculated.', 'product-publish-guard' ),
+				__( 'The checklist could not be calculated.', 'sapphireit-publish-guard' ),
 				array( 'status' => WP_Http::INTERNAL_SERVER_ERROR )
 			);
 		}
@@ -330,7 +330,7 @@ final class Validate_Controller {
 	 */
 	public function validate_draft( $value, WP_REST_Request $request, string $param ) {
 		if ( ! is_array( $value ) ) {
-			return self::invalid( $param, __( 'Expected an object.', 'product-publish-guard' ) );
+			return self::invalid( $param, __( 'Expected an object.', 'sapphireit-publish-guard' ) );
 		}
 
 		foreach ( self::DRAFT_FIELDS as $field => $spec ) {
@@ -362,32 +362,32 @@ final class Validate_Controller {
 		if ( 'ids' === $rule ) {
 			return ( is_array( $value ) || is_string( $value ) )
 				? true
-				: self::invalid( $name, __( 'Expected a list of identifiers.', 'product-publish-guard' ) );
+				: self::invalid( $name, __( 'Expected a list of identifiers.', 'sapphireit-publish-guard' ) );
 		}
 
 		if ( 'nullable_int' === $rule ) {
 			return ( null === $value || is_scalar( $value ) )
 				? true
-				: self::invalid( $name, __( 'Expected a number or null.', 'product-publish-guard' ) );
+				: self::invalid( $name, __( 'Expected a number or null.', 'sapphireit-publish-guard' ) );
 		}
 
 		if ( ! is_scalar( $value ) ) {
-			return self::invalid( $name, __( 'Expected a single value.', 'product-publish-guard' ) );
+			return self::invalid( $name, __( 'Expected a single value.', 'sapphireit-publish-guard' ) );
 		}
 
 		if ( 'product_type' === $rule && ! in_array( (string) $value, self::product_types(), true ) ) {
-			return self::invalid( $name, __( 'Not one of the registered product types.', 'product-publish-guard' ) );
+			return self::invalid( $name, __( 'Not one of the registered product types.', 'sapphireit-publish-guard' ) );
 		}
 
 		if ( 'stock_status' === $rule && ! in_array( (string) $value, self::stock_statuses(), true ) ) {
-			return self::invalid( $name, __( 'Not one of the registered stock statuses.', 'product-publish-guard' ) );
+			return self::invalid( $name, __( 'Not one of the registered stock statuses.', 'sapphireit-publish-guard' ) );
 		}
 
 		if ( 'price' === $rule ) {
 			$normalized = self::normalize_price( $value );
 
 			if ( '' !== $normalized && ! is_numeric( $normalized ) ) {
-				return self::invalid( $name, __( 'Expected a price.', 'product-publish-guard' ) );
+				return self::invalid( $name, __( 'Expected a price.', 'sapphireit-publish-guard' ) );
 			}
 		}
 
@@ -599,7 +599,7 @@ final class Validate_Controller {
 	private static function not_found(): WP_Error {
 		return new WP_Error(
 			'sit_wcpg_not_found',
-			__( 'No product was found with that identifier.', 'product-publish-guard' ),
+			__( 'No product was found with that identifier.', 'sapphireit-publish-guard' ),
 			array( 'status' => WP_Http::NOT_FOUND )
 		);
 	}
@@ -618,7 +618,7 @@ final class Validate_Controller {
 			'rest_invalid_param',
 			sprintf(
 				/* translators: 1: parameter name, 2: reason the value was rejected. */
-				__( 'Invalid parameter: %1$s. %2$s', 'product-publish-guard' ),
+				__( 'Invalid parameter: %1$s. %2$s', 'sapphireit-publish-guard' ),
 				$name,
 				$reason
 			),

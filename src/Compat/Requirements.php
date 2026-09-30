@@ -155,7 +155,7 @@ final class Requirements {
 		}
 
 		echo '<div class="notice notice-error"><p><strong>';
-		echo esc_html__( 'Product Publish Guard has been stopped.', 'product-publish-guard' );
+		echo esc_html__( 'SapphireIT Publish Guard has been stopped.', 'sapphireit-publish-guard' );
 		echo '</strong></p><ul class="ul-disc">';
 
 		foreach ( self::$failures as $failure ) {
@@ -181,7 +181,7 @@ final class Requirements {
 			case 'php':
 				return sprintf(
 					/* translators: 1: minimum required PHP version, 2: PHP version running on this site. */
-					__( 'PHP %1$s or newer is required. This site runs PHP %2$s. Ask your host to upgrade PHP.', 'product-publish-guard' ),
+					__( 'PHP %1$s or newer is required. This site runs PHP %2$s. Ask your host to upgrade PHP.', 'sapphireit-publish-guard' ),
 					$required,
 					$actual
 				);
@@ -189,7 +189,7 @@ final class Requirements {
 			case 'wp':
 				return sprintf(
 					/* translators: 1: minimum required WordPress version, 2: WordPress version on this site. */
-					__( 'WordPress %1$s or newer is required. This site runs WordPress %2$s. Update WordPress from Dashboard, then Updates.', 'product-publish-guard' ),
+					__( 'WordPress %1$s or newer is required. This site runs WordPress %2$s. Update WordPress from Dashboard, then Updates.', 'sapphireit-publish-guard' ),
 					$required,
 					$actual
 				);
@@ -197,14 +197,14 @@ final class Requirements {
 			case 'wc_version':
 				return sprintf(
 					/* translators: 1: minimum required WooCommerce version, 2: WooCommerce version on this site. */
-					__( 'WooCommerce %1$s or newer is required. This site runs WooCommerce %2$s. Update WooCommerce from Plugins.', 'product-publish-guard' ),
+					__( 'WooCommerce %1$s or newer is required. This site runs WooCommerce %2$s. Update WooCommerce from Plugins.', 'sapphireit-publish-guard' ),
 					$required,
 					$actual
 				);
 
 			case 'wc_missing':
 			default:
-				return __( 'WooCommerce is not active. Activate WooCommerce to use the product checklist.', 'product-publish-guard' );
+				return __( 'WooCommerce is not active. Activate WooCommerce to use the product checklist.', 'sapphireit-publish-guard' );
 		}
 	}
 }

@@ -186,7 +186,7 @@ final class Notices {
 		}
 
 		foreach ( self::PUBLISHED_MESSAGES as $number ) {
-			$messages[ Screen::POST_TYPE ][ $number ] = esc_html__( 'Product saved, but not published.', 'product-publish-guard' );
+			$messages[ Screen::POST_TYPE ][ $number ] = esc_html__( 'Product saved, but not published.', 'sapphireit-publish-guard' );
 		}
 
 		return $messages;
@@ -267,8 +267,8 @@ final class Notices {
 
 		if ( $single ) {
 			$heading = $blocked
-				? __( 'This product was not published because required checks failed:', 'product-publish-guard' )
-				: __( 'This product was published although required checks failed, because you are allowed to override the publishing guard:', 'product-publish-guard' );
+				? __( 'This product was not published because required checks failed:', 'sapphireit-publish-guard' )
+				: __( 'This product was published although required checks failed, because you are allowed to override the publishing guard:', 'sapphireit-publish-guard' );
 		} else {
 			$heading = $blocked
 				? sprintf(
@@ -277,7 +277,7 @@ final class Notices {
 						'%d product was not published because required checks failed:',
 						'%d products were not published because required checks failed:',
 						count( $entries ),
-						'product-publish-guard'
+						'sapphireit-publish-guard'
 					),
 					count( $entries )
 				)
@@ -287,7 +287,7 @@ final class Notices {
 						'%d product was published although required checks failed, because you are allowed to override the publishing guard:',
 						'%d products were published although required checks failed, because you are allowed to override the publishing guard:',
 						count( $entries ),
-						'product-publish-guard'
+						'sapphireit-publish-guard'
 					),
 					count( $entries )
 				);
@@ -353,8 +353,8 @@ final class Notices {
 	private static function product_name( int $post_id ): string {
 		return $post_id > 0
 			/* translators: %d: product id. */
-			? sprintf( __( 'Product #%d', 'product-publish-guard' ), $post_id )
-			: __( 'A new product', 'product-publish-guard' );
+			? sprintf( __( 'Product #%d', 'sapphireit-publish-guard' ), $post_id )
+			: __( 'A new product', 'sapphireit-publish-guard' );
 	}
 
 	/**

@@ -2,24 +2,24 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Product Publish Guard 1.0.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/product-publish-guard\n"
+"Project-Id-Version: SapphireIT Publish Guard for WooCommerce 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/sapphireit-publish-guard\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-27T07:10:09+00:00\n"
+"POT-Creation-Date: 2026-09-28T15:32:42+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.9.0\n"
-"X-Domain: product-publish-guard\n"
+"X-Domain: sapphireit-publish-guard\n"
 
 #. Plugin Name of the plugin
-msgid "Product Publish Guard"
+msgid "SapphireIT Publish Guard for WooCommerce"
 msgstr ""
 
 #. Plugin URI of the plugin
-msgid "https://github.com/rshalihin/product-publish-guard"
+msgid "https://github.com/rshalihin/sapphireit-publish-guard"
 msgstr ""
 
 #. Description of the plugin
@@ -39,7 +39,7 @@ msgid "The product checklist is not shown in the new product editor."
 msgstr ""
 
 #: src/Admin/Block_Editor_Notice.php:95
-msgid "Product Publish Guard shows its checklist in the classic product editor only. WooCommerce's new product editor is turned on, so the checklist will not appear while you edit products. Publishing rules are still enforced whenever a product is saved."
+msgid "SapphireIT Publish Guard shows its checklist in the classic product editor only. WooCommerce's new product editor is turned on, so the checklist will not appear while you edit products. Publishing rules are still enforced whenever a product is saved."
 msgstr ""
 
 #: src/Admin/Block_Editor_Notice.php:97
@@ -183,7 +183,7 @@ msgid "No readiness state"
 msgstr ""
 
 #: src/Compat/Requirements.php:158
-msgid "Product Publish Guard has been stopped."
+msgid "SapphireIT Publish Guard has been stopped."
 msgstr ""
 
 #. translators: 1: minimum required PHP version, 2: PHP version running on this site.
@@ -534,117 +534,117 @@ msgstr ""
 
 #: src/Settings/Settings_Page.php:115
 #: src/Settings/Settings_Page.php:116
-#: src/Settings/Settings_Page.php:179
+#: src/Settings/Settings_Page.php:182
 msgid "Product Checklist"
 msgstr ""
 
-#: src/Settings/Settings_Page.php:136
+#: src/Settings/Settings_Page.php:139
 msgid "Product readiness checklist configuration."
 msgstr ""
 
-#: src/Settings/Settings_Page.php:173
+#: src/Settings/Settings_Page.php:176
 msgid "You do not have permission to manage these settings."
 msgstr ""
 
-#: src/Settings/Settings_Page.php:208
+#: src/Settings/Settings_Page.php:211
 msgid "Checklist"
 msgstr ""
 
-#: src/Settings/Settings_Page.php:214
+#: src/Settings/Settings_Page.php:217
 msgid "Enable the product readiness checklist"
 msgstr ""
 
-#: src/Settings/Settings_Page.php:215
+#: src/Settings/Settings_Page.php:218
 msgid "When this is off, no checks run and nothing is enforced."
 msgstr ""
 
-#: src/Settings/Settings_Page.php:230
+#: src/Settings/Settings_Page.php:233
 msgid "Rules"
 msgstr ""
 
-#: src/Settings/Settings_Page.php:232
+#: src/Settings/Settings_Page.php:235
 msgid "A required check must pass before a product can be published. A warning is advisory and never blocks publishing."
 msgstr ""
 
-#: src/Settings/Settings_Page.php:238
+#: src/Settings/Settings_Page.php:241
 msgid "No checks are registered."
 msgstr ""
 
-#: src/Settings/Settings_Page.php:244
+#: src/Settings/Settings_Page.php:247
 msgid "Check"
 msgstr ""
 
-#: src/Settings/Settings_Page.php:245
+#: src/Settings/Settings_Page.php:248
 msgid "Enabled"
 msgstr ""
 
-#: src/Settings/Settings_Page.php:246
+#: src/Settings/Settings_Page.php:249
 msgid "Severity"
 msgstr ""
 
 #. translators: %s: the name of the check being enabled.
-#: src/Settings/Settings_Page.php:287
+#: src/Settings/Settings_Page.php:290
 msgid "Run the %s check"
 msgstr ""
 
-#: src/Settings/Settings_Page.php:310
+#: src/Settings/Settings_Page.php:313
 msgid "Content thresholds"
 msgstr ""
 
-#: src/Settings/Settings_Page.php:314
-#: src/Settings/Settings_Page.php:315
+#: src/Settings/Settings_Page.php:317
+#: src/Settings/Settings_Page.php:318
 msgid "Characters. Set to 0 to turn the length warning off."
 msgstr ""
 
-#: src/Settings/Settings_Page.php:316
+#: src/Settings/Settings_Page.php:319
 msgid "Images, counting the featured image. Set to 0 or 1 to turn this check off."
 msgstr ""
 
-#: src/Settings/Settings_Page.php:352
+#: src/Settings/Settings_Page.php:355
 msgid "All signed-in requests"
 msgstr ""
 
-#: src/Settings/Settings_Page.php:353
+#: src/Settings/Settings_Page.php:356
 msgid "Admin editor screens only"
 msgstr ""
 
-#: src/Settings/Settings_Page.php:356
+#: src/Settings/Settings_Page.php:359
 msgid "Publishing"
 msgstr ""
 
-#: src/Settings/Settings_Page.php:359
+#: src/Settings/Settings_Page.php:362
 msgid "Enforcement"
 msgstr ""
 
-#: src/Settings/Settings_Page.php:364
+#: src/Settings/Settings_Page.php:367
 msgid "Prevent publishing when required checks fail"
 msgstr ""
 
-#: src/Settings/Settings_Page.php:365
+#: src/Settings/Settings_Page.php:368
 msgid "Enforced on the server, so it also covers quick edit, bulk edit and the REST API."
 msgstr ""
 
-#: src/Settings/Settings_Page.php:371
+#: src/Settings/Settings_Page.php:374
 msgid "Allow users who can manage WooCommerce to publish anyway"
 msgstr ""
 
-#: src/Settings/Settings_Page.php:372
+#: src/Settings/Settings_Page.php:375
 msgid "Off by default, which means nobody can publish past a failing required check."
 msgstr ""
 
-#: src/Settings/Settings_Page.php:377
+#: src/Settings/Settings_Page.php:380
 msgid "Enforcement applies to"
 msgstr ""
 
-#: src/Settings/Settings_Page.php:389
+#: src/Settings/Settings_Page.php:392
 msgid "Scheduled publishing run by WP-Cron and requests made through WP-CLI are always excluded."
 msgstr ""
 
-#: src/Settings/Settings_Page.php:393
+#: src/Settings/Settings_Page.php:396
 msgid "Products list"
 msgstr ""
 
-#: src/Settings/Settings_Page.php:398
+#: src/Settings/Settings_Page.php:401
 msgid "Show the Readiness column in the products list"
 msgstr ""
 

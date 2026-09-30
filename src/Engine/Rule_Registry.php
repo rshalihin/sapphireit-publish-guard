@@ -52,7 +52,7 @@ final class Rule_Registry {
 		$id = $rule->get_id();
 
 		if ( '' === $id ) {
-			$this->notify_misuse( __METHOD__, __( 'A rule must have a non-empty id.', 'product-publish-guard' ) );
+			$this->notify_misuse( __METHOD__, __( 'A rule must have a non-empty id.', 'sapphireit-publish-guard' ) );
 
 			return false;
 		}
@@ -62,7 +62,7 @@ final class Rule_Registry {
 				__METHOD__,
 				sprintf(
 					/* translators: %s is the duplicate rule identifier. */
-					__( 'A rule with the id "%s" is already registered.', 'product-publish-guard' ),
+					__( 'A rule with the id "%s" is already registered.', 'sapphireit-publish-guard' ),
 					$id
 				)
 			);

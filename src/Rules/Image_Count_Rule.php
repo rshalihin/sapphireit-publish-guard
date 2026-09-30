@@ -46,7 +46,7 @@ final class Image_Count_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_label(): string {
-		return __( 'Product images', 'product-publish-guard' );
+		return __( 'Product images', 'sapphireit-publish-guard' );
 	}
 
 	/**
@@ -57,7 +57,7 @@ final class Image_Count_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks the total number of images on the product, counting the featured image and the gallery together.', 'product-publish-guard' );
+		return __( 'Checks the total number of images on the product, counting the featured image and the gallery together.', 'sapphireit-publish-guard' );
 	}
 
 	/**
@@ -103,7 +103,7 @@ final class Image_Count_Rule extends Abstract_Rule {
 	public function get_fix_target(): array {
 		return array(
 			'selector' => '#product_images_container',
-			'label'    => __( 'Add product images', 'product-publish-guard' ),
+			'label'    => __( 'Add product images', 'sapphireit-publish-guard' ),
 			'panel'    => '',
 		);
 	}
@@ -127,7 +127,7 @@ final class Image_Count_Rule extends Abstract_Rule {
 		);
 
 		if ( $minimum <= 1 ) {
-			return $this->skip( __( 'No minimum number of images is configured.', 'product-publish-guard' ), $data );
+			return $this->skip( __( 'No minimum number of images is configured.', 'sapphireit-publish-guard' ), $data );
 		}
 
 		if ( $count < $minimum ) {
@@ -138,7 +138,7 @@ final class Image_Count_Rule extends Abstract_Rule {
 						'This product has %1$d image; at least %2$d are recommended.',
 						'This product has %1$d images; at least %2$d are recommended.',
 						$count,
-						'product-publish-guard'
+						'sapphireit-publish-guard'
 					),
 					$count,
 					$minimum

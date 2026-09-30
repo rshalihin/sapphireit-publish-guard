@@ -215,7 +215,7 @@ final class Settings_Sanitizer {
 			'sit_wcpg_threshold_clamped_' . $key,
 			sprintf(
 				/* translators: 1: threshold setting label, 2: the value that was stored instead. */
-				__( '%1$s was outside the allowed range and has been saved as %2$d.', 'product-publish-guard' ),
+				__( '%1$s was outside the allowed range and has been saved as %2$d.', 'sapphireit-publish-guard' ),
 				Settings::threshold_label( $key ),
 				$value
 			),

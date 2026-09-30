@@ -45,7 +45,7 @@ final class Sale_Price_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_label(): string {
-		return __( 'Sale price', 'product-publish-guard' );
+		return __( 'Sale price', 'sapphireit-publish-guard' );
 	}
 
 	/**
@@ -56,7 +56,7 @@ final class Sale_Price_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks that a sale price, when one is set, is valid, lower than the regular price and has a sensible date range.', 'product-publish-guard' );
+		return __( 'Checks that a sale price, when one is set, is valid, lower than the regular price and has a sensible date range.', 'sapphireit-publish-guard' );
 	}
 
 	/**
@@ -102,7 +102,7 @@ final class Sale_Price_Rule extends Abstract_Rule {
 	public function get_fix_target(): array {
 		return array(
 			'selector' => '#_sale_price',
-			'label'    => __( 'Review the sale price', 'product-publish-guard' ),
+			'label'    => __( 'Review the sale price', 'sapphireit-publish-guard' ),
 			'panel'    => 'general',
 		);
 	}
@@ -122,7 +122,7 @@ final class Sale_Price_Rule extends Abstract_Rule {
 		$sale = trim( $context->get_sale_price() );
 
 		if ( '' === $sale ) {
-			return $this->skip( __( 'This product is not on sale.', 'product-publish-guard' ) );
+			return $this->skip( __( 'This product is not on sale.', 'sapphireit-publish-guard' ) );
 		}
 
 		if ( ! is_numeric( $sale ) ) {

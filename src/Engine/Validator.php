@@ -130,7 +130,7 @@ final class Validator {
 		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		error_log(
 			sprintf(
-				'Product Publish Guard: rule "%1$s" threw %2$s: %3$s',
+				'SapphireIT Publish Guard: rule "%1$s" threw %2$s: %3$s',
 				$rule_id,
 				get_class( $error ),
 				$error->getMessage()

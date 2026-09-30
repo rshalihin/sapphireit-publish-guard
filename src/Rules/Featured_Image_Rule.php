@@ -44,7 +44,7 @@ final class Featured_Image_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_label(): string {
-		return __( 'Featured image', 'product-publish-guard' );
+		return __( 'Featured image', 'sapphireit-publish-guard' );
 	}
 
 	/**
@@ -55,7 +55,7 @@ final class Featured_Image_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks that the product has a featured image and that the image is still in the media library.', 'product-publish-guard' );
+		return __( 'Checks that the product has a featured image and that the image is still in the media library.', 'sapphireit-publish-guard' );
 	}
 
 	/**
@@ -90,7 +90,7 @@ final class Featured_Image_Rule extends Abstract_Rule {
 	public function get_fix_target(): array {
 		return array(
 			'selector' => '#set-post-thumbnail',
-			'label'    => __( 'Set a featured image', 'product-publish-guard' ),
+			'label'    => __( 'Set a featured image', 'sapphireit-publish-guard' ),
 			'panel'    => '',
 		);
 	}
@@ -115,11 +115,11 @@ final class Featured_Image_Rule extends Abstract_Rule {
 		);
 
 		if ( $image_id <= 0 ) {
-			return $this->fail( __( 'This product has no featured image.', 'product-publish-guard' ), $data );
+			return $this->fail( __( 'This product has no featured image.', 'sapphireit-publish-guard' ), $data );
 		}
 
 		if ( ! $context->has_valid_featured_image() ) {
-			return $this->fail( __( 'The featured image is missing from the media library.', 'product-publish-guard' ), $data );
+			return $this->fail( __( 'The featured image is missing from the media library.', 'sapphireit-publish-guard' ), $data );
 		}
 
 		return $this->pass( '', $data );
