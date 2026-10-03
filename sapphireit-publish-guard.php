@@ -1,7 +1,6 @@
 <?php
 /**
  * Plugin Name:          SapphireIT Publish Guard for WooCommerce
- * Plugin URI:           https://github.com/rshalihin/sapphireit-publish-guard
  * Description:          A pre-publish quality checklist for WooCommerce products, with optional server-side publishing enforcement.
  * Version:              1.0.0
  * Requires at least:    6.5

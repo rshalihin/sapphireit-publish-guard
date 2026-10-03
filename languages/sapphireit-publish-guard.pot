@@ -9,17 +9,13 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-28T15:32:42+00:00\n"
+"POT-Creation-Date: 2026-10-03T05:37:03+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.9.0\n"
 "X-Domain: sapphireit-publish-guard\n"
 
 #. Plugin Name of the plugin
 msgid "SapphireIT Publish Guard for WooCommerce"
-msgstr ""
-
-#. Plugin URI of the plugin
-msgid "https://github.com/rshalihin/sapphireit-publish-guard"
 msgstr ""
 
 #. Description of the plugin
