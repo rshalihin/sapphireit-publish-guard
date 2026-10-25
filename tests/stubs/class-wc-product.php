@@ -46,7 +46,7 @@ class WC_Product {
 	 * @param mixed  $default_value Fallback.
 	 * @return mixed
 	 */
-	private function sit_wcpg_value( string $key, $default_value ) {
+	protected function sit_wcpg_value( string $key, $default_value ) {
 		return $this->sit_wcpg_values[ $key ] ?? $default_value;
 	}
 
@@ -243,15 +243,20 @@ class WC_Product {
 	/**
 	 * Whether stock is managed.
 	 *
+	 * A seeded `'parent'` is returned as is: that is what a variation answers outside the
+	 * `edit` context when its parent manages the stock.
+	 *
 	 * @since 1.0.0
 	 *
 	 * @param string $context Read context.
-	 * @return bool
+	 * @return bool|string
 	 */
 	public function get_manage_stock( $context = 'view' ) {
 		unset( $context );
 
-		return (bool) $this->sit_wcpg_value( 'manage_stock', false );
+		$value = $this->sit_wcpg_value( 'manage_stock', false );
+
+		return 'parent' === $value ? 'parent' : (bool) $value;
 	}
 
 	/**
@@ -266,6 +271,46 @@ class WC_Product {
 		unset( $context );
 
 		return $this->sit_wcpg_value( 'stock_quantity', null );
+	}
+
+	/**
+	 * Child product ids: variations of a variable product, linked products of a grouped one.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param string $context Read context.
+	 * @return array
+	 */
+	public function get_children( $context = 'view' ) {
+		unset( $context );
+
+		return (array) $this->sit_wcpg_value( 'children', array() );
+	}
+
+	/**
+	 * Parent product id.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param string $context Read context.
+	 * @return int
+	 */
+	public function get_parent_id( $context = 'view' ) {
+		unset( $context );
+
+		return (int) $this->sit_wcpg_value( 'parent_id', 0 );
+	}
+
+	/**
+	 * Whether the product is of a type, or of one of a list of types.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param string|array $type Type or types.
+	 * @return bool
+	 */
+	public function is_type( $type ) {
+		return in_array( $this->get_type(), (array) $type, true );
 	}
 }
 

@@ -10,12 +10,14 @@ namespace ProductPublishGuard\Rules;
 use ProductPublishGuard\Engine\Abstract_Rule;
 use ProductPublishGuard\Engine\Product_Context;
 use ProductPublishGuard\Engine\Rule_Result;
+use ProductPublishGuard\Engine\Type_Family;
+use ProductPublishGuard\Engine\Variation_Data;
 use ProductPublishGuard\Settings\Settings;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Requires a usable regular price on the product types that carry one.
+ * Requires a usable regular price on the product, or on every enabled variation.
  *
  * A price of exactly zero passes. Free products are legitimate, and a rule that treated
  * them as unfinished would make the checklist wrong for an entire category of store.
@@ -23,14 +25,6 @@ defined( 'ABSPATH' ) || exit;
  * @since 1.0.0
  */
 final class Price_Rule extends Abstract_Rule {
-
-	/**
-	 * Product types whose price does not live on the parent product.
-	 *
-	 * @since 1.0.0
-	 * @var string[]
-	 */
-	private const UNPRICED_TYPES = array( 'variable', 'grouped' );
 
 	/**
 	 * Rule identifier.
@@ -62,7 +56,7 @@ final class Price_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks that the product has a valid regular price. Variable and grouped products are skipped.', 'sapphireit-publish-guard' );
+		return __( 'Checks that the product has a valid regular price. On a variable product, every enabled variation needs one; grouped products are skipped.', 'sapphireit-publish-guard' );
 	}
 
 	/**
@@ -114,20 +108,24 @@ final class Price_Rule extends Abstract_Rule {
 	public function check( Product_Context $context, Settings $settings ): Rule_Result {
 		unset( $settings );
 
-		$type = $context->get_product_type();
+		$family = $context->get_type_family();
 
-		if ( in_array( $type, self::UNPRICED_TYPES, true ) ) {
-			return $this->skip( $this->skip_reason( $type ) );
+		if ( Type_Family::GROUPED === $family ) {
+			return $this->skip( __( 'A grouped product has no price of its own — its products carry their own prices.', 'sapphireit-publish-guard' ) );
+		}
+
+		if ( Type_Family::VARIABLE === $family ) {
+			return $this->check_variations( $context->get_variations() );
 		}
 
 		$price = trim( $context->get_regular_price() );
 
 		if ( '' === $price ) {
-			return $this->fail( __( 'Set a regular price.', 'sapphireit-publish-guard' ) );
+			return $this->fail( __( 'The regular price is empty — enter it in Product data → General → Regular price.', 'sapphireit-publish-guard' ) );
 		}
 
-		if ( ! is_numeric( $price ) || (float) $price < 0 ) {
-			return $this->fail( __( 'The regular price is not a valid number.', 'sapphireit-publish-guard' ) );
+		if ( ! self::is_valid_price( $price ) ) {
+			return $this->fail( __( 'The regular price is not a valid amount — enter a number of zero or more in Product data → General → Regular price.', 'sapphireit-publish-guard' ) );
 		}
 
 		// Zero is a price, not a missing price.
@@ -135,18 +133,69 @@ final class Price_Rule extends Abstract_Rule {
 	}
 
 	/**
-	 * Why this product type has no price of its own.
+	 * Every enabled variation needs a valid price of its own.
 	 *
-	 * @since 1.0.0
+	 * @since 1.1.0
 	 *
-	 * @param string $type WooCommerce product type.
-	 * @return string
+	 * @param Variation_Data[] $variations The enabled variations, in display order.
+	 * @return Rule_Result
 	 */
-	private function skip_reason( string $type ): string {
-		if ( 'grouped' === $type ) {
-			return __( 'A grouped product takes its price from the products it contains.', 'sapphireit-publish-guard' );
+	private function check_variations( array $variations ): Rule_Result {
+		if ( array() === $variations ) {
+			return $this->skip( Variation_Fix::zero_variations_reason() );
 		}
 
-		return __( 'Variable product pricing is validated per variation, which is not part of this version.', 'sapphireit-publish-guard' );
+		$failing  = 0;
+		$first_id = 0;
+
+		foreach ( $variations as $variation ) {
+			if ( self::is_valid_price( trim( $variation->get_regular_price() ) ) ) {
+				continue;
+			}
+
+			++$failing;
+
+			if ( 0 === $first_id ) {
+				$first_id = $variation->get_id();
+			}
+		}
+
+		if ( 0 === $failing ) {
+			return $this->pass();
+		}
+
+		$enabled = count( $variations );
+
+		return $this->fail(
+			sprintf(
+				/* translators: 1: number of enabled variations without a valid price, 2: number of enabled variations, 3: the first such variation's id. */
+				_n(
+					'%1$d of %2$d enabled variations has no valid regular price (first: variation #%3$d) — enter one in Product data → Variations → Regular price.',
+					'%1$d of %2$d enabled variations have no valid regular price (first: variation #%3$d) — enter one in Product data → Variations → Regular price.',
+					$failing,
+					'sapphireit-publish-guard'
+				),
+				$failing,
+				$enabled,
+				$first_id
+			),
+			array(
+				'failing'            => $failing,
+				'enabled'            => $enabled,
+				'first_variation_id' => $first_id,
+			)
+		)->with_fix( Variation_Fix::target() );
+	}
+
+	/**
+	 * Whether a trimmed price is a usable amount: non-empty, numeric and not negative.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param string $price Trimmed price, as stored.
+	 * @return bool
+	 */
+	private static function is_valid_price( string $price ): bool {
+		return '' !== $price && is_numeric( $price ) && (float) $price >= 0;
 	}
 }

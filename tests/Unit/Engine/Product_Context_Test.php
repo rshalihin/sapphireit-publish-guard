@@ -7,8 +7,14 @@
 
 namespace ProductPublishGuard\Tests\Unit\Engine;
 
+use ProductPublishGuard\Engine\Child_Loader;
 use ProductPublishGuard\Engine\Product_Context;
+use ProductPublishGuard\Engine\Type_Family;
+use ProductPublishGuard\Engine\Variation_Data;
 use WC_Product;
+use WC_Product_Grouped;
+use WC_Product_Variable;
+use WC_Product_Variation;
 use Yoast\PHPUnitPolyfills\TestCases\TestCase;
 
 /**
@@ -29,6 +35,25 @@ final class Product_Context_Test extends TestCase {
 		$GLOBALS['sit_wcpg_test_terms']     = array();
 		$GLOBALS['sit_wcpg_test_options']   = array();
 		$GLOBALS['sit_wcpg_test_image_ids'] = array();
+		$GLOBALS['sit_wcpg_test_filters']   = array();
+		$GLOBALS['sit_wcpg_test_products']  = array();
+		$GLOBALS['sit_wcpg_test_posts']     = array();
+		$GLOBALS['sit_wcpg_test_post_ids']  = array();
+
+		Child_Loader::flush();
+	}
+
+	/**
+	 * Remove the filters a test registered, so they cannot leak into another class.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	protected function tear_down() {
+		$GLOBALS['sit_wcpg_test_filters'] = array();
+
+		Child_Loader::flush();
 	}
 
 	/**
@@ -507,5 +532,366 @@ final class Product_Context_Test extends TestCase {
 		$GLOBALS['sit_wcpg_test_terms'] = array( 'product_cat' => array( 99 ) );
 
 		$this->assertSame( array( 3 ), $context->get_category_ids() );
+	}
+
+	/**
+	 * The family follows the product type, and the draft type wins over the stored one.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_type_family_follows_the_product_type() {
+		$this->assertSame( Type_Family::VARIABLE, Product_Context::from_array( array( 'product_type' => 'variable-subscription' ) )->get_type_family() );
+		$this->assertSame( Type_Family::SIMPLE, Product_Context::from_array( array() )->get_type_family() );
+		$this->assertSame( Type_Family::EXTERNAL, Product_Context::from_product( $this->stored_product( array( 'type' => 'external' ) ) )->get_type_family() );
+
+		$drafted = Product_Context::from_product_with_overrides( $this->stored_product(), array( 'product_type' => 'grouped' ) );
+
+		$this->assertSame( Type_Family::GROUPED, $drafted->get_type_family() );
+	}
+
+	/**
+	 * The `sit_wcpg_product_type_family` filter can remap a type, and is applied once.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_type_family_filter_can_remap() {
+		$calls = array();
+
+		add_filter(
+			'sit_wcpg_product_type_family',
+			static function ( $family, $type, $context ) use ( &$calls ) {
+				$calls[] = array( $family, $type, $context );
+
+				return 'bundle' === $type ? Type_Family::GROUPED : $family;
+			},
+			10,
+			3
+		);
+
+		$bundle = Product_Context::from_array( array( 'product_type' => 'bundle' ) );
+
+		$this->assertSame( Type_Family::GROUPED, $bundle->get_type_family() );
+		$this->assertSame( Type_Family::GROUPED, $bundle->get_type_family() );
+		$this->assertCount( 1, $calls, 'The filtered family is memoized.' );
+		$this->assertSame( array( Type_Family::SIMPLE, 'bundle' ), array_slice( $calls[0], 0, 2 ) );
+		$this->assertSame( $bundle, $calls[0][2] );
+
+		$this->assertSame( Type_Family::VARIABLE, Product_Context::from_array( array( 'product_type' => 'variable' ) )->get_type_family() );
+	}
+
+	/**
+	 * A filtered value that is not one of the four families falls back to the mapping.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_invalid_filtered_family_falls_back() {
+		$returned = 'bundle';
+
+		add_filter(
+			'sit_wcpg_product_type_family',
+			static function () use ( &$returned ) {
+				return $returned;
+			}
+		);
+
+		$this->assertSame( Type_Family::VARIABLE, Product_Context::from_array( array( 'product_type' => 'variable' ) )->get_type_family() );
+
+		$returned = null;
+
+		$this->assertSame( Type_Family::GROUPED, Product_Context::from_array( array( 'product_type' => 'grouped' ) )->get_type_family() );
+
+		$returned = array( Type_Family::GROUPED );
+
+		$this->assertSame( Type_Family::EXTERNAL, Product_Context::from_array( array( 'product_type' => 'external' ) )->get_type_family() );
+	}
+
+	/**
+	 * An array context builds one Variation_Data per variation array.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_from_array_builds_variations() {
+		$context = Product_Context::from_array(
+			array(
+				'product_type' => 'variable',
+				'variations'   => array(
+					array(
+						'id'            => 21,
+						'regular_price' => '10',
+					),
+					array(
+						'id'  => 22,
+						'sku' => 'VAR-2',
+					),
+				),
+			)
+		);
+
+		$variations = $context->get_variations();
+
+		$this->assertCount( 2, $variations );
+		$this->assertContainsOnlyInstancesOf( Variation_Data::class, $variations );
+		$this->assertSame( 21, $variations[0]->get_id() );
+		$this->assertSame( '10', $variations[0]->get_regular_price() );
+		$this->assertSame( 'VAR-2', $variations[1]->get_sku() );
+	}
+
+	/**
+	 * Outside the variable family there are no variations, whatever was seeded.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_variations_are_empty_unless_variable() {
+		$context = Product_Context::from_array(
+			array(
+				'product_type' => 'simple',
+				'variations'   => array( array( 'id' => 21 ) ),
+			)
+		);
+
+		$this->assertSame( array(), $context->get_variations() );
+	}
+
+	/**
+	 * Variations come from storage only: no draft can carry them (D3).
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_overrides_cannot_inject_variations() {
+		$simple = Product_Context::from_product_with_overrides(
+			$this->stored_product(),
+			array( 'variations' => array( array( 'id' => 9 ) ) )
+		);
+
+		$this->assertSame( array(), $simple->get_variations() );
+
+		// Even on a variable product, the injected array is ignored and storage is read.
+		$variable = Product_Context::from_product_with_overrides(
+			new WC_Product_Variable( array( 'id' => 56 ) ),
+			array( 'variations' => array( array( 'id' => 9 ) ) )
+		);
+
+		$this->assertSame( array(), $variable->get_variations() );
+
+		$saved = Product_Context::from_save_request(
+			null,
+			array(
+				'product_type' => 'variable',
+				'variations'   => array( array( 'id' => 9 ) ),
+			)
+		);
+
+		$this->assertSame( array(), $saved->get_variations() );
+	}
+
+	/**
+	 * A stored variable product reads its enabled variations through the child loader.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_stored_variations_are_the_enabled_children() {
+		$GLOBALS['sit_wcpg_test_products'] = array(
+			21 => new WC_Product_Variation(
+				array(
+					'id'     => 21,
+					'status' => 'publish',
+				)
+			),
+			22 => new WC_Product_Variation(
+				array(
+					'id'     => 22,
+					'status' => 'private',
+				)
+			),
+			23 => new WC_Product(
+				array(
+					'id'     => 23,
+					'status' => 'publish',
+				)
+			),
+		);
+
+		$context = Product_Context::from_product(
+			new WC_Product_Variable(
+				array(
+					'id'       => 56,
+					'children' => array( 21, 22, 23, 24 ),
+				)
+			)
+		);
+
+		$ids = array_map(
+			static function ( Variation_Data $variation ) {
+				return $variation->get_id();
+			},
+			$context->get_variations()
+		);
+
+		$this->assertSame( array( 21 ), $ids );
+	}
+
+	/**
+	 * A draft type of variable over a product not yet stored as variable reads children
+	 * by post parent (§3.2), so the gap can never become a bypass.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_draft_variable_over_a_stored_simple_reads_children_by_parent() {
+		$GLOBALS['sit_wcpg_test_post_ids'] = array( 31 );
+		$GLOBALS['sit_wcpg_test_products'] = array(
+			31 => new WC_Product_Variation(
+				array(
+					'id'            => 31,
+					'status'        => 'publish',
+					'regular_price' => '',
+				)
+			),
+		);
+
+		$context = Product_Context::from_product_with_overrides( $this->stored_product(), array( 'product_type' => 'variable' ) );
+
+		$this->assertCount( 1, $context->get_variations() );
+		$this->assertSame( 31, $context->get_variations()[0]->get_id() );
+	}
+
+	/**
+	 * Grouped child ids can come from the draft (D16), and are checked against storage.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_child_ids_are_overridable() {
+		$GLOBALS['sit_wcpg_test_posts'] = array(
+			3 => array(
+				'post_type'   => 'product',
+				'post_status' => 'trash',
+			),
+			4 => array(
+				'post_type'   => 'product',
+				'post_status' => 'publish',
+			),
+			5 => array(
+				'post_type'   => 'product',
+				'post_status' => 'draft',
+			),
+			6 => array(
+				'post_type'   => 'page',
+				'post_status' => 'publish',
+			),
+		);
+
+		$grouped = new WC_Product_Grouped(
+			array(
+				'id'       => 57,
+				'children' => array( 3, 4 ),
+			)
+		);
+
+		$stored = Product_Context::from_product( $grouped );
+
+		$this->assertSame( array( 4 ), $stored->get_child_ids() );
+		$this->assertSame( 1, $stored->get_published_child_count() );
+
+		$drafted = Product_Context::from_product_with_overrides( $grouped, array( 'child_ids' => array( 4, 5, 6, 404 ) ) );
+
+		$this->assertSame( array( 4, 5 ), $drafted->get_child_ids() );
+		$this->assertSame( 1, $drafted->get_published_child_count() );
+
+		$emptied = Product_Context::from_product_with_overrides( $grouped, array( 'child_ids' => array() ) );
+
+		$this->assertSame( array(), $emptied->get_child_ids() );
+		$this->assertSame( 0, $emptied->get_published_child_count() );
+
+		// A new grouped product, saved for the first time with its children picked.
+		$new = Product_Context::from_save_request(
+			null,
+			array(
+				'product_type' => 'grouped',
+				'child_ids'    => '5,4',
+			)
+		);
+
+		$this->assertSame( array( 5, 4 ), $new->get_child_ids() );
+		$this->assertSame( 1, $new->get_published_child_count() );
+	}
+
+	/**
+	 * Outside the grouped family there are no children; inside it, an array context takes
+	 * them verbatim.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_child_ids_empty_unless_grouped() {
+		$seeded = array(
+			'child_ids'             => array( 3, 4 ),
+			'published_child_count' => 1,
+		);
+
+		$simple  = Product_Context::from_array( array( 'product_type' => 'simple' ) + $seeded );
+		$grouped = Product_Context::from_array( array( 'product_type' => 'grouped' ) + $seeded );
+
+		$this->assertSame( array(), $simple->get_child_ids() );
+		$this->assertSame( 0, $simple->get_published_child_count() );
+		$this->assertSame( array( 3, 4 ), $grouped->get_child_ids() );
+		$this->assertSame( 1, $grouped->get_published_child_count() );
+
+		$draft_simple = Product_Context::from_product_with_overrides(
+			new WC_Product_Grouped(
+				array(
+					'id'       => 57,
+					'children' => array( 4 ),
+				)
+			),
+			array( 'product_type' => 'simple' )
+		);
+
+		$this->assertSame( array(), $draft_simple->get_child_ids() );
+	}
+
+	/**
+	 * A variable product counts the distinct images across the parent and its variations.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_variable_image_count_is_the_distinct_union() {
+		$seeded = array(
+			'featured_image_id' => 1,
+			'gallery_image_ids' => array( 2 ),
+			'variations'        => array(
+				array(
+					'id'                => 21,
+					'image_id'          => 3,
+					'gallery_image_ids' => array( 2 ),
+				),
+				array(
+					'id'       => 22,
+					'image_id' => 1,
+				),
+			),
+		);
+
+		$this->assertSame( 3, Product_Context::from_array( array( 'product_type' => 'variable' ) + $seeded )->get_image_count() );
+		$this->assertSame( 2, Product_Context::from_array( array( 'product_type' => 'simple' ) + $seeded )->get_image_count() );
 	}
 }

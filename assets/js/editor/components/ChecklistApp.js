@@ -85,6 +85,9 @@ export function ChecklistApp( { data } ) {
 	useEffect( () => {
 		watcher.current = watchFields( {
 			onSnapshot: ( draft ) => checkRef.current( draft ),
+			// Variations changed in storage: re-check, still behind the 1500 ms floor.
+			onExternalChange: () =>
+				checkRef.current( watcher.current.snapshotNow().draft ),
 		} );
 
 		return () => watcher.current.stop();

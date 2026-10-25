@@ -2,7 +2,7 @@
 /**
  * Plugin Name:          SapphireIT Publish Guard for WooCommerce
  * Description:          A pre-publish quality checklist for WooCommerce products, with optional server-side publishing enforcement.
- * Version:              1.0.0
+ * Version:              1.1.0
  * Requires at least:    6.5
  * Requires PHP:         8.0
  * Requires Plugins:     woocommerce
@@ -13,14 +13,14 @@
  * Text Domain:          sapphireit-publish-guard
  * Domain Path:          /languages
  * WC requires at least: 9.0
- * WC tested up to:      11.1
+ * WC tested up to:      11.2
  *
  * @package ProductPublishGuard
  */
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SIT_WCPG_VERSION', '1.0.0' );
+define( 'SIT_WCPG_VERSION', '1.1.0' );
 define( 'SIT_WCPG_FILE', __FILE__ );
 define( 'SIT_WCPG_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SIT_WCPG_URL', plugin_dir_url( __FILE__ ) );

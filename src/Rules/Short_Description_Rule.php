@@ -125,7 +125,7 @@ final class Short_Description_Rule extends Abstract_Rule {
 		);
 
 		if ( 0 === $length ) {
-			return $this->fail( __( 'The short description is empty.', 'sapphireit-publish-guard' ), $data );
+			return $this->fail( __( 'The short description is empty — write one in the Product short description box.', 'sapphireit-publish-guard' ), $data );
 		}
 
 		// A threshold of zero switches the advisory branch off entirely.
@@ -134,8 +134,8 @@ final class Short_Description_Rule extends Abstract_Rule {
 				sprintf(
 					/* translators: 1: current short description length in characters, 2: recommended minimum length in characters. */
 					_n(
-						'The short description is %1$d character; at least %2$d are recommended.',
-						'The short description is %1$d characters; at least %2$d are recommended.',
+						'The short description is %1$d character; at least %2$d are recommended — expand it in the Product short description box.',
+						'The short description is %1$d characters; at least %2$d are recommended — expand it in the Product short description box.',
 						$length,
 						'sapphireit-publish-guard'
 					),

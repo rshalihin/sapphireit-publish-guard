@@ -123,7 +123,7 @@ final class Tags_Rule extends Abstract_Rule {
 		$data  = array( 'tag_count' => $count );
 
 		if ( 0 === $count ) {
-			return $this->fail( __( 'Add at least one product tag.', 'sapphireit-publish-guard' ), $data );
+			return $this->fail( __( 'The product has no tags — add one in the Product tags box.', 'sapphireit-publish-guard' ), $data );
 		}
 
 		return $this->pass( '', $data );

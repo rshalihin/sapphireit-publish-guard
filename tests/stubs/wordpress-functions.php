@@ -70,9 +70,28 @@ if ( ! function_exists( 'esc_html' ) ) {
 	}
 }
 
+if ( ! function_exists( 'add_filter' ) ) {
+	/**
+	 * Register a filter callback.
+	 *
+	 * Kept in `$GLOBALS['sit_wcpg_test_filters']`; a test that adds one resets it.
+	 *
+	 * @param string   $hook_name     Filter name.
+	 * @param callable $callback      Callback.
+	 * @param int      $priority      Run order, lowest first.
+	 * @param int      $accepted_args How many arguments the callback takes.
+	 * @return true
+	 */
+	function add_filter( $hook_name, $callback, $priority = 10, $accepted_args = 1 ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+		$GLOBALS['sit_wcpg_test_filters'][ $hook_name ][ (int) $priority ][] = array( $callback, (int) $accepted_args );
+
+		return true;
+	}
+}
+
 if ( ! function_exists( 'apply_filters' ) ) {
 	/**
-	 * Return the filtered value unchanged; no filters are registered in the unit suite.
+	 * Run the callbacks registered with `add_filter()`, by priority, as core does.
 	 *
 	 * @param string $hook_name Filter name.
 	 * @param mixed  $value     Value to filter.
@@ -80,9 +99,80 @@ if ( ! function_exists( 'apply_filters' ) ) {
 	 * @return mixed
 	 */
 	function apply_filters( $hook_name, $value, ...$args ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
-		unset( $hook_name, $args );
+		$registered = $GLOBALS['sit_wcpg_test_filters'][ $hook_name ] ?? array();
+
+		ksort( $registered );
+
+		foreach ( $registered as $callbacks ) {
+			foreach ( $callbacks as $entry ) {
+				list( $callback, $accepted_args ) = $entry;
+
+				$value = call_user_func_array( $callback, array_slice( array_merge( array( $value ), $args ), 0, $accepted_args ) );
+			}
+		}
 
 		return $value;
+	}
+}
+
+if ( ! function_exists( '_prime_post_caches' ) ) {
+	/**
+	 * Prime post caches: nothing to prime in the unit suite.
+	 *
+	 * @param int[] $ids               Post ids.
+	 * @param bool  $update_term_cache Whether to prime term caches.
+	 * @param bool  $update_meta_cache Whether to prime meta caches.
+	 * @return void
+	 */
+	function _prime_post_caches( $ids, $update_term_cache = true, $update_meta_cache = true ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+		unset( $ids, $update_term_cache, $update_meta_cache );
+	}
+}
+
+if ( ! function_exists( 'get_posts' ) ) {
+	/**
+	 * Query posts.
+	 *
+	 * Returns `$GLOBALS['sit_wcpg_test_post_ids']`, whatever the arguments.
+	 *
+	 * @param array $args Query arguments.
+	 * @return int[]
+	 */
+	function get_posts( $args = null ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+		unset( $args );
+
+		return array_map( 'intval', (array) ( $GLOBALS['sit_wcpg_test_post_ids'] ?? array() ) );
+	}
+}
+
+if ( ! function_exists( 'get_post' ) ) {
+	/**
+	 * A post object.
+	 *
+	 * Controlled by `$GLOBALS['sit_wcpg_test_posts'][ $id ]`, an array of post fields.
+	 *
+	 * @param int $post Post id.
+	 * @return object|null
+	 */
+	function get_post( $post = null ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+		$id     = (int) $post;
+		$fields = $GLOBALS['sit_wcpg_test_posts'][ $id ] ?? null;
+
+		return null === $fields ? null : (object) array_merge( array( 'ID' => $id ), (array) $fields );
+	}
+}
+
+if ( ! function_exists( 'wc_get_product' ) ) {
+	/**
+	 * A product object.
+	 *
+	 * Controlled by `$GLOBALS['sit_wcpg_test_products'][ $id ]`.
+	 *
+	 * @param int $the_product Product id.
+	 * @return WC_Product|false
+	 */
+	function wc_get_product( $the_product = false ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+		return $GLOBALS['sit_wcpg_test_products'][ (int) $the_product ] ?? false;
 	}
 }
 

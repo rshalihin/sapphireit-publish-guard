@@ -29,7 +29,22 @@
 		"lint:prefix": "@php bin/check-prefix.php",
 		"lint:fix": "phpcbf",
 		"test": "phpunit",
-		"test:unit": "phpunit --testsuite unit"
+		"test:unit": "phpunit --testsuite unit",
+		"test:setup": "@php bin/install-wp-tests.php --target=current",
+		"test:setup:floor": "@php bin/install-wp-tests.php --target=floor",
+		"test:integration": "@php bin/run-wp-tests.php --target=current",
+		"test:integration:floor": "@php bin/run-wp-tests.php --target=floor"
+	},
+	"scripts-descriptions": {
+		"lint": "PHPCS (WordPress ruleset) and the retired-prefix guard.",
+		"lint:prefix": "Fail on any identifier that still carries the retired prefix.",
+		"lint:fix": "Fix what PHPCS can fix automatically.",
+		"test": "Run every PHPUnit suite. Without a WordPress test environment, only unit runs meaningfully.",
+		"test:unit": "PHPUnit unit suite. No WordPress, no database.",
+		"test:setup": "Install WordPress 7.1.3, its wp-phpunit library and WooCommerce 11.2.1 for the integration suites, and write the test config. Database: sit_wcpg_tests. The suite drops every table in it.",
+		"test:setup:floor": "Install the floor environment: WordPress 6.5.11 and WooCommerce 9.0.0. Database: sit_wcpg_tests_floor. The suite drops every table in it.",
+		"test:integration": "Integration and security suites on the current target. PHP: SIT_WCPG_CURRENT_PHP, else composer's PHP. Run test:setup first.",
+		"test:integration:floor": "Integration and security suites on the floor target. PHP: SIT_WCPG_FLOOR_PHP, else php on PATH. Run test:setup:floor first."
 	},
 	"support": {
 		"issues": "https://github.com/rshalihin/sapphireit-publish-guard/issues"

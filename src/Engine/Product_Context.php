@@ -15,8 +15,8 @@ defined( 'ABSPATH' ) || exit;
  * Rules read this object and nothing else. That is what makes them pure functions, and
  * therefore unit-testable with no WordPress bootstrap at all (see `from_array()`).
  *
- * Every accessor is memoized and null-safe, so a full eleven-rule run touches the
- * WooCommerce data store once.
+ * Every accessor is memoized and null-safe, so a full rule run touches the WooCommerce
+ * data store once.
  *
  * Merge semantics for the override factories are the crux of the design: a key that is
  * **present** in the override array wins, a key that is **absent** falls back to the
@@ -70,6 +70,21 @@ final class Product_Context {
 		'category_ids'             => 'ids',
 		'tag_ids'                  => 'ids',
 		'default_category_id'      => 'id',
+		'child_ids'                => 'ids',
+	);
+
+	/**
+	 * The keys only `from_array()` accepts, mapped to their normalizer.
+	 *
+	 * Never accepted from an override array: variations come from storage, never from a
+	 * draft (D3), and the published-child count is always read from storage.
+	 *
+	 * @since 1.1.0
+	 * @var array
+	 */
+	private const ARRAY_ONLY = array(
+		'variations'            => 'variations',
+		'published_child_count' => 'count',
 	);
 
 	/**
@@ -166,6 +181,16 @@ final class Product_Context {
 			}
 		}
 
+		foreach ( self::ARRAY_ONLY as $key => $type ) {
+			$values[ $key ] = array_key_exists( $key, $data ) ? self::coerce( $type, $data[ $key ] ) : self::default_for( $type );
+		}
+
+		// Taken verbatim: an array context has no storage to check the children against.
+		$values['grouped'] = array(
+			'ids'       => $values['child_ids'],
+			'published' => $values['published_child_count'],
+		);
+
 		return new self( null, $values );
 	}
 
@@ -232,20 +257,50 @@ final class Product_Context {
 				return ( null === $value || '' === $value ) ? null : (int) $value;
 			case 'ids':
 				return self::coerce_ids( $value );
+			case 'count':
+				return max( 0, (int) $value );
+			case 'variations':
+				return self::coerce_variations( $value );
 			default:
 				return is_scalar( $value ) ? (string) $value : '';
 		}
 	}
 
 	/**
+	 * Coerce a value to a list of variation snapshots.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param mixed $value A list of variation arrays or Variation_Data objects.
+	 * @return Variation_Data[]
+	 */
+	private static function coerce_variations( $value ): array {
+		$variations = array();
+
+		foreach ( is_array( $value ) ? $value : array() as $variation ) {
+			if ( is_array( $variation ) ) {
+				$variation = Variation_Data::from_array( $variation );
+			}
+
+			if ( $variation instanceof Variation_Data ) {
+				$variations[] = $variation;
+			}
+		}
+
+		return $variations;
+	}
+
+	/**
 	 * Coerce a value to a list of unique, positive integer identifiers.
+	 *
+	 * Public since 1.1.0 so that `Variation_Data` coerces ids by the same rules.
 	 *
 	 * @since 1.0.0
 	 *
 	 * @param mixed $value Raw value.
 	 * @return array
 	 */
-	private static function coerce_ids( $value ): array {
+	public static function coerce_ids( $value ): array {
 		if ( ! is_array( $value ) ) {
 			$value = ( is_string( $value ) && '' !== $value ) ? explode( ',', $value ) : array();
 		}
@@ -274,12 +329,14 @@ final class Product_Context {
 	private static function default_for( string $type ) {
 		switch ( $type ) {
 			case 'id':
+			case 'count':
 				return 0;
 			case 'bool':
 				return false;
 			case 'nullable_int':
 				return null;
 			case 'ids':
+			case 'variations':
 				return array();
 			default:
 				return '';
@@ -414,6 +471,30 @@ final class Product_Context {
 			'product_type',
 			function () {
 				return null === $this->product ? '' : (string) $this->product->get_type();
+			}
+		);
+	}
+
+	/**
+	 * The family the product type belongs to: one of the Type_Family constants.
+	 *
+	 * Filtered by `sit_wcpg_product_type_family`, so a third-party type can be checked
+	 * like a variable or a grouped product. A filtered value that is not a family falls
+	 * back to the unfiltered one.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return string
+	 */
+	public function get_type_family(): string {
+		return (string) $this->value(
+			'type_family',
+			function () {
+				$type     = $this->get_product_type();
+				$family   = Type_Family::from_type( $type );
+				$filtered = apply_filters( 'sit_wcpg_product_type_family', $family, $type, $this );
+
+				return ( is_string( $filtered ) && Type_Family::is_valid( $filtered ) ) ? $filtered : $family;
 			}
 		);
 	}
@@ -567,7 +648,10 @@ final class Product_Context {
 	/**
 	 * Number of distinct images on the product, featured image included.
 	 *
+	 * On a variable product, each enabled variation's own image and gallery count too.
+	 *
 	 * @since 1.0.0
+	 * @since 1.1.0 Counts the enabled variations' images on a variable product.
 	 *
 	 * @return int
 	 */
@@ -575,14 +659,14 @@ final class Product_Context {
 		return (int) $this->value(
 			'image_count',
 			function () {
-				$ids      = $this->get_gallery_image_ids();
-				$featured = $this->get_featured_image_id();
+				$ids = array_merge( array( $this->get_featured_image_id() ), $this->get_gallery_image_ids() );
 
-				if ( $featured > 0 && ! in_array( $featured, $ids, true ) ) {
-					$ids[] = $featured;
+				foreach ( $this->get_variations() as $variation ) {
+					$ids[] = $variation->get_image_id();
+					$ids   = array_merge( $ids, $variation->get_gallery_image_ids() );
 				}
 
-				return count( $ids );
+				return count( self::coerce_ids( $ids ) );
 			}
 		);
 	}
@@ -786,6 +870,87 @@ final class Product_Context {
 				$default    = $this->get_default_category_id();
 
 				return $default > 0 && array( $default ) === array_values( $categories );
+			}
+		);
+	}
+
+	/**
+	 * The enabled variations, read from storage. Empty unless the family is variable.
+	 *
+	 * Never taken from a draft (D3): the classic editor saves its variations by AJAX
+	 * before the form is submitted, so at publish time they are stored.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return Variation_Data[]
+	 */
+	public function get_variations(): array {
+		if ( Type_Family::VARIABLE !== $this->get_type_family() ) {
+			return array();
+		}
+
+		return (array) $this->value(
+			'variations',
+			function () {
+				return null === $this->product ? array() : Child_Loader::variations( $this->product );
+			}
+		);
+	}
+
+	/**
+	 * The linked products that still exist. Empty unless the family is grouped.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return int[]
+	 */
+	public function get_child_ids(): array {
+		if ( Type_Family::GROUPED !== $this->get_type_family() ) {
+			return array();
+		}
+
+		return (array) $this->grouped_children()['ids'];
+	}
+
+	/**
+	 * How many of the existing linked products are published. Zero unless grouped.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return int
+	 */
+	public function get_published_child_count(): int {
+		if ( Type_Family::GROUPED !== $this->get_type_family() ) {
+			return 0;
+		}
+
+		return (int) $this->grouped_children()['published'];
+	}
+
+	/**
+	 * The grouped children, checked against storage.
+	 *
+	 * The draft's ids win when present (D16): the classic form posts them with the save,
+	 * so the stored ones may be stale. Either way they pass through the child loader, so
+	 * a deleted or trashed product never counts.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return array{ids: int[], published: int}
+	 */
+	private function grouped_children(): array {
+		return (array) $this->value(
+			'grouped',
+			function () {
+				$ids = array();
+
+				if ( array_key_exists( 'child_ids', $this->values ) ) {
+					$ids = (array) $this->values['child_ids'];
+				} elseif ( $this->product instanceof \WC_Product_Grouped ) {
+					$ids = (array) $this->product->get_children( 'edit' );
+				}
+
+				return Child_Loader::grouped( $ids );
 			}
 		);
 	}

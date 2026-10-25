@@ -71,7 +71,7 @@ final class Short_Description_Rule_Test extends TestCase {
 		$result = $this->check( '', 50 );
 
 		$this->assertSame( Status::FAIL, $result->get_status() );
-		$this->assertSame( 'The short description is empty.', $result->get_message() );
+		$this->assertSame( 'The short description is empty — write one in the Product short description box.', $result->get_message() );
 	}
 
 	/**
@@ -85,8 +85,21 @@ final class Short_Description_Rule_Test extends TestCase {
 		$result = $this->check( str_repeat( 'a', 20 ), 50 );
 
 		$this->assertSame( Status::WARNING, $result->get_status() );
-		$this->assertStringContainsString( '20', $result->get_message() );
-		$this->assertStringContainsString( '50', $result->get_message() );
+		$this->assertSame( 'The short description is 20 characters; at least 50 are recommended — expand it in the Product short description box.', $result->get_message() );
+	}
+
+	/**
+	 * A one-character short description takes the singular form.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_a_one_character_one_uses_the_singular() {
+		$this->assertSame(
+			'The short description is 1 character; at least 50 are recommended — expand it in the Product short description box.',
+			$this->check( 'a', 50 )->get_message()
+		);
 	}
 
 	/**

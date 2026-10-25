@@ -159,6 +159,36 @@ describe( 'buildSnapshot', () => {
 
 		expect( buildSnapshot( document, {} ).stock_quantity ).toBeNull();
 	} );
+
+	it( 'reads grouped child ids from #grouped_products', () => {
+		document
+			.getElementById( 'woocommerce-product-data' )
+			.insertAdjacentHTML(
+				'beforeend',
+				`<select id="grouped_products" name="grouped_products[]" multiple>
+				<option value="31" selected>A</option>
+				<option value="0" selected>Bogus</option>
+				<option value="32">Not picked</option>
+				<option value="33" selected>B</option>
+				<option value="31" selected>A again</option>
+			</select>`
+			);
+
+		expect( buildSnapshot( document, {} ).child_ids ).toEqual( [ 31, 33 ] );
+
+		// An emptied multi-select still says "no children" while the field is there.
+		document
+			.querySelectorAll( '#grouped_products option' )
+			.forEach( ( option ) => ( option.selected = false ) );
+
+		expect( buildSnapshot( document, {} ).child_ids ).toEqual( [] );
+	} );
+
+	it( 'omits child_ids when the field is absent', () => {
+		expect( buildSnapshot( document, {} ) ).not.toHaveProperty(
+			'child_ids'
+		);
+	} );
 } );
 
 describe( 'parseIdList', () => {

@@ -110,11 +110,11 @@ final class Category_Rule extends Abstract_Rule {
 		$data  = array( 'category_count' => $count );
 
 		if ( 0 === $count ) {
-			return $this->fail( __( 'Assign at least one product category.', 'sapphireit-publish-guard' ), $data );
+			return $this->fail( __( 'The product is not in any category — tick one in the Product categories box.', 'sapphireit-publish-guard' ), $data );
 		}
 
 		if ( $context->is_only_default_category() ) {
-			return $this->warn( __( 'This product only uses the default category.', 'sapphireit-publish-guard' ), $data );
+			return $this->warn( __( 'The product is only in the store\'s default category — choose a more specific one in the Product categories box.', 'sapphireit-publish-guard' ), $data );
 		}
 
 		return $this->pass( '', $data );

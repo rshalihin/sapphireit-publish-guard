@@ -143,6 +143,28 @@ final class Publish_Guard {
 	private array $refused = array();
 
 	/**
+	 * Notices for new products Layer B judged, by object id, until the save gives them an id.
+	 *
+	 * A new product is judged before it has an id. Queued at once, every one of them would
+	 * share key 0, and an import refusing several would report only the last (section 6.1).
+	 *
+	 * @since 1.1.0
+	 * @var array<int, array{user_id: int, result: Validation_Result, kind: string}>
+	 */
+	private array $held_saves = array();
+
+	/**
+	 * Notices for new products Layer A judged, until `wp_insert_post` reports their id.
+	 *
+	 * A stack, because an insert can run inside another; each frame keeps the title it
+	 * wrote, so a nested insert that finishes first is not mistaken for it.
+	 *
+	 * @since 1.1.0
+	 * @var array<int, array{title: string, user_id: int, result: Validation_Result, kind: string}>
+	 */
+	private array $held_inserts = array();
+
+	/**
 	 * Construct the guard.
 	 *
 	 * The checklist service is resolved lazily: most saves are not publish attempts on
@@ -172,7 +194,7 @@ final class Publish_Guard {
 	 */
 	public function register(): void {
 		add_filter( 'wp_insert_post_data', array( $this, 'filter_insert_post_data' ), 10, 2 );
-		add_action( 'wp_insert_post', array( $this, 'end_insert' ), PHP_INT_MAX );
+		add_action( 'wp_insert_post', array( $this, 'end_insert' ), PHP_INT_MAX, 3 );
 		add_action( 'woocommerce_before_product_object_save', array( $this, 'guard_product_object_save' ), 10, 1 );
 		add_action( 'woocommerce_after_product_object_save', array( $this, 'end_product_object_save' ), PHP_INT_MAX, 1 );
 		add_action( 'future_to_publish', array( $this, 'guard_scheduled_publish' ), 5, 1 );
@@ -217,15 +239,40 @@ final class Publish_Guard {
 	}
 
 	/**
-	 * Close Layer A's window for a post once `wp_insert_post()` has finished with it.
+	 * Close Layer A's window for a post once `wp_insert_post()` has finished with it, and
+	 * report a new product judged on the way in under the id it now has.
 	 *
 	 * @since 1.0.0
+	 * @since 1.1.0 Takes `$post` and `$update`; reports held new products.
 	 *
 	 * @param mixed $post_id The post that was written.
+	 * @param mixed $post    The post object.
+	 * @param mixed $update  Whether an existing post was updated.
 	 * @return void
 	 */
-	public function end_insert( $post_id ): void {
+	public function end_insert( $post_id, $post = null, $update = true ): void {
 		unset( self::$layer_a_writes[ (int) $post_id ] );
+
+		if ( $update || array() === $this->held_inserts || ! $post instanceof WP_Post || 'product' !== $post->post_type ) {
+			return;
+		}
+
+		// The topmost frame with this title: the innermost insert finishes first.
+		for ( $i = count( $this->held_inserts ) - 1; $i >= 0; $i-- ) {
+			$held = $this->held_inserts[ $i ];
+
+			if ( $held['title'] === $post->post_title ) {
+				array_splice( $this->held_inserts, $i, 1 );
+
+				try {
+					$this->report( $held['user_id'], (int) $post_id, $held['result'], $held['kind'] );
+				} catch ( Throwable $error ) {
+					self::log_failure( 'wp_insert_post', $error );
+				}
+
+				return;
+			}
+		}
 	}
 
 	/**
@@ -248,6 +295,9 @@ final class Publish_Guard {
 		self::$crud_keys[ spl_object_id( $product ) ] = $key;
 		self::$crud_saves[ $key ]                     = ( self::$crud_saves[ $key ] ?? 0 ) + 1;
 
+		// An object id is reused once its object is freed; never inherit a stale notice.
+		unset( $this->held_saves[ spl_object_id( $product ) ] );
+
 		try {
 			$this->guard_crud( $product );
 		} catch ( Throwable $error ) {
@@ -256,9 +306,11 @@ final class Publish_Guard {
 	}
 
 	/**
-	 * Clear Layer B's in-progress flag once the data store has written.
+	 * Clear Layer B's in-progress flag once the data store has written, and report a new
+	 * product judged on the way in under the id it now has.
 	 *
 	 * @since 1.0.0
+	 * @since 1.1.0 Reports held new products.
 	 *
 	 * @param mixed $product The product that was saved.
 	 * @return void
@@ -269,6 +321,21 @@ final class Publish_Guard {
 		}
 
 		$object_id = spl_object_id( $product );
+
+		if ( isset( $this->held_saves[ $object_id ] ) ) {
+			$held = $this->held_saves[ $object_id ];
+
+			unset( $this->held_saves[ $object_id ] );
+
+			// Still 0 when the data store's insert failed: reported as "A new product", as in v1.0.
+			$post_id = $product instanceof WC_Product ? (int) $product->get_id() : 0;
+
+			try {
+				$this->report( $held['user_id'], $post_id, $held['result'], $held['kind'] );
+			} catch ( Throwable $error ) {
+				self::log_failure( 'woocommerce_after_product_object_save', $error );
+			}
+		}
 
 		if ( ! isset( self::$crud_keys[ $object_id ] ) ) {
 			return;
@@ -420,15 +487,22 @@ final class Publish_Guard {
 			return $data;
 		}
 
-		if ( $this->can_override( $user_id ) ) {
-			$this->notices->queue( $user_id, $post_id, $result, Notices::KIND_OVERRIDE );
+		$kind = $this->can_override( $user_id ) ? Notices::KIND_OVERRIDE : Notices::KIND_BLOCKED;
 
-			return $data;
+		if ( Notices::KIND_BLOCKED === $kind ) {
+			$data['post_status'] = in_array( $stored_status, self::KEPT_STATUSES, true ) ? $stored_status : 'draft';
 		}
 
-		$data['post_status'] = in_array( $stored_status, self::KEPT_STATUSES, true ) ? $stored_status : 'draft';
-
-		$this->refuse( $user_id, $post_id, $result );
+		if ( $post_id > 0 ) {
+			$this->report( $user_id, $post_id, $result, $kind );
+		} else {
+			$this->held_inserts[] = array(
+				'title'   => wp_unslash( isset( $data['post_title'] ) && is_string( $data['post_title'] ) ? $data['post_title'] : '' ),
+				'user_id' => $user_id,
+				'result'  => $result,
+				'kind'    => $kind,
+			);
+		}
 
 		return $data;
 	}
@@ -467,15 +541,21 @@ final class Publish_Guard {
 			return;
 		}
 
-		if ( $this->can_override( $user_id ) ) {
-			$this->notices->queue( $user_id, $product_id, $result, Notices::KIND_OVERRIDE );
+		$kind = $this->can_override( $user_id ) ? Notices::KIND_OVERRIDE : Notices::KIND_BLOCKED;
 
-			return;
+		if ( Notices::KIND_BLOCKED === $kind ) {
+			$product->set_status( in_array( $stored_status, self::KEPT_STATUSES, true ) ? $stored_status : 'draft' );
 		}
 
-		$product->set_status( in_array( $stored_status, self::KEPT_STATUSES, true ) ? $stored_status : 'draft' );
-
-		$this->refuse( $user_id, $product_id, $result );
+		if ( $product_id > 0 ) {
+			$this->report( $user_id, $product_id, $result, $kind );
+		} else {
+			$this->held_saves[ spl_object_id( $product ) ] = array(
+				'user_id' => $user_id,
+				'result'  => $result,
+				'kind'    => $kind,
+			);
+		}
 	}
 
 	/**
@@ -551,6 +631,25 @@ final class Publish_Guard {
 		$this->refused[ $post_id ] = $result;
 
 		$this->notices->queue( $user_id, $post_id, $result, Notices::KIND_BLOCKED );
+	}
+
+	/**
+	 * Report a refused or overridden publish.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param int               $user_id The user to tell; 0 tells nobody.
+	 * @param int               $post_id The product; 0 for one that was never saved.
+	 * @param Validation_Result $result  The result that decided the outcome.
+	 * @param string            $kind    One of the Notices::KIND_* constants.
+	 * @return void
+	 */
+	private function report( int $user_id, int $post_id, Validation_Result $result, string $kind ): void {
+		if ( Notices::KIND_BLOCKED === $kind ) {
+			$this->refuse( $user_id, $post_id, $result );
+		} else {
+			$this->notices->queue( $user_id, $post_id, $result, Notices::KIND_OVERRIDE );
+		}
 	}
 
 	/**

@@ -53,7 +53,7 @@ final class Category_Rule_Test extends TestCase {
 		$result = $this->check( array() );
 
 		$this->assertSame( Status::FAIL, $result->get_status() );
-		$this->assertSame( 'Assign at least one product category.', $result->get_message() );
+		$this->assertSame( 'The product is not in any category — tick one in the Product categories box.', $result->get_message() );
 		$this->assertSame( array( 'category_count' => 0 ), $result->get_data() );
 	}
 
@@ -70,7 +70,7 @@ final class Category_Rule_Test extends TestCase {
 		$result = $this->check( array( 15 ) );
 
 		$this->assertSame( Status::WARNING, $result->get_status() );
-		$this->assertSame( 'This product only uses the default category.', $result->get_message() );
+		$this->assertSame( 'The product is only in the store\'s default category — choose a more specific one in the Product categories box.', $result->get_message() );
 	}
 
 	/**

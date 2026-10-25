@@ -11,6 +11,8 @@ use ProductPublishGuard\Engine\Abstract_Rule;
 use ProductPublishGuard\Engine\Product_Context;
 use ProductPublishGuard\Engine\Rule_Result;
 use ProductPublishGuard\Engine\Severity;
+use ProductPublishGuard\Engine\Type_Family;
+use ProductPublishGuard\Engine\Variation_Data;
 use ProductPublishGuard\Settings\Settings;
 
 defined( 'ABSPATH' ) || exit;
@@ -56,7 +58,7 @@ final class Sale_Price_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks that a sale price, when one is set, is valid, lower than the regular price and has a sensible date range.', 'sapphireit-publish-guard' );
+		return __( 'Checks that a sale price, when one is set, is valid, lower than the regular price and has a sensible date range. On a variable product, each enabled variation on sale is checked.', 'sapphireit-publish-guard' );
 	}
 
 	/**
@@ -119,34 +121,127 @@ final class Sale_Price_Rule extends Abstract_Rule {
 	public function check( Product_Context $context, Settings $settings ): Rule_Result {
 		unset( $settings );
 
+		$family = $context->get_type_family();
+
+		if ( Type_Family::GROUPED === $family ) {
+			return $this->skip( __( 'A grouped product has no sale price of its own.', 'sapphireit-publish-guard' ) );
+		}
+
+		if ( Type_Family::VARIABLE === $family ) {
+			return $this->check_variations( $context->get_variations() );
+		}
+
 		$sale = trim( $context->get_sale_price() );
 
 		if ( '' === $sale ) {
 			return $this->skip( __( 'This product is not on sale.', 'sapphireit-publish-guard' ) );
 		}
 
+		$problem = $this->problem( $sale, $context->get_regular_price(), $context->get_sale_from(), $context->get_sale_to() );
+
+		return '' === $problem ? $this->pass() : $this->fail( $problem );
+	}
+
+	/**
+	 * Every enabled variation on sale is checked against its own regular price and dates.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param Variation_Data[] $variations The enabled variations, in display order.
+	 * @return Rule_Result
+	 */
+	private function check_variations( array $variations ): Rule_Result {
+		if ( array() === $variations ) {
+			return $this->skip( Variation_Fix::zero_variations_reason() );
+		}
+
+		$on_sale  = 0;
+		$failing  = 0;
+		$first_id = 0;
+
+		foreach ( $variations as $variation ) {
+			$sale = trim( $variation->get_sale_price() );
+
+			if ( '' === $sale ) {
+				continue;
+			}
+
+			++$on_sale;
+
+			if ( '' === $this->problem( $sale, $variation->get_regular_price(), $variation->get_sale_from(), $variation->get_sale_to() ) ) {
+				continue;
+			}
+
+			++$failing;
+
+			if ( 0 === $first_id ) {
+				$first_id = $variation->get_id();
+			}
+		}
+
+		if ( 0 === $on_sale ) {
+			return $this->skip( __( 'No enabled variation is on sale.', 'sapphireit-publish-guard' ) );
+		}
+
+		if ( 0 === $failing ) {
+			return $this->pass();
+		}
+
+		return $this->fail(
+			sprintf(
+				/* translators: 1: number of variations on sale with a sale price problem, 2: number of enabled variations on sale, 3: the first such variation's id. */
+				_n(
+					'%1$d of %2$d variations on sale has a sale price problem (first: variation #%3$d) — check its sale price and dates in Product data → Variations.',
+					'%1$d of %2$d variations on sale have a sale price problem (first: variation #%3$d) — check its sale price and dates in Product data → Variations.',
+					$failing,
+					'sapphireit-publish-guard'
+				),
+				$failing,
+				$on_sale,
+				$first_id
+			),
+			array(
+				'failing'            => $failing,
+				'on_sale'            => $on_sale,
+				'first_variation_id' => $first_id,
+			)
+		)->with_fix( Variation_Fix::target() );
+	}
+
+	/**
+	 * What is wrong with one sale, or '' when nothing is.
+	 *
+	 * Shared by the single-product path and the per-variation path, so both apply the same
+	 * checks in the same order.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param string $sale    Trimmed, non-empty sale price.
+	 * @param string $regular Regular price, as stored.
+	 * @param string $from    Sale start, `Y-m-d H:i:s` or ''.
+	 * @param string $to      Sale end, `Y-m-d H:i:s` or ''.
+	 * @return string The problem's message, or '' when the sale is sound.
+	 */
+	private function problem( string $sale, string $regular, string $from, string $to ): string {
 		if ( ! is_numeric( $sale ) ) {
-			return $this->fail( __( 'The sale price is not a valid number.', 'sapphireit-publish-guard' ) );
+			return __( 'The sale price is not a valid number — correct it in Product data → General → Sale price.', 'sapphireit-publish-guard' );
 		}
 
 		if ( (float) $sale < 0 ) {
-			return $this->fail( __( 'The sale price cannot be negative.', 'sapphireit-publish-guard' ) );
+			return __( 'The sale price is negative — correct it in Product data → General → Sale price.', 'sapphireit-publish-guard' );
 		}
 
-		$regular = trim( $context->get_regular_price() );
+		$regular = trim( $regular );
 
 		if ( is_numeric( $regular ) && (float) $sale >= (float) $regular ) {
-			return $this->fail( __( 'The sale price is not lower than the regular price.', 'sapphireit-publish-guard' ) );
+			return __( 'The sale price is not lower than the regular price — lower it in Product data → General → Sale price.', 'sapphireit-publish-guard' );
 		}
-
-		$from = $context->get_sale_from();
-		$to   = $context->get_sale_to();
 
 		// Both dates are normalized to `Y-m-d H:i:s`, so a string comparison is a date comparison.
 		if ( '' !== $from && '' !== $to && $to < $from ) {
-			return $this->fail( __( 'The sale end date is earlier than the sale start date.', 'sapphireit-publish-guard' ) );
+			return __( 'The sale ends before it starts — fix the dates in Product data → General → Schedule.', 'sapphireit-publish-guard' );
 		}
 
-		return $this->pass();
+		return '';
 	}
 }

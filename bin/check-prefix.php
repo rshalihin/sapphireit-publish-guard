@@ -35,7 +35,7 @@ $sit_wcpg_skip_dirs = array( '.git', 'vendor', 'node_modules', 'build' );
  */
 $sit_wcpg_skip_files = array(
 	'.phpcs.cache',
-	'.claude/plan/prefix-migration-plan.md',
+	'.claude/plan/v-1.0.0/prefix-migration-plan.md',
 );
 
 $sit_wcpg_iterator = new RecursiveIteratorIterator(

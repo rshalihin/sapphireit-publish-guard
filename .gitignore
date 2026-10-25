@@ -17,6 +17,11 @@
 # Release zip, produced by `npm run package`.
 /dist/
 
+# Playwright output: storage state, traces, failure screenshots and the HTML report.
+/artifacts/
+/test-results/
+/playwright-report/
+
 # Local environment secrets. Never committed.
 .env
 .env.*

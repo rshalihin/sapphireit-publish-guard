@@ -115,11 +115,11 @@ final class Featured_Image_Rule extends Abstract_Rule {
 		);
 
 		if ( $image_id <= 0 ) {
-			return $this->fail( __( 'This product has no featured image.', 'sapphireit-publish-guard' ), $data );
+			return $this->fail( __( 'This product has no featured image — set one in the Product image box.', 'sapphireit-publish-guard' ), $data );
 		}
 
 		if ( ! $context->has_valid_featured_image() ) {
-			return $this->fail( __( 'The featured image is missing from the media library.', 'sapphireit-publish-guard' ), $data );
+			return $this->fail( __( 'The featured image is no longer in the media library — choose a new one in the Product image box.', 'sapphireit-publish-guard' ), $data );
 		}
 
 		return $this->pass( '', $data );

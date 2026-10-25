@@ -230,4 +230,104 @@ final class Rule_Result_Test extends TestCase {
 		$this->assertSame( Severity::REQUIRED, $result->get_severity() );
 		$this->assertSame( Status::FAIL, $result->get_status() );
 	}
+
+	/**
+	 * `with_fix()` returns a normalized copy and leaves the original alone.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_with_fix_returns_a_copy_with_the_new_fix() {
+		$original = Rule_Result::fail( 'price', 'Price', 'pricing', 'No price.', array(), array( 'selector' => '#_regular_price' ) );
+		$copy     = $original->with_fix(
+			array(
+				'selector' => '#variable_product_options',
+				'panel'    => 'variations',
+				'extra'    => 'dropped',
+			)
+		);
+
+		$this->assertNotSame( $original, $copy );
+		$this->assertSame(
+			array(
+				'selector' => '#_regular_price',
+				'label'    => '',
+				'panel'    => '',
+			),
+			$original->get_fix()
+		);
+		$this->assertSame(
+			array(
+				'selector' => '#variable_product_options',
+				'label'    => '',
+				'panel'    => 'variations',
+			),
+			$copy->get_fix()
+		);
+	}
+
+	/**
+	 * Everything but the fix target carries over to the copy.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_with_fix_keeps_outcome_severity_message_and_data() {
+		$original = Rule_Result::fail( 'sku', 'SKU', 'inventory', 'No SKU.', array( 'failing' => 2 ) )
+			->with_severity( Severity::WARNING );
+		$copy     = $original->with_fix( array( 'selector' => '#_sku' ) );
+
+		$this->assertSame( 'sku', $copy->get_rule_id() );
+		$this->assertSame( Status::FAIL, $copy->get_outcome() );
+		$this->assertSame( Severity::WARNING, $copy->get_severity() );
+		$this->assertSame( Status::WARNING, $copy->get_status() );
+		$this->assertSame( 'SKU', $copy->get_label() );
+		$this->assertSame( 'inventory', $copy->get_group() );
+		$this->assertSame( 'No SKU.', $copy->get_message() );
+		$this->assertSame( array( 'failing' => 2 ), $copy->get_data() );
+	}
+
+	/**
+	 * A fix target without a selector clears the fix, as the constructor does.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_with_fix_without_selector_clears_the_fix() {
+		$copy = Rule_Result::fail( 'sku', 'SKU', 'inventory', 'No SKU.', array(), array( 'selector' => '#_sku' ) )
+			->with_fix( array( 'label' => 'Go' ) );
+
+		$this->assertSame( array(), $copy->get_fix() );
+	}
+
+	/**
+	 * The engine stamps severity after the rule set the fix; the fix must survive it.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_with_fix_survives_with_severity() {
+		$result = Rule_Result::fail( 'price', 'Price', 'pricing', 'No price.' )
+			->with_fix(
+				array(
+					'selector' => '#variable_product_options',
+					'label'    => 'Open the Variations tab',
+					'panel'    => 'variations',
+				)
+			)
+			->with_severity( Severity::REQUIRED );
+
+		$this->assertSame(
+			array(
+				'selector' => '#variable_product_options',
+				'label'    => 'Open the Variations tab',
+				'panel'    => 'variations',
+			),
+			$result->get_fix()
+		);
+	}
 }
