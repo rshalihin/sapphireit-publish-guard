@@ -109,7 +109,7 @@ final class Title_Rule extends Abstract_Rule {
 		$title = trim( $context->get_title() );
 
 		if ( '' === $title || $this->is_placeholder( $title ) ) {
-			return $this->fail( __( 'Add a product title.', 'sapphireit-publish-guard' ) );
+			return $this->fail( __( 'The product has no title — enter one in the title field at the top of the page.', 'sapphireit-publish-guard' ) );
 		}
 
 		return $this->pass();

@@ -40,5 +40,10 @@ node_modules
 tests
 vendor
 
+# Playwright output (npm run test:e2e:local).
+artifacts
+test-results
+playwright-report
+
 # Empty companion of the style-only `admin` entry; nothing enqueues it.
 build/admin.js

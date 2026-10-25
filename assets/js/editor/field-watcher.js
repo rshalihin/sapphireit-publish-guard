@@ -6,7 +6,8 @@
  *
  * Request-avoidance rules owned here (section 8.2):
  * 1. 800 ms trailing debounce;
- * 2. signature dedupe — a snapshot equal to the last one emitted is dropped;
+ * 2. signature dedupe — a snapshot equal to the last one emitted is dropped, except after
+ *    a variation event: variations are stored, not drafted, so the signature can't see them;
  * 5. watching pauses while the tab is hidden and stops for good on form submit.
  * The single in-flight request (3) is api.js's; the 1500 ms floor (4) is useValidation's.
  */
@@ -45,23 +46,50 @@ const OBSERVED_CONTAINERS = [
 ];
 
 /**
+ * WooCommerce's variation events, fired on (or bubbling up to) `#woocommerce-product-data`
+ * once variations are stored (R4). Bulk variation actions and "Generate variations" end in
+ * `load_variations()`, which fires `woocommerce_variations_loaded`; so do opening the tab
+ * and paging, which only cost a debounced, floored re-check.
+ */
+const VARIATION_EVENTS = [
+	'woocommerce_variations_saved',
+	'woocommerce_variations_added',
+	'woocommerce_variations_removed',
+	'woocommerce_variations_loaded',
+];
+
+/**
  * Start watching.
  *
- * @param {Object}                                     args            Arguments.
- * @param {(draft: Object, signature: string) => void} args.onSnapshot Called for each new draft.
- * @param {Document}                                   [args.doc]      Document.
- * @param {Window}                                     [args.win]      Window.
+ * @param {Object}                                     args                    Arguments.
+ * @param {(draft: Object, signature: string) => void} args.onSnapshot         Called for each new draft.
+ * @param {() => void}                                 [args.onExternalChange] Called when stored data the draft
+ *                                                                             doesn't carry (variations) changed.
+ * @param {Document}                                   [args.doc]              Document.
+ * @param {Window}                                     [args.win]              Window.
  * @return {{stop: () => void, snapshotNow: () => {draft: Object, signature: string}}} Controls.
  */
-export function watchFields( { onSnapshot, doc = document, win = window } ) {
+export function watchFields( {
+	onSnapshot,
+	onExternalChange = () => {},
+	doc = document,
+	win = window,
+} ) {
 	const namespace = '.sitWcpgWatcher';
 	const $doc = $( doc );
 	const $form = $( '#post', doc );
+	const $productData = $( '#woocommerce-product-data', doc );
 	const observers = [];
 	const boundEditors = new WeakSet();
 
 	let timer = null;
 	let stopped = false;
+
+	/*
+	 * Set by a variation event. The snapshot carries no variation fields, so signature
+	 * dedupe would drop the change: this forces a re-check through it.
+	 */
+	let externalPending = false;
 
 	/*
 	 * The baseline is the editor as it was painted, which is what the server-rendered
@@ -79,12 +107,19 @@ export function watchFields( { onSnapshot, doc = document, win = window } ) {
 		const draft = buildSnapshot( doc, win );
 		const next = signature( draft );
 
-		if ( next === lastSignature ) {
+		if ( next !== lastSignature ) {
+			// A new draft is validated against the stored variations anyway: one request.
+			externalPending = false;
+			lastSignature = next;
+			onSnapshot( draft, next );
+
 			return;
 		}
 
-		lastSignature = next;
-		onSnapshot( draft, next );
+		if ( externalPending ) {
+			externalPending = false;
+			onExternalChange();
+		}
 	}
 
 	function schedule() {
@@ -97,6 +132,15 @@ export function watchFields( { onSnapshot, doc = document, win = window } ) {
 		}
 
 		timer = setTimeout( flush, DEBOUNCE_MS );
+	}
+
+	function scheduleExternal() {
+		if ( stopped ) {
+			return;
+		}
+
+		externalPending = true;
+		schedule();
 	}
 
 	/**
@@ -131,6 +175,12 @@ export function watchFields( { onSnapshot, doc = document, win = window } ) {
 	$( doc.body ).on(
 		`woocommerce-product-type-change${ namespace }`,
 		schedule
+	);
+
+	// Variations are stored by AJAX, never read from the draft (D3).
+	$productData.on(
+		VARIATION_EVENTS.map( ( event ) => event + namespace ).join( ' ' ),
+		scheduleExternal
 	);
 
 	$doc.on( `tinymce-editor-init${ namespace }`, ( event, editor ) =>
@@ -176,6 +226,7 @@ export function watchFields( { onSnapshot, doc = document, win = window } ) {
 		}
 
 		stopped = true;
+		externalPending = false;
 
 		if ( timer ) {
 			clearTimeout( timer );
@@ -183,6 +234,7 @@ export function watchFields( { onSnapshot, doc = document, win = window } ) {
 		}
 
 		$form.off( namespace );
+		$productData.off( namespace );
 		$( doc.body ).off( namespace );
 		$doc.off( namespace );
 		observers.forEach( ( observer ) => observer.disconnect() );
@@ -209,6 +261,9 @@ export function watchFields( { onSnapshot, doc = document, win = window } ) {
 			clearTimeout( timer );
 			timer = null;
 		}
+
+		// The caller checks this draft against the stored variations: nothing is left over.
+		externalPending = false;
 
 		const draft = buildSnapshot( doc, win );
 

@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: SapphireIT Publish Guard for WooCommerce 1.0.0\n"
+"Project-Id-Version: SapphireIT Publish Guard for WooCommerce 1.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/sapphireit-publish-guard\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-03T05:37:03+00:00\n"
+"POT-Creation-Date: 2026-10-25T14:06:35+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.9.0\n"
 "X-Domain: sapphireit-publish-guard\n"
@@ -117,64 +117,64 @@ msgstr ""
 msgid "Not applicable"
 msgstr ""
 
-#: src/Admin/Notices.php:189
+#: src/Admin/Notices.php:191
 msgid "Product saved, but not published."
 msgstr ""
 
-#: src/Admin/Notices.php:270
+#: src/Admin/Notices.php:272
 msgid "This product was not published because required checks failed:"
 msgstr ""
 
-#: src/Admin/Notices.php:271
+#: src/Admin/Notices.php:273
 msgid "This product was published although required checks failed, because you are allowed to override the publishing guard:"
 msgstr ""
 
 #. translators: %d: number of products.
-#: src/Admin/Notices.php:276
+#: src/Admin/Notices.php:278
 msgid "%d product was not published because required checks failed:"
 msgid_plural "%d products were not published because required checks failed:"
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of products.
-#: src/Admin/Notices.php:286
+#: src/Admin/Notices.php:288
 msgid "%d product was published although required checks failed, because you are allowed to override the publishing guard:"
 msgid_plural "%d products were published although required checks failed, because you are allowed to override the publishing guard:"
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: product id.
-#: src/Admin/Notices.php:356
+#: src/Admin/Notices.php:387
 msgid "Product #%d"
 msgstr ""
 
-#: src/Admin/Notices.php:357
+#: src/Admin/Notices.php:388
 msgid "A new product"
 msgstr ""
 
-#: src/Admin/Product_List_Column.php:138
+#: src/Admin/Product_List_Column.php:147
 msgid "Readiness"
 msgstr ""
 
 #. translators: %d: number of failed required checks.
-#: src/Admin/Product_List_Column.php:258
+#: src/Admin/Product_List_Column.php:270
 msgid "%d error"
 msgid_plural "%d errors"
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of checks with a warning.
-#: src/Admin/Product_List_Column.php:268
+#: src/Admin/Product_List_Column.php:280
 msgid "%d warning"
 msgid_plural "%d warnings"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Admin/Product_List_Column.php:275
+#: src/Admin/Product_List_Column.php:287
 msgid "Ready"
 msgstr ""
 
-#: src/Admin/Product_List_Column.php:353
+#: src/Admin/Product_List_Column.php:382
 msgid "No readiness state"
 msgstr ""
 
@@ -221,56 +221,56 @@ msgid_plural "%1$d of %2$d checks passed"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Rest/Validate_Controller.php:197
+#: src/Rest/Validate_Controller.php:203
 msgid "Product identifier."
 msgstr ""
 
-#: src/Rest/Validate_Controller.php:206
+#: src/Rest/Validate_Controller.php:212
 msgid "Unsaved editor values. Only the keys present override the stored product."
 msgstr ""
 
-#: src/Rest/Validate_Controller.php:273
+#: src/Rest/Validate_Controller.php:279
 msgid "You are not allowed to check this product."
 msgstr ""
 
-#: src/Rest/Validate_Controller.php:304
+#: src/Rest/Validate_Controller.php:310
 msgid "The checklist could not be calculated."
 msgstr ""
 
-#: src/Rest/Validate_Controller.php:333
+#: src/Rest/Validate_Controller.php:339
 msgid "Expected an object."
 msgstr ""
 
-#: src/Rest/Validate_Controller.php:365
+#: src/Rest/Validate_Controller.php:371
 msgid "Expected a list of identifiers."
 msgstr ""
 
-#: src/Rest/Validate_Controller.php:371
+#: src/Rest/Validate_Controller.php:377
 msgid "Expected a number or null."
 msgstr ""
 
-#: src/Rest/Validate_Controller.php:375
+#: src/Rest/Validate_Controller.php:381
 msgid "Expected a single value."
 msgstr ""
 
-#: src/Rest/Validate_Controller.php:379
+#: src/Rest/Validate_Controller.php:385
 msgid "Not one of the registered product types."
 msgstr ""
 
-#: src/Rest/Validate_Controller.php:383
+#: src/Rest/Validate_Controller.php:389
 msgid "Not one of the registered stock statuses."
 msgstr ""
 
-#: src/Rest/Validate_Controller.php:390
+#: src/Rest/Validate_Controller.php:396
 msgid "Expected a price."
 msgstr ""
 
-#: src/Rest/Validate_Controller.php:602
+#: src/Rest/Validate_Controller.php:608
 msgid "No product was found with that identifier."
 msgstr ""
 
 #. translators: 1: parameter name, 2: reason the value was rejected.
-#: src/Rest/Validate_Controller.php:621
+#: src/Rest/Validate_Controller.php:627
 msgid "Invalid parameter: %1$s. %2$s"
 msgstr ""
 
@@ -287,11 +287,42 @@ msgid "Choose a category"
 msgstr ""
 
 #: src/Rules/Category_Rule.php:113
-msgid "Assign at least one product category."
+msgid "The product is not in any category — tick one in the Product categories box."
 msgstr ""
 
 #: src/Rules/Category_Rule.php:117
-msgid "This product only uses the default category."
+msgid "The product is only in the store's default category — choose a more specific one in the Product categories box."
+msgstr ""
+
+#: src/Rules/Child_Products_Rule.php:53
+msgid "Variations and grouped products"
+msgstr ""
+
+#: src/Rules/Child_Products_Rule.php:64
+msgid "Checks that a variable product has at least one enabled variation, and that a grouped product contains at least one existing product that is published."
+msgstr ""
+
+#: src/Rules/Child_Products_Rule.php:133
+msgid "Only variable and grouped products have variations or linked products."
+msgstr ""
+
+#: src/Rules/Child_Products_Rule.php:151
+msgid "This variable product has no enabled variations — add or enable one in Product data → Variations."
+msgstr ""
+
+#: src/Rules/Child_Products_Rule.php:175
+msgid "This grouped product contains no products — add some in Product data → Linked Products → Grouped products."
+msgstr ""
+
+#. translators: %d: number of products in the group.
+#: src/Rules/Child_Products_Rule.php:179
+msgid "None of the %d product in this group is published — publish at least one, or the group has nothing to sell."
+msgid_plural "None of the %d products in this group is published — publish at least one, or the group has nothing to sell."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Rules/Child_Products_Rule.php:202
+msgid "Add products to the group"
 msgstr ""
 
 #: src/Rules/Description_Rule.php:48
@@ -307,13 +338,13 @@ msgid "Edit the description"
 msgstr ""
 
 #: src/Rules/Description_Rule.php:118
-msgid "The product description is empty."
+msgid "The product description is empty — write one in the main editor below the title."
 msgstr ""
 
 #. translators: 1: current description length in characters, 2: recommended minimum length in characters.
 #: src/Rules/Description_Rule.php:126
-msgid "The product description is %1$d character; at least %2$d are recommended."
-msgid_plural "The product description is %1$d characters; at least %2$d are recommended."
+msgid "The product description is %1$d character; at least %2$d are recommended — expand it in the main editor below the title."
+msgid_plural "The product description is %1$d characters; at least %2$d are recommended — expand it in the main editor below the title."
 msgstr[0] ""
 msgstr[1] ""
 
@@ -330,94 +361,119 @@ msgid "Set a featured image"
 msgstr ""
 
 #: src/Rules/Featured_Image_Rule.php:118
-msgid "This product has no featured image."
+msgid "This product has no featured image — set one in the Product image box."
 msgstr ""
 
 #: src/Rules/Featured_Image_Rule.php:122
-msgid "The featured image is missing from the media library."
+msgid "The featured image is no longer in the media library — choose a new one in the Product image box."
 msgstr ""
 
-#: src/Rules/Image_Count_Rule.php:49
+#: src/Rules/Image_Count_Rule.php:51
 msgid "Product images"
 msgstr ""
 
-#: src/Rules/Image_Count_Rule.php:60
-msgid "Checks the total number of images on the product, counting the featured image and the gallery together."
+#: src/Rules/Image_Count_Rule.php:63
+msgid "Checks the total number of images on the product, counting the featured image and the gallery together. On a variable product, images on enabled variations count too."
 msgstr ""
 
-#: src/Rules/Image_Count_Rule.php:106
+#: src/Rules/Image_Count_Rule.php:109
 msgid "Add product images"
 msgstr ""
 
-#: src/Rules/Image_Count_Rule.php:130
+#: src/Rules/Image_Count_Rule.php:133
 msgid "No minimum number of images is configured."
 msgstr ""
 
-#. translators: 1: number of images on the product, 2: recommended minimum number of images.
-#: src/Rules/Image_Count_Rule.php:137
-msgid "This product has %1$d image; at least %2$d are recommended."
-msgid_plural "This product has %1$d images; at least %2$d are recommended."
+#. translators: 1: number of images on the product and its enabled variations, 2: recommended minimum number of images.
+#: src/Rules/Image_Count_Rule.php:157
+msgid "This product and its variations have %1$d image; at least %2$d are recommended — add more in the Product gallery box or on the variations."
+msgid_plural "This product and its variations have %1$d images; at least %2$d are recommended — add more in the Product gallery box or on the variations."
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Rules/Price_Rule.php:54
+#. translators: 1: number of images on the product, 2: recommended minimum number of images.
+#: src/Rules/Image_Count_Rule.php:170
+msgid "This product has %1$d image; at least %2$d are recommended — add more in the Product gallery box."
+msgid_plural "This product has %1$d images; at least %2$d are recommended — add more in the Product gallery box."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Rules/Price_Rule.php:48
 msgid "Regular price"
 msgstr ""
 
-#: src/Rules/Price_Rule.php:65
-msgid "Checks that the product has a valid regular price. Variable and grouped products are skipped."
+#: src/Rules/Price_Rule.php:59
+msgid "Checks that the product has a valid regular price. On a variable product, every enabled variation needs one; grouped products are skipped."
 msgstr ""
 
-#: src/Rules/Price_Rule.php:100
+#: src/Rules/Price_Rule.php:94
 msgid "Set the regular price"
 msgstr ""
 
-#: src/Rules/Price_Rule.php:126
-msgid "Set a regular price."
+#: src/Rules/Price_Rule.php:114
+msgid "A grouped product has no price of its own — its products carry their own prices."
 msgstr ""
 
-#: src/Rules/Price_Rule.php:130
-msgid "The regular price is not a valid number."
+#: src/Rules/Price_Rule.php:124
+msgid "The regular price is empty — enter it in Product data → General → Regular price."
 msgstr ""
 
-#: src/Rules/Price_Rule.php:147
-msgid "A grouped product takes its price from the products it contains."
+#: src/Rules/Price_Rule.php:128
+msgid "The regular price is not a valid amount — enter a number of zero or more in Product data → General → Regular price."
 msgstr ""
 
-#: src/Rules/Price_Rule.php:150
-msgid "Variable product pricing is validated per variation, which is not part of this version."
-msgstr ""
+#. translators: 1: number of enabled variations without a valid price, 2: number of enabled variations, 3: the first such variation's id.
+#: src/Rules/Price_Rule.php:172
+msgid "%1$d of %2$d enabled variations has no valid regular price (first: variation #%3$d) — enter one in Product data → Variations → Regular price."
+msgid_plural "%1$d of %2$d enabled variations have no valid regular price (first: variation #%3$d) — enter one in Product data → Variations → Regular price."
+msgstr[0] ""
+msgstr[1] ""
 
-#: src/Rules/Sale_Price_Rule.php:48
+#: src/Rules/Sale_Price_Rule.php:50
 msgid "Sale price"
 msgstr ""
 
-#: src/Rules/Sale_Price_Rule.php:59
-msgid "Checks that a sale price, when one is set, is valid, lower than the regular price and has a sensible date range."
+#: src/Rules/Sale_Price_Rule.php:61
+msgid "Checks that a sale price, when one is set, is valid, lower than the regular price and has a sensible date range. On a variable product, each enabled variation on sale is checked."
 msgstr ""
 
-#: src/Rules/Sale_Price_Rule.php:105
+#: src/Rules/Sale_Price_Rule.php:107
 msgid "Review the sale price"
 msgstr ""
 
-#: src/Rules/Sale_Price_Rule.php:125
+#: src/Rules/Sale_Price_Rule.php:127
+msgid "A grouped product has no sale price of its own."
+msgstr ""
+
+#: src/Rules/Sale_Price_Rule.php:137
 msgid "This product is not on sale."
 msgstr ""
 
-#: src/Rules/Sale_Price_Rule.php:129
-msgid "The sale price is not a valid number."
+#: src/Rules/Sale_Price_Rule.php:183
+msgid "No enabled variation is on sale."
 msgstr ""
 
-#: src/Rules/Sale_Price_Rule.php:133
-msgid "The sale price cannot be negative."
+#. translators: 1: number of variations on sale with a sale price problem, 2: number of enabled variations on sale, 3: the first such variation's id.
+#: src/Rules/Sale_Price_Rule.php:193
+msgid "%1$d of %2$d variations on sale has a sale price problem (first: variation #%3$d) — check its sale price and dates in Product data → Variations."
+msgid_plural "%1$d of %2$d variations on sale have a sale price problem (first: variation #%3$d) — check its sale price and dates in Product data → Variations."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Rules/Sale_Price_Rule.php:227
+msgid "The sale price is not a valid number — correct it in Product data → General → Sale price."
 msgstr ""
 
-#: src/Rules/Sale_Price_Rule.php:139
-msgid "The sale price is not lower than the regular price."
+#: src/Rules/Sale_Price_Rule.php:231
+msgid "The sale price is negative — correct it in Product data → General → Sale price."
 msgstr ""
 
-#: src/Rules/Sale_Price_Rule.php:147
-msgid "The sale end date is earlier than the sale start date."
+#: src/Rules/Sale_Price_Rule.php:237
+msgid "The sale price is not lower than the regular price — lower it in Product data → General → Sale price."
+msgstr ""
+
+#: src/Rules/Sale_Price_Rule.php:242
+msgid "The sale ends before it starts — fix the dates in Product data → General → Schedule."
 msgstr ""
 
 #: src/Rules/Short_Description_Rule.php:47
@@ -433,56 +489,92 @@ msgid "Edit the short description"
 msgstr ""
 
 #: src/Rules/Short_Description_Rule.php:128
-msgid "The short description is empty."
+msgid "The short description is empty — write one in the Product short description box."
 msgstr ""
 
 #. translators: 1: current short description length in characters, 2: recommended minimum length in characters.
 #: src/Rules/Short_Description_Rule.php:136
-msgid "The short description is %1$d character; at least %2$d are recommended."
-msgid_plural "The short description is %1$d characters; at least %2$d are recommended."
+msgid "The short description is %1$d character; at least %2$d are recommended — expand it in the Product short description box."
+msgid_plural "The short description is %1$d characters; at least %2$d are recommended — expand it in the Product short description box."
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Rules/Sku_Rule.php:47
+#: src/Rules/Sku_Rule.php:49
 msgid "SKU"
 msgstr ""
 
-#: src/Rules/Sku_Rule.php:58
-msgid "Checks that the product has a SKU."
+#: src/Rules/Sku_Rule.php:60
+msgid "Checks that the product has a SKU. On a variable product, a SKU on the product covers its variations; otherwise every enabled variation needs its own."
 msgstr ""
 
-#: src/Rules/Sku_Rule.php:104
+#: src/Rules/Sku_Rule.php:106
 msgid "Add a SKU"
 msgstr ""
 
-#: src/Rules/Sku_Rule.php:122
-msgid "Add a SKU for this product."
+#: src/Rules/Sku_Rule.php:132
+msgid "The product has no SKU — enter one in Product data → Inventory → SKU."
 msgstr ""
 
-#: src/Rules/Stock_Status_Rule.php:55
+#. translators: 1: number of enabled variations without a SKU, 2: number of enabled variations, 3: the first such variation's id.
+#: src/Rules/Sku_Rule.php:175
+msgid "%1$d of %2$d enabled variations has no SKU and the product has none to pass down (first: variation #%3$d) — add one in Product data → Inventory → SKU, or on each variation."
+msgid_plural "%1$d of %2$d enabled variations have no SKU and the product has none to pass down (first: variation #%3$d) — add one in Product data → Inventory → SKU, or on each variation."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Rules/Stock_Status_Rule.php:57
 msgid "Stock status"
 msgstr ""
 
-#: src/Rules/Stock_Status_Rule.php:66
-msgid "Checks that the product has a stock status, and that a managed quantity agrees with it."
+#: src/Rules/Stock_Status_Rule.php:68
+msgid "Checks that the product has a stock status and that a managed quantity agrees with it. On a variable product, each enabled variation is checked; grouped and external products are skipped."
 msgstr ""
 
-#: src/Rules/Stock_Status_Rule.php:112
+#: src/Rules/Stock_Status_Rule.php:114
 msgid "Review the stock status"
 msgstr ""
 
-#: src/Rules/Stock_Status_Rule.php:132
-msgid "Select a stock status."
+#: src/Rules/Stock_Status_Rule.php:135
+msgid "A grouped product has no stock of its own — its products carry their own."
 msgstr ""
 
-#: src/Rules/Stock_Status_Rule.php:136
-msgid "This product is marked out of stock."
+#: src/Rules/Stock_Status_Rule.php:139
+msgid "External products have no stock — the store they link to sells them."
+msgstr ""
+
+#: src/Rules/Stock_Status_Rule.php:149
+msgid "No stock status is selected — choose one in Product data → Inventory → Stock status."
+msgstr ""
+
+#: src/Rules/Stock_Status_Rule.php:153
+msgid "This product is marked out of stock — change it in Product data → Inventory → Stock status if that is wrong."
 msgstr ""
 
 #. translators: %d is the managed stock quantity.
-#: src/Rules/Stock_Status_Rule.php:145
-msgid "Stock management is on but the quantity is %d."
+#: src/Rules/Stock_Status_Rule.php:162
+msgid "Stock management is on but the quantity is %d — update it in Product data → Inventory → Quantity."
 msgstr ""
+
+#. translators: 1: number of enabled variations without a stock status, 2: number of enabled variations, 3: the first such variation's id.
+#: src/Rules/Stock_Status_Rule.php:211
+msgid "%1$d of %2$d enabled variations has no stock status (first: variation #%3$d) — choose one in Product data → Variations → Stock status."
+msgid_plural "%1$d of %2$d enabled variations have no stock status (first: variation #%3$d) — choose one in Product data → Variations → Stock status."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: 1: number of enabled variations in stock with a managed quantity of zero or less, 2: number of enabled variations, 3: the first such variation's id.
+#: src/Rules/Stock_Status_Rule.php:229
+msgid "%1$d of %2$d enabled variations is in stock with a quantity of zero or less (first: variation #%3$d) — update the quantity in Product data → Variations, or in Product data → Inventory when the product manages stock."
+msgid_plural "%1$d of %2$d enabled variations are in stock with a quantity of zero or less (first: variation #%3$d) — update the quantity in Product data → Variations, or in Product data → Inventory when the product manages stock."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: 1: number of enabled variations marked out of stock, 2: number of enabled variations, 3: the first such variation's id.
+#: src/Rules/Stock_Status_Rule.php:247
+msgid "%1$d of %2$d enabled variations is marked out of stock (first: variation #%3$d) — check Product data → Variations → Stock status."
+msgid_plural "%1$d of %2$d enabled variations are marked out of stock (first: variation #%3$d) — check Product data → Variations → Stock status."
+msgstr[0] ""
+msgstr[1] ""
 
 #: src/Rules/Tags_Rule.php:48
 msgid "Product tags"
@@ -497,7 +589,7 @@ msgid "Add a tag"
 msgstr ""
 
 #: src/Rules/Tags_Rule.php:126
-msgid "Add at least one product tag."
+msgid "The product has no tags — add one in the Product tags box."
 msgstr ""
 
 #: src/Rules/Title_Rule.php:46
@@ -513,7 +605,15 @@ msgid "Edit the title"
 msgstr ""
 
 #: src/Rules/Title_Rule.php:112
-msgid "Add a product title."
+msgid "The product has no title — enter one in the title field at the top of the page."
+msgstr ""
+
+#: src/Rules/Variation_Fix.php:39
+msgid "Open the Variations tab"
+msgstr ""
+
+#: src/Rules/Variation_Fix.php:52
+msgid "This variable product has no enabled variations yet — see the \"Variations and grouped products\" check."
 msgstr ""
 
 #: src/Settings/Settings.php:184

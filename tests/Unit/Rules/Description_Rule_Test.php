@@ -69,7 +69,7 @@ final class Description_Rule_Test extends TestCase {
 		$result = $this->check( '', 150 );
 
 		$this->assertSame( Status::FAIL, $result->get_status() );
-		$this->assertSame( 'The product description is empty.', $result->get_message() );
+		$this->assertSame( 'The product description is empty — write one in the main editor below the title.', $result->get_message() );
 		$this->assertSame(
 			array(
 				'length'  => 0,
@@ -101,8 +101,21 @@ final class Description_Rule_Test extends TestCase {
 		$result = $this->check( str_repeat( 'a', 40 ), 150 );
 
 		$this->assertSame( Status::WARNING, $result->get_status() );
-		$this->assertStringContainsString( '40', $result->get_message() );
-		$this->assertStringContainsString( '150', $result->get_message() );
+		$this->assertSame( 'The product description is 40 characters; at least 150 are recommended — expand it in the main editor below the title.', $result->get_message() );
+	}
+
+	/**
+	 * A one-character description takes the singular form.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_a_one_character_description_uses_the_singular() {
+		$this->assertSame(
+			'The product description is 1 character; at least 150 are recommended — expand it in the main editor below the title.',
+			$this->check( 'a', 150 )->get_message()
+		);
 	}
 
 	/**

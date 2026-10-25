@@ -7,6 +7,7 @@
 
 namespace ProductPublishGuard\Admin;
 
+use ProductPublishGuard\Engine\Child_Loader;
 use ProductPublishGuard\Engine\Status;
 use ProductPublishGuard\Plugin;
 use ProductPublishGuard\Settings\Settings;
@@ -73,6 +74,14 @@ final class Product_List_Column {
 	 * @var string
 	 */
 	private const GALLERY_META = '_product_image_gallery';
+
+	/**
+	 * Rules that read variations or grouped children (§6.3).
+	 *
+	 * @since 1.1.0
+	 * @var string[]
+	 */
+	private const CHILD_RULES = array( 'price', 'sale_price', 'sku', 'stock_status', 'image_count', 'child_products' );
 
 	/**
 	 * The merchant's configuration.
@@ -203,7 +212,10 @@ final class Product_List_Column {
 
 		$attachment_ids = $this->attachment_ids( $ids );
 
-		if ( array() !== $attachment_ids ) {
+		if ( $this->reads_children() ) {
+			// Variations, grouped children and images in one pass for the page (D11).
+			Child_Loader::prime( $ids, $attachment_ids );
+		} elseif ( array() !== $attachment_ids ) {
 			_prime_post_caches( $attachment_ids, false, true );
 		}
 
@@ -308,6 +320,23 @@ final class Product_List_Column {
 		return current_user_can( self::CAPABILITY )
 			&& $this->settings->is_enabled()
 			&& $this->settings->shows_list_column();
+	}
+
+	/**
+	 * Whether any enabled rule reads variations or grouped children.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return bool
+	 */
+	private function reads_children(): bool {
+		foreach ( self::CHILD_RULES as $rule_id ) {
+			if ( $this->settings->rule_is_enabled( $rule_id ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

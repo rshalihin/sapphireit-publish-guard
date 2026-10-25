@@ -12,7 +12,10 @@ use ProductPublishGuard\Rest\Validate_Controller;
 use ProductPublishGuard\Settings\Settings;
 use ProductPublishGuard\Support\Checklist_Service;
 use Spy_REST_Server;
+use WC_Product_Grouped;
 use WC_Product_Simple;
+use WC_Product_Variable;
+use WC_Product_Variation;
 use WP_REST_Request;
 use WP_UnitTestCase;
 
@@ -496,5 +499,159 @@ final class Rest_Validate_Test extends WP_UnitTestCase {
 
 		$this->assertSame( Status::WARNING, $first['sku'] );
 		$this->assertSame( Status::PASS, $second['sku'] );
+	}
+
+	/**
+	 * Assert an id is a 404, for an administrator and for a user who could edit nothing.
+	 *
+	 * The second half pins the order of the checks: the post type is checked before the
+	 * capability, so the answer doesn't depend on who asks.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param int $id Id that must not resolve to a product.
+	 * @return void
+	 */
+	private function assertNotFoundForAnyone( int $id ): void {
+		$admin_id = get_current_user_id();
+
+		foreach ( array( $admin_id, self::factory()->user->create( array( 'role' => 'subscriber' ) ) ) as $user_id ) {
+			wp_set_current_user( $user_id );
+
+			$response = $this->dispatch( $id );
+
+			$this->assertSame( 404, $response->get_status() );
+			$this->assertSame( 'sit_wcpg_not_found', $response->get_data()['code'] );
+			$this->assertArrayNotHasKey( 'results', $response->get_data() );
+		}
+
+		wp_set_current_user( $admin_id );
+	}
+
+	/**
+	 * A saved variable product with one variation.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param string $price The variation's regular price.
+	 * @return WC_Product_Variable
+	 */
+	private function variable_product( string $price ): WC_Product_Variable {
+		$parent = new WC_Product_Variable();
+		$parent->set_name( 'A variable product' );
+		$parent->set_description( str_repeat( 'Sentence about the product. ', 20 ) );
+		$parent->save();
+
+		$variation = new WC_Product_Variation();
+		$variation->set_parent_id( $parent->get_id() );
+		$variation->set_status( 'publish' );
+		$variation->set_regular_price( $price );
+		$variation->save();
+
+		return wc_get_product( $parent->get_id() );
+	}
+
+	/**
+	 * A variation id resolves to a `WC_Product`, but it is not a product: 404 (closes a v1.0 gap).
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_variation_id_is_not_found(): void {
+		$this->assertNotFoundForAnyone( $this->variable_product( '10' )->get_children()[0] );
+	}
+
+	/**
+	 * An order id is a 404.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_order_id_is_not_found(): void {
+		$this->assertNotFoundForAnyone( wc_create_order()->get_id() );
+	}
+
+	/**
+	 * A page id is a 404.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_page_id_is_not_found(): void {
+		$this->assertNotFoundForAnyone( self::factory()->post->create( array( 'post_type' => 'page' ) ) );
+	}
+
+	/**
+	 * The draft's grouped children are sanitized like every identifier list, then used (D16).
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_child_ids_draft_is_sanitized_and_used(): void {
+		$child = $this->product();
+		$child->set_status( 'publish' );
+		$child->save();
+
+		$grouped = new WC_Product_Grouped();
+		$grouped->set_name( 'A grouped product' );
+		$grouped->save();
+
+		$stored = self::statuses( $this->dispatch( $grouped->get_id() )->get_data() );
+
+		// `child_products` ships at warning severity (D7).
+		$this->assertSame( Status::WARNING, $stored['child_products'] );
+
+		$response = $this->dispatch(
+			$grouped->get_id(),
+			array( 'child_ids' => array( 'x', (string) $child->get_id(), $child->get_id(), -4, 0, array( 1 ) ) )
+		);
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( Status::PASS, self::statuses( $response->get_data() )['child_products'] );
+
+		$emptied = $this->dispatch( $grouped->get_id(), array( 'child_ids' => '' ) );
+
+		$this->assertSame( Status::WARNING, self::statuses( $emptied->get_data() )['child_products'] );
+
+		$invalid = $this->dispatch( $grouped->get_id(), array( 'child_ids' => 12 ) );
+
+		$this->assertSame( 400, $invalid->get_status() );
+	}
+
+	/**
+	 * No draft can carry variation data (D3): the keys are dropped, so the answer is the
+	 * stored product's.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_draft_cannot_carry_variations(): void {
+		$parent       = $this->variable_product( '' );
+		$variation_id = $parent->get_children()[0];
+
+		$expected = $this->dispatch( $parent->get_id() )->get_data()['results'];
+		$this->assertSame( Status::FAIL, self::statuses( array( 'results' => $expected ) )['price'] );
+
+		$response = $this->dispatch(
+			$parent->get_id(),
+			array(
+				'variations'    => array(
+					array(
+						'id'            => $variation_id,
+						'regular_price' => '10',
+						'status'        => 'publish',
+					),
+				),
+				'variation_ids' => array( $variation_id ),
+			)
+		);
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( $expected, $response->get_data()['results'] );
 	}
 }

@@ -166,26 +166,30 @@ final class Checklist_Service_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Manual rows 3 and 4: on a real variable product, with or without variations, the
-	 * price rule is not applicable and leaves the counts, while the other rules still run.
+	 * Manual rows 3 and 4, as of v1.1.0: on a real variable product the price rule checks
+	 * every enabled variation, and an empty one is left to the child_products warning,
+	 * while the other rules still run.
 	 *
 	 * @since 1.0.0
+	 * @since 1.1.0 Price is checked per variation; no longer skipped.
 	 *
-	 * @dataProvider data_variation_counts
+	 * @dataProvider data_variation_prices
 	 *
-	 * @param int $variations Priced variations to create.
+	 * @param string[] $prices          Regular price of each variation to create.
+	 * @param string   $price_status    Expected price status.
+	 * @param string   $children_status Expected child_products status.
 	 * @return void
 	 */
-	public function test_a_variable_product_skips_only_the_price_rule( int $variations ): void {
+	public function test_a_variable_product_is_priced_per_variation( array $prices, string $price_status, string $children_status ): void {
 		$product = new WC_Product_Variable();
 		$product->set_name( 'A variable product' );
 		$product->set_description( str_repeat( 'Sentence about the product. ', 20 ) );
 		$product->save();
 
-		for ( $i = 0; $i < $variations; $i++ ) {
+		foreach ( $prices as $price ) {
 			$variation = new WC_Product_Variation();
 			$variation->set_parent_id( $product->get_id() );
-			$variation->set_regular_price( (string) ( 10 + $i ) );
+			$variation->set_regular_price( $price );
 			$variation->save();
 		}
 
@@ -199,10 +203,12 @@ final class Checklist_Service_Test extends WP_UnitTestCase {
 		}
 
 		$this->assertSame( 'variable', $result->get_product_type() );
-		$this->assertSame( Status::SKIPPED, $statuses['price'] );
+		$this->assertSame( $price_status, $statuses['price'] );
+		$this->assertSame( $children_status, $statuses['child_products'] );
 		$this->assertSame( Status::PASS, $statuses['title'] );
 		$this->assertSame( Status::PASS, $statuses['description'] );
-		$this->assertNotContains( 'price', $result->get_required_failures() );
+		$this->assertSame( Status::FAIL === $price_status, in_array( 'price', $result->get_required_failures(), true ) );
+		$this->assertNotContains( 'child_products', $result->get_required_failures() );
 
 		$skipped = count( array_keys( $statuses, Status::SKIPPED, true ) );
 		$counts  = $result->get_counts();
@@ -212,16 +218,18 @@ final class Checklist_Service_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Variable products with and without variations.
+	 * Variable products with priced, unpriced and no variations.
 	 *
 	 * @since 1.0.0
+	 * @since 1.1.0 Expected statuses; an unpriced variation.
 	 *
-	 * @return array<string, array{int}>
+	 * @return array<string, array{string[], string, string}>
 	 */
-	public function data_variation_counts(): array {
+	public function data_variation_prices(): array {
 		return array(
-			'priced variations' => array( 2 ),
-			'no variations'     => array( 0 ),
+			'priced variations'     => array( array( '10', '11' ), Status::PASS, Status::PASS ),
+			'an unpriced variation' => array( array( '10', '' ), Status::FAIL, Status::PASS ),
+			'no variations'         => array( array(), Status::SKIPPED, Status::WARNING ),
 		);
 	}
 

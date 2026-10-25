@@ -48,7 +48,7 @@ final class Tags_Rule_Test extends TestCase {
 		$result = $this->check( array() );
 
 		$this->assertSame( Status::FAIL, $result->get_status() );
-		$this->assertSame( 'Add at least one product tag.', $result->get_message() );
+		$this->assertSame( 'The product has no tags — add one in the Product tags box.', $result->get_message() );
 		$this->assertSame( array( 'tag_count' => 0 ), $result->get_data() );
 	}
 

@@ -7,10 +7,12 @@
 
 namespace ProductPublishGuard\Support;
 
+use ProductPublishGuard\Engine\Child_Loader;
 use ProductPublishGuard\Engine\Product_Context;
 use ProductPublishGuard\Engine\Status;
 use ProductPublishGuard\Engine\Validation_Result;
 use ProductPublishGuard\Engine\Validator;
+use ProductPublishGuard\Plugin;
 use ProductPublishGuard\Settings\Settings;
 use WC_Product;
 use WP_Post;
@@ -56,9 +58,10 @@ final class Checklist_Service {
 	 * Cache-key schema version, bumped when the stored shape changes.
 	 *
 	 * @since 1.0.0
+	 * @since 1.1.0 `v2`: results are variation-aware and carry per-result fix targets.
 	 * @var string
 	 */
-	public const CACHE_VERSION = 'v1';
+	public const CACHE_VERSION = 'v2';
 
 	/**
 	 * Results already computed in this request, keyed by product id and settings hash.
@@ -72,12 +75,31 @@ final class Checklist_Service {
 	private static array $memo = array();
 
 	/**
-	 * The engine this service runs.
+	 * Variation writes that change what the parent's checklist would say (D12, R6).
+	 *
+	 * Each passes the variation, or its id, first. Delete is caught before the post goes,
+	 * while its parent can still be resolved.
+	 *
+	 * @since 1.1.0
+	 * @var string[]
+	 */
+	private const VARIATION_HOOKS = array(
+		'woocommerce_new_product_variation',
+		'woocommerce_update_product_variation',
+		'woocommerce_before_delete_product_variation',
+		'woocommerce_trash_product_variation',
+		'woocommerce_variation_set_stock',
+		'woocommerce_variation_set_stock_status',
+	);
+
+	/**
+	 * The engine this service runs, or null until first used.
 	 *
 	 * @since 1.0.0
-	 * @var Validator
+	 * @since 1.1.0 Nullable: resolved on first use.
+	 * @var Validator|null
 	 */
-	private Validator $validator;
+	private ?Validator $validator;
 
 	/**
 	 * The merchant's configuration, read for the cache key.
@@ -91,13 +113,56 @@ final class Checklist_Service {
 	 * Construct the service.
 	 *
 	 * @since 1.0.0
+	 * @since 1.1.0 `$validator` may be null, so the service can register its hooks at boot
+	 *              without building the rule registry, which fires `sit_wcpg_register_rules`.
 	 *
-	 * @param Validator $validator The rule engine.
-	 * @param Settings  $settings  The merchant's configuration.
+	 * @param Validator|null $validator The rule engine. Null resolves the plugin's own on first use.
+	 * @param Settings       $settings  The merchant's configuration.
 	 */
-	public function __construct( Validator $validator, Settings $settings ) {
+	public function __construct( ?Validator $validator, Settings $settings ) {
 		$this->validator = $validator;
 		$this->settings  = $settings;
+	}
+
+	/**
+	 * Flush a parent's result whenever one of its variations is written.
+	 *
+	 * Registered on every request: variation stock changes on the storefront, at checkout.
+	 * Registering adds hooks and nothing else.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function register(): void {
+		foreach ( self::VARIATION_HOOKS as $hook ) {
+			add_action( $hook, array( $this, 'flush_parent_of' ), 10, 1 );
+		}
+	}
+
+	/**
+	 * Drop the cached result of a variation's parent.
+	 *
+	 * The parent's modification time, part of the cache key, does not change when a
+	 * variation is saved, so without this the parent's entry would outlive the change.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param WC_Product|int|mixed $variation_or_id The variation, or its post id.
+	 * @return void
+	 */
+	public function flush_parent_of( $variation_or_id ): void {
+		if ( $variation_or_id instanceof WC_Product ) {
+			$parent_id = (int) $variation_or_id->get_parent_id();
+		} elseif ( is_numeric( $variation_or_id ) ) {
+			$parent_id = (int) wp_get_post_parent_id( (int) $variation_or_id );
+		} else {
+			return;
+		}
+
+		if ( $parent_id > 0 ) {
+			$this->flush_post( $parent_id );
+		}
 	}
 
 	/**
@@ -170,7 +235,7 @@ final class Checklist_Service {
 			? Product_Context::from_product( $product )
 			: Product_Context::from_product_with_overrides( $product, $overrides );
 
-		return $this->validator->validate( $context );
+		return $this->validator()->validate( $context );
 	}
 
 	/**
@@ -186,7 +251,7 @@ final class Checklist_Service {
 	 * @return Validation_Result
 	 */
 	public function validate_context( Product_Context $context ): Validation_Result {
-		return $this->validator->validate( $context );
+		return $this->validator()->validate( $context );
 	}
 
 	/**
@@ -242,6 +307,7 @@ final class Checklist_Service {
 		}
 
 		unset( self::$memo[ $this->memo_key( $post_id ) ] );
+		Child_Loader::flush( $post_id );
 
 		wp_cache_delete( $this->cache_key( $post_id ), self::CACHE_GROUP );
 	}
@@ -257,6 +323,7 @@ final class Checklist_Service {
 	 */
 	public static function flush_memo(): void {
 		self::$memo = array();
+		Child_Loader::flush();
 	}
 
 	/**
@@ -281,6 +348,21 @@ final class Checklist_Service {
 		}
 
 		return Status::SKIPPED;
+	}
+
+	/**
+	 * The rule engine, resolved on first use.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return Validator
+	 */
+	private function validator(): Validator {
+		if ( null === $this->validator ) {
+			$this->validator = Plugin::instance()->validator();
+		}
+
+		return $this->validator;
 	}
 
 	/**

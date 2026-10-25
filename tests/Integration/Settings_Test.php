@@ -9,6 +9,7 @@ namespace ProductPublishGuard\Tests\Integration;
 
 use ProductPublishGuard\Engine\Rule_Registry;
 use ProductPublishGuard\Engine\Severity;
+use ProductPublishGuard\Rules\Rules_Provider;
 use ProductPublishGuard\Settings\Settings;
 use ProductPublishGuard\Settings\Settings_Page;
 use ProductPublishGuard\Settings\Settings_Sanitizer;
@@ -293,5 +294,103 @@ final class Settings_Test extends WP_UnitTestCase {
 		$this->assertFalse( $settings->rule_is_enabled( 'no_such_rule' ) );
 		$this->assertSame( Severity::REQUIRED, $settings->rule_severity( 'no_such_rule' ) );
 		$this->assertSame( 0, $settings->threshold( 'no_such_threshold' ) );
+	}
+
+	/**
+	 * The shipped rule catalogue.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return Rule_Registry
+	 */
+	private function built_in_registry(): Rule_Registry {
+		$registry = new Rule_Registry();
+
+		Rules_Provider::populate( $registry );
+
+		return $registry;
+	}
+
+	/**
+	 * An option saved by v1.0: the eleven v1.0 rules, every one made required.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	private function store_a_v1_0_option(): void {
+		$rules = array();
+
+		foreach ( array( 'title', 'description', 'short_description', 'featured_image', 'image_count', 'price', 'sale_price', 'category', 'tags', 'sku', 'stock_status' ) as $rule_id ) {
+			$rules[ $rule_id ] = array(
+				'enabled'  => true,
+				'severity' => Severity::REQUIRED,
+			);
+		}
+
+		update_option(
+			Settings::OPTION_NAME,
+			array(
+				'version' => Settings::VERSION,
+				'enabled' => true,
+				'rules'   => $rules,
+			)
+		);
+	}
+
+	/**
+	 * On a site upgraded from v1.0, child_products arrives enabled and as a warning, even
+	 * though the merchant made every stored rule required (D7).
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_child_products_defaults_to_a_warning_over_a_v1_0_option(): void {
+		$this->store_a_v1_0_option();
+
+		$settings = new Settings( $this->built_in_registry() );
+
+		$this->assertSame( Severity::REQUIRED, $settings->rule_severity( 'price' ), 'Stored values still win.' );
+		$this->assertTrue( $settings->rule_is_enabled( 'child_products' ) );
+		$this->assertSame( Severity::WARNING, $settings->rule_severity( 'child_products' ) );
+	}
+
+	/**
+	 * The settings screen renders a row for the new rule, with warning selected.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_the_settings_page_renders_the_child_products_row(): void {
+		$this->store_a_v1_0_option();
+
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+
+		$registry = $this->built_in_registry();
+
+		ob_start();
+		( new Settings_Page( new Settings( $registry ), $registry ) )->render_page();
+		$output = (string) ob_get_clean();
+
+		$field = Settings::OPTION_NAME . '[rules][child_products]';
+
+		$this->assertStringContainsString( '<strong>Variations and grouped products</strong>', $output );
+		$this->assertStringContainsString( 'Checks that a variable product has at least one enabled variation', $output );
+		$this->assertMatchesRegularExpression(
+			'/name="' . preg_quote( $field . '[enabled]', '/' ) . '"[^>]*checked=/',
+			$output,
+			'The new rule must render enabled.'
+		);
+		$this->assertMatchesRegularExpression(
+			'/name="' . preg_quote( $field . '[severity]', '/' ) . '" value="' . Severity::WARNING . '"\s*checked=/',
+			$output,
+			'The new rule must render with warning selected.'
+		);
+		$this->assertDoesNotMatchRegularExpression(
+			'/name="' . preg_quote( $field . '[severity]', '/' ) . '" value="' . Severity::REQUIRED . '"\s*checked=/',
+			$output
+		);
 	}
 }

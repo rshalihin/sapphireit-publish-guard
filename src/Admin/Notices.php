@@ -19,8 +19,9 @@ defined( 'ABSPATH' ) || exit;
  * because neither Quick Edit nor Bulk Edit redirects with a product id, and a Bulk Edit
  * notice has to name every product it refused (coding-plan.md section 6.3.1).
  *
- * An entry carries only rule ids, labels and statuses. Product titles are read, and
- * escaped, when the notice is rendered.
+ * An entry carries only rule ids, labels, translated messages and statuses. A message is
+ * the rule's literal, which never holds product text (section 9.5). Products are named
+ * by id, and everything is escaped when the notice is rendered.
  *
  * @since 1.0.0
  */
@@ -67,12 +68,24 @@ final class Notices {
 	public const KIND_OVERRIDE = 'override';
 
 	/**
-	 * The editor messages that would otherwise claim the product was published or scheduled.
+	 * The editor messages a refused Publish can land on: published, scheduled, or (WordPress
+	 * 7.1+, which picks by the stored status) draft updated.
 	 *
 	 * @since 1.0.0
+	 * @since 1.1.0 Message 10.
 	 * @var int[]
 	 */
-	private const PUBLISHED_MESSAGES = array( 6, 9 );
+	private const PUBLISHED_MESSAGES = array( 6, 9, 10 );
+
+	/**
+	 * Priority of the `post_updated_messages` filter. WooCommerce adds its own on `init`, after
+	 * this plugin registers, and replaces every product message; at the same priority it would
+	 * run second and undo the replacement.
+	 *
+	 * @since 1.1.0
+	 * @var int
+	 */
+	public const MESSAGES_PRIORITY = 20;
 
 	/**
 	 * Products refused in this request, so their editor redirect can say so.
@@ -91,7 +104,7 @@ final class Notices {
 	 */
 	public function register(): void {
 		add_action( 'admin_notices', array( $this, 'render' ) );
-		add_filter( 'post_updated_messages', array( $this, 'filter_messages' ) );
+		add_filter( 'post_updated_messages', array( $this, 'filter_messages' ), self::MESSAGES_PRIORITY );
 		add_filter( 'redirect_post_location', array( $this, 'filter_redirect' ), 10, 2 );
 	}
 
@@ -118,6 +131,7 @@ final class Notices {
 				$failures[] = array(
 					'rule_id' => $row->get_rule_id(),
 					'label'   => $row->get_label(),
+					'message' => $row->get_message(),
 					'status'  => $row->get_status(),
 				);
 			}
@@ -170,8 +184,9 @@ final class Notices {
 	/**
 	 * Stop the editor claiming a refused product was published.
 	 *
-	 * Core picks "Product published." from the button that was pressed, not from the
-	 * status the product ended up with.
+	 * Before 7.1, core picks "Product published." from the button that was pressed, not
+	 * from the status the product ended up with; from 7.1 it says "Product draft updated.".
+	 * Either way the merchant pressed Publish, so both say it was not published.
 	 *
 	 * @since 1.0.0
 	 *
@@ -302,8 +317,8 @@ final class Notices {
 
 		foreach ( $entries as $post_id => $entry ) {
 			if ( $single ) {
-				foreach ( self::labels( $entry ) as $label ) {
-					printf( '<li>%s</li>', esc_html( $label ) );
+				foreach ( self::messages( $entry ) as $message ) {
+					printf( '<li>%s</li>', esc_html( $message ) );
 				}
 
 				continue;
@@ -337,6 +352,35 @@ final class Notices {
 		}
 
 		return $labels;
+	}
+
+	/**
+	 * What each failure of one entry tells the merchant to fix.
+	 *
+	 * The rule's message, or its label when the message is empty: a third-party rule may
+	 * return none.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param mixed $entry A queued entry.
+	 * @return string[]
+	 */
+	private static function messages( $entry ): array {
+		$messages = array();
+
+		foreach ( (array) ( $entry['failures'] ?? array() ) as $failure ) {
+			if ( ! is_array( $failure ) ) {
+				continue;
+			}
+
+			if ( isset( $failure['message'] ) && is_string( $failure['message'] ) && '' !== $failure['message'] ) {
+				$messages[] = $failure['message'];
+			} elseif ( isset( $failure['label'] ) && is_string( $failure['label'] ) ) {
+				$messages[] = $failure['label'];
+			}
+		}
+
+		return $messages;
 	}
 
 	/**

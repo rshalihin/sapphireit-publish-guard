@@ -1,0 +1,4 @@
+type,sku,name,published,description,short_description,regular_price,category_ids,tag_ids,images,parent_id,attributes:name1,attributes:value1,attributes:visible1,attributes:global1
+variable,SIT-WCPG-CSV-VAR,An imported variable product,1,"A carefully written description of the imported product. It explains what the product is, what it is made of, who it is for and how to look after it, so that a shopper can decide without asking.","A short summary of the imported product for the shop page.",,Imported,imported,sit-wcpg-import.jpg,,Size,"Small, Large",1,0
+variation,SIT-WCPG-CSV-VAR-S,An imported variable product - Small,1,,,10,,,,SIT-WCPG-CSV-VAR,Size,Small,,0
+variation,SIT-WCPG-CSV-VAR-L,An imported variable product - Large,1,,,12,,,,SIT-WCPG-CSV-VAR,Size,Large,,0

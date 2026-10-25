@@ -56,13 +56,13 @@ final class Rules_Provider_Test extends TestCase {
 	}
 
 	/**
-	 * Exactly the eleven documented rules, in the documented order.
+	 * Exactly the twelve documented rules, in the documented order.
 	 *
 	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
-	public function test_it_registers_the_eleven_rules_in_display_order() {
+	public function test_it_registers_the_twelve_rules_in_display_order() {
 		$ids = array_map(
 			static function ( $rule ) {
 				return $rule->get_id();
@@ -83,6 +83,7 @@ final class Rules_Provider_Test extends TestCase {
 				'tags',
 				'sku',
 				'stock_status',
+				'child_products',
 			),
 			$ids
 		);
@@ -103,7 +104,7 @@ final class Rules_Provider_Test extends TestCase {
 			$priorities[] = $rule->get_priority();
 		}
 
-		$this->assertSame( range( 10, 110, 10 ), $priorities );
+		$this->assertSame( range( 10, 120, 10 ), $priorities );
 	}
 
 	/**
@@ -130,7 +131,7 @@ final class Rules_Provider_Test extends TestCase {
 	}
 
 	/**
-	 * The shipped severities are the ones the plan settled on: five requirements, six
+	 * The shipped severities are the ones the plan settled on: five requirements, seven
 	 * advisories.
 	 *
 	 * @since 1.0.0
@@ -157,6 +158,7 @@ final class Rules_Provider_Test extends TestCase {
 				'tags'              => Severity::WARNING,
 				'sku'               => Severity::WARNING,
 				'stock_status'      => Severity::WARNING,
+				'child_products'    => Severity::WARNING,
 			),
 			$severities
 		);
@@ -196,6 +198,6 @@ final class Rules_Provider_Test extends TestCase {
 		);
 
 		$this->assertSame( 'alt_text', $ids[4] );
-		$this->assertCount( 12, $ids );
+		$this->assertCount( 13, $ids );
 	}
 }

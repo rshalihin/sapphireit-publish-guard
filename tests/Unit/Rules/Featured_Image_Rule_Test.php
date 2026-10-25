@@ -47,7 +47,7 @@ final class Featured_Image_Rule_Test extends TestCase {
 		$result = $this->check( array( 'featured_image_id' => 0 ) );
 
 		$this->assertSame( Status::FAIL, $result->get_status() );
-		$this->assertSame( 'This product has no featured image.', $result->get_message() );
+		$this->assertSame( 'This product has no featured image — set one in the Product image box.', $result->get_message() );
 	}
 
 	/**
@@ -61,7 +61,7 @@ final class Featured_Image_Rule_Test extends TestCase {
 		$result = $this->check( array( 'featured_image_id' => -1 ) );
 
 		$this->assertSame( Status::FAIL, $result->get_status() );
-		$this->assertSame( 'This product has no featured image.', $result->get_message() );
+		$this->assertSame( 'This product has no featured image — set one in the Product image box.', $result->get_message() );
 	}
 
 	/**
@@ -81,7 +81,7 @@ final class Featured_Image_Rule_Test extends TestCase {
 		);
 
 		$this->assertSame( Status::FAIL, $result->get_status() );
-		$this->assertSame( 'The featured image is missing from the media library.', $result->get_message() );
+		$this->assertSame( 'The featured image is no longer in the media library — choose a new one in the Product image box.', $result->get_message() );
 	}
 
 	/**

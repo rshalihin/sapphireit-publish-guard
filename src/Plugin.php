@@ -156,6 +156,13 @@ final class Plugin {
 		 */
 		$this->publish_guard()->register();
 
+		/*
+		 * Every request as well: a variation's stock changes at checkout, and its parent's
+		 * cached checklist must not outlive that (D12). The service resolves its validator
+		 * on first use, so this builds no rule list.
+		 */
+		$this->checklist()->register();
+
 		if ( is_admin() ) {
 			/*
 			 * Constructing these is cheap: they only add hooks. Everything expensive —
@@ -230,7 +237,8 @@ final class Plugin {
 	 */
 	public function checklist(): Checklist_Service {
 		if ( null === $this->checklist ) {
-			$this->checklist = new Checklist_Service( $this->validator(), $this->settings() );
+			// The validator is resolved by the service on first use, not here: boot() builds this.
+			$this->checklist = new Checklist_Service( null, $this->settings() );
 		}
 
 		return $this->checklist;
