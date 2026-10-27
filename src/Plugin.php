@@ -12,6 +12,7 @@ use ProductPublishGuard\Admin\Block_Editor_Notice;
 use ProductPublishGuard\Admin\Editor_Meta_Box;
 use ProductPublishGuard\Admin\Notices;
 use ProductPublishGuard\Admin\Product_List_Column;
+use ProductPublishGuard\Admin\Settings_Footer;
 use ProductPublishGuard\Engine\Rule_Registry;
 use ProductPublishGuard\Engine\Validator;
 use ProductPublishGuard\Publishing\Publish_Guard;
@@ -171,6 +172,7 @@ final class Plugin {
 			 * ordinary admin request therefore never builds the rule list.
 			 */
 			( new Settings_Page( $this->settings() ) )->register();
+			( new Settings_Footer() )->register();
 			( new Assets( $this->settings() ) )->register();
 			( new Editor_Meta_Box( $this->settings() ) )->register();
 			( new Product_List_Column( $this->settings() ) )->register();

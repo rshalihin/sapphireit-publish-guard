@@ -11,6 +11,9 @@ $sit-wcpg-warning: #996800;
 $sit-wcpg-fail: #d63638;
 $sit-wcpg-muted: #646970;
 
+// Brand green: the shield in the plugin icon (.wordpress-org/icon.svg).
+$sit-wcpg-brand: #00a32a;
+
 // Products list — the Readiness cell.
 .sit-wcpg-readiness {
 	white-space: nowrap;
@@ -54,4 +57,42 @@ $sit-wcpg-muted: #646970;
 /* stylelint-disable-next-line selector-class-pattern -- core list-table classes */
 table.wp-list-table .manage-column.column-sit_wcpg_readiness {
 	width: 100px;
+}
+
+// Settings page. Scoped to the page wrapper, because this stylesheet also loads on the
+// products list, whose table rows must not pick these up.
+.sit-wcpg-settings {
+
+	// Wider label column than core's 200px.
+	/* stylelint-disable-next-line selector-class-pattern -- core settings-table class */
+	.form-table th {
+		width: 260px;
+	}
+
+	tr > td:first-child {
+		max-width: 800px;
+	}
+
+	// Core sets `.form-table td fieldset label { margin: … !important }`, so only
+	// !important can widen the gap between two radio choices.
+	.sit-wcpg-settings-choice:first-child {
+		margin-right: 12px !important;
+	}
+
+	// Space under the first checkbox's description, before the second checkbox.
+	.sit-wcpg-settings-enforcement > p:first-of-type {
+		margin-bottom: 12px;
+	}
+}
+
+// Settings page footer: the five-star review link (Settings_Footer).
+.sit-wcpg-rating-link {
+	color: $sit-wcpg-brand;
+	text-decoration: none;
+
+	&:hover,
+	&:focus {
+		color: $sit-wcpg-brand;
+		text-decoration: underline;
+	}
 }

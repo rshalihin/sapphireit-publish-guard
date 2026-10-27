@@ -12,6 +12,7 @@
 
 # Local plan and agent notes. Kept on disk, never published.
 /.claude/
+/.claude-c/
 /CLAUDE.md
 
 # Release zip, produced by `npm run package`.
