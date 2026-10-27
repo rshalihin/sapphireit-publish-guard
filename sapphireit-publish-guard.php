@@ -41,12 +41,17 @@ require_once SIT_WCPG_PATH . 'src/Autoloader.php';
  * - `plugins_loaded` priority 5 is late enough that `WC_VERSION` is defined and early
  *   enough to register every other hook the plugin needs.
  *
+ * The activation hook is registered here too, because core only fires it for a hook
+ * added while the plugin file loads. It flags the one-time welcome notice and nothing more.
+ *
  * @since 1.0.0
  *
  * @return void
  */
 function sit_wcpg_bootstrap() {
 	\ProductPublishGuard\Autoloader::register();
+
+	register_activation_hook( SIT_WCPG_FILE, array( \ProductPublishGuard\Admin\Activation_Notice::class, 'activate' ) );
 
 	add_action(
 		'before_woocommerce_init',

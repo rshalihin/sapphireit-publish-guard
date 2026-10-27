@@ -412,6 +412,7 @@ API in 1.x.
 | Name | Kind | Removed on uninstall |
 |---|---|---|
 | `sit_wcpg_settings` | option (autoloaded, one row) | yes |
+| `sit_wcpg_activation_notice` | option (not autoloaded), set on activation and deleted once the welcome notice is shown | yes |
 | `sit_wcpg_blocked_{user_id}` | transient, 60 s | yes |
 | `sit_wcpg` | object-cache group (non-persistent unless you run an object cache) | n/a |
 

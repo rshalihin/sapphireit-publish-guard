@@ -46,8 +46,8 @@ Each check can be turned off, or set to **required** (it must pass before the pr
 
 **Light footprint.**
 
-* One settings row. No custom tables, post meta, roles or capabilities.
-* Assets load only on the product editor, the products list and the settings screen.
+* One settings row, plus a temporary flag that is removed once the welcome notice has been shown. No custom tables, post meta, roles or capabilities.
+* Assets load only on the product editor, the products list and the settings screen, and once on the Plugins screen for the welcome notice.
 * No outbound network requests, tracking or upsell notices.
 
 SapphireIT Publish Guard for WooCommerce is an independent plugin. It is not affiliated with or endorsed by WooCommerce or Automattic.

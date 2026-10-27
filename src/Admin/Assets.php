@@ -22,6 +22,7 @@ defined( 'ABSPATH' ) || exit;
  * | product editor (`post.php`/`post-new.php`) | `sit-wcpg-editor` | editor.css | `sitWcpgEditorData` |
  * | products list (`edit.php`)          | none         | admin.css   | none            |
  * | plugin settings page                | none         | admin.css   | none            |
+ * | Plugins screen, welcome notice pending | none      | admin.css   | none            |
  * | everything else                     | none         | none        | none            |
  *
  * The screen is decided before the settings are read, because reading a setting builds
@@ -121,7 +122,11 @@ final class Assets {
 			return;
 		}
 
-		if ( Screen::is_product_list_screen( $hook_suffix ) || Screen::is_settings_screen( $hook_suffix ) ) {
+		if (
+			Screen::is_product_list_screen( $hook_suffix )
+			|| Screen::is_settings_screen( $hook_suffix )
+			|| ( Screen::is_plugins_screen( $hook_suffix ) && Activation_Notice::is_pending() )
+		) {
 			$this->enqueue_style( self::ADMIN_HANDLE, 'admin.css', SIT_WCPG_VERSION );
 		}
 	}

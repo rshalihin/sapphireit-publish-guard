@@ -7,10 +7,12 @@
 
 namespace ProductPublishGuard;
 
+use ProductPublishGuard\Admin\Activation_Notice;
 use ProductPublishGuard\Admin\Assets;
 use ProductPublishGuard\Admin\Block_Editor_Notice;
 use ProductPublishGuard\Admin\Editor_Meta_Box;
 use ProductPublishGuard\Admin\Notices;
+use ProductPublishGuard\Admin\Plugin_Action_Links;
 use ProductPublishGuard\Admin\Product_List_Column;
 use ProductPublishGuard\Admin\Settings_Footer;
 use ProductPublishGuard\Engine\Rule_Registry;
@@ -173,6 +175,8 @@ final class Plugin {
 			 */
 			( new Settings_Page( $this->settings() ) )->register();
 			( new Settings_Footer() )->register();
+			( new Plugin_Action_Links() )->register();
+			( new Activation_Notice() )->register();
 			( new Assets( $this->settings() ) )->register();
 			( new Editor_Meta_Box( $this->settings() ) )->register();
 			( new Product_List_Column( $this->settings() ) )->register();

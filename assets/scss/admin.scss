@@ -1,7 +1,9 @@
 /**
- * Shared admin stylesheet: the products list Readiness column and the settings page.
+ * Shared admin stylesheet: the products list Readiness column, the settings page and the
+ * welcome notice on the Plugins screen.
  *
- * Enqueued as `sit-wcpg-admin` on those two screens only (coding-plan.md section 11.1).
+ * Enqueued as `sit-wcpg-admin` on those screens only (coding-plan.md section 11.1), and
+ * on the Plugins screen only while the welcome notice is pending.
  * The status colours match editor.scss; status is always also carried by a glyph and a
  * text label, never by colour alone.
  */
@@ -95,4 +97,37 @@ table.wp-list-table .manage-column.column-sit_wcpg_readiness {
 		color: $sit-wcpg-brand;
 		text-decoration: underline;
 	}
+}
+
+// Plugins screen: the one-time welcome notice (Activation_Notice), logo on the left.
+// Core positions the dismiss button absolutely, so the flex row leaves it in place.
+.sit-wcpg-brand-notice {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding-top: 12px;
+	padding-bottom: 12px;
+}
+
+.sit-wcpg-brand-notice__logo {
+	flex: 0 0 64px;
+	width: 64px;
+	height: 64px;
+}
+
+.sit-wcpg-brand-notice__body {
+	min-width: 0;
+
+	p {
+		max-width: 720px;
+	}
+
+	p:last-child {
+		margin-bottom: 0;
+	}
+}
+
+.sit-wcpg-brand-notice__title {
+	margin: 0 0 4px;
+	font-size: 15px;
 }
