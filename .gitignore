@@ -26,3 +26,4 @@
 # Local environment secrets. Never committed.
 .env
 .env.*
+/.DS_Store
