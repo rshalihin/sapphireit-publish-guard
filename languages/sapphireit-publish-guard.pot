@@ -9,25 +9,41 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-25T14:06:35+00:00\n"
+"POT-Creation-Date: 2026-10-28T03:53:40+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.9.0\n"
+"X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: sapphireit-publish-guard\n"
 
 #. Plugin Name of the plugin
+#: sapphireit-publish-guard.php
 msgid "SapphireIT Publish Guard for WooCommerce"
 msgstr ""
 
 #. Description of the plugin
+#: sapphireit-publish-guard.php
 msgid "A pre-publish quality checklist for WooCommerce products, with optional server-side publishing enforcement."
 msgstr ""
 
 #. Author of the plugin
+#: sapphireit-publish-guard.php
 msgid "Md. Readush Shalihin"
 msgstr ""
 
 #. Author URI of the plugin
+#: sapphireit-publish-guard.php
 msgid "https://profiles.wordpress.org/sapphireit/"
+msgstr ""
+
+#: src/Admin/Activation_Notice.php:99
+msgid "Thanks for installing SapphireIT Publish Guard!"
+msgstr ""
+
+#: src/Admin/Activation_Notice.php:100
+msgid "Every product is now checked against a quality checklist, and a product that fails a required check is kept as a draft. Review the rules to choose what is required and whether failures block publishing."
+msgstr ""
+
+#: src/Admin/Activation_Notice.php:102
+msgid "Review checklist rules"
 msgstr ""
 
 #: src/Admin/Block_Editor_Notice.php:93
@@ -83,6 +99,7 @@ msgstr ""
 #. translators: %d: number of checks that did not pass.
 #: src/Admin/Editor_Meta_Box.php:262
 #: build/editor.js:3
+#, php-format,js-format
 msgid "%d issue"
 msgid_plural "%d issues"
 msgstr[0] ""
@@ -91,6 +108,7 @@ msgstr[1] ""
 #. translators: %d: number of checks that do not apply to this product.
 #: src/Admin/Editor_Meta_Box.php:309
 #: build/editor.js:4
+#, php-format,js-format
 msgid "Not applicable (%d)"
 msgid_plural "Not applicable (%d)"
 msgstr[0] ""
@@ -117,39 +135,46 @@ msgstr ""
 msgid "Not applicable"
 msgstr ""
 
-#: src/Admin/Notices.php:191
+#: src/Admin/Notices.php:204
 msgid "Product saved, but not published."
 msgstr ""
 
-#: src/Admin/Notices.php:272
+#: src/Admin/Notices.php:285
 msgid "This product was not published because required checks failed:"
 msgstr ""
 
-#: src/Admin/Notices.php:273
+#: src/Admin/Notices.php:286
 msgid "This product was published although required checks failed, because you are allowed to override the publishing guard:"
 msgstr ""
 
 #. translators: %d: number of products.
-#: src/Admin/Notices.php:278
+#: src/Admin/Notices.php:291
+#, php-format
 msgid "%d product was not published because required checks failed:"
 msgid_plural "%d products were not published because required checks failed:"
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of products.
-#: src/Admin/Notices.php:288
+#: src/Admin/Notices.php:301
+#, php-format
 msgid "%d product was published although required checks failed, because you are allowed to override the publishing guard:"
 msgid_plural "%d products were published although required checks failed, because you are allowed to override the publishing guard:"
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: product id.
-#: src/Admin/Notices.php:387
+#: src/Admin/Notices.php:400
+#, php-format
 msgid "Product #%d"
 msgstr ""
 
-#: src/Admin/Notices.php:388
+#: src/Admin/Notices.php:401
 msgid "A new product"
+msgstr ""
+
+#: src/Admin/Plugin_Action_Links.php:51
+msgid "Settings"
 msgstr ""
 
 #: src/Admin/Product_List_Column.php:147
@@ -158,6 +183,7 @@ msgstr ""
 
 #. translators: %d: number of failed required checks.
 #: src/Admin/Product_List_Column.php:270
+#, php-format
 msgid "%d error"
 msgid_plural "%d errors"
 msgstr[0] ""
@@ -165,6 +191,7 @@ msgstr[1] ""
 
 #. translators: %d: number of checks with a warning.
 #: src/Admin/Product_List_Column.php:280
+#, php-format
 msgid "%d warning"
 msgid_plural "%d warnings"
 msgstr[0] ""
@@ -178,22 +205,49 @@ msgstr ""
 msgid "No readiness state"
 msgstr ""
 
+#: src/Admin/Settings_Footer.php:67
+msgid "review"
+msgstr ""
+
+#: src/Admin/Settings_Footer.php:68
+msgid "(opens in a new tab)"
+msgstr ""
+
+#. translators: 1: plugin name, 2: link to the WordPress.org review form, reading "review".
+#: src/Admin/Settings_Footer.php:72
+#, php-format
+msgid "If %1$s helps your store, please consider leaving a %2$s on WordPress.org. Thank you!"
+msgstr ""
+
+#: src/Admin/Settings_Footer.php:73
+msgid "SapphireIT Publish Guard"
+msgstr ""
+
+#. translators: %s: plugin version number.
+#: src/Admin/Settings_Footer.php:93
+#, php-format
+msgid "Version %s"
+msgstr ""
+
 #: src/Compat/Requirements.php:158
 msgid "SapphireIT Publish Guard has been stopped."
 msgstr ""
 
 #. translators: 1: minimum required PHP version, 2: PHP version running on this site.
 #: src/Compat/Requirements.php:184
+#, php-format
 msgid "PHP %1$s or newer is required. This site runs PHP %2$s. Ask your host to upgrade PHP."
 msgstr ""
 
 #. translators: 1: minimum required WordPress version, 2: WordPress version on this site.
 #: src/Compat/Requirements.php:192
+#, php-format
 msgid "WordPress %1$s or newer is required. This site runs WordPress %2$s. Update WordPress from Dashboard, then Updates."
 msgstr ""
 
 #. translators: 1: minimum required WooCommerce version, 2: WooCommerce version on this site.
 #: src/Compat/Requirements.php:200
+#, php-format
 msgid "WooCommerce %1$s or newer is required. This site runs WooCommerce %2$s. Update WooCommerce from Plugins."
 msgstr ""
 
@@ -207,6 +261,7 @@ msgstr ""
 
 #. translators: %s is the duplicate rule identifier.
 #: src/Engine/Rule_Registry.php:65
+#, php-format
 msgid "A rule with the id \"%s\" is already registered."
 msgstr ""
 
@@ -216,6 +271,7 @@ msgstr ""
 
 #. translators: 1: number of checks that passed, 2: number of checks evaluated.
 #: src/Engine/Validation_Result.php:291
+#, php-format
 msgid "%1$d of %2$d check passed"
 msgid_plural "%1$d of %2$d checks passed"
 msgstr[0] ""
@@ -271,6 +327,7 @@ msgstr ""
 
 #. translators: 1: parameter name, 2: reason the value was rejected.
 #: src/Rest/Validate_Controller.php:627
+#, php-format
 msgid "Invalid parameter: %1$s. %2$s"
 msgstr ""
 
@@ -316,6 +373,7 @@ msgstr ""
 
 #. translators: %d: number of products in the group.
 #: src/Rules/Child_Products_Rule.php:179
+#, php-format
 msgid "None of the %d product in this group is published — publish at least one, or the group has nothing to sell."
 msgid_plural "None of the %d products in this group is published — publish at least one, or the group has nothing to sell."
 msgstr[0] ""
@@ -343,6 +401,7 @@ msgstr ""
 
 #. translators: 1: current description length in characters, 2: recommended minimum length in characters.
 #: src/Rules/Description_Rule.php:126
+#, php-format
 msgid "The product description is %1$d character; at least %2$d are recommended — expand it in the main editor below the title."
 msgid_plural "The product description is %1$d characters; at least %2$d are recommended — expand it in the main editor below the title."
 msgstr[0] ""
@@ -386,6 +445,7 @@ msgstr ""
 
 #. translators: 1: number of images on the product and its enabled variations, 2: recommended minimum number of images.
 #: src/Rules/Image_Count_Rule.php:157
+#, php-format
 msgid "This product and its variations have %1$d image; at least %2$d are recommended — add more in the Product gallery box or on the variations."
 msgid_plural "This product and its variations have %1$d images; at least %2$d are recommended — add more in the Product gallery box or on the variations."
 msgstr[0] ""
@@ -393,6 +453,7 @@ msgstr[1] ""
 
 #. translators: 1: number of images on the product, 2: recommended minimum number of images.
 #: src/Rules/Image_Count_Rule.php:170
+#, php-format
 msgid "This product has %1$d image; at least %2$d are recommended — add more in the Product gallery box."
 msgid_plural "This product has %1$d images; at least %2$d are recommended — add more in the Product gallery box."
 msgstr[0] ""
@@ -424,6 +485,7 @@ msgstr ""
 
 #. translators: 1: number of enabled variations without a valid price, 2: number of enabled variations, 3: the first such variation's id.
 #: src/Rules/Price_Rule.php:172
+#, php-format
 msgid "%1$d of %2$d enabled variations has no valid regular price (first: variation #%3$d) — enter one in Product data → Variations → Regular price."
 msgid_plural "%1$d of %2$d enabled variations have no valid regular price (first: variation #%3$d) — enter one in Product data → Variations → Regular price."
 msgstr[0] ""
@@ -455,6 +517,7 @@ msgstr ""
 
 #. translators: 1: number of variations on sale with a sale price problem, 2: number of enabled variations on sale, 3: the first such variation's id.
 #: src/Rules/Sale_Price_Rule.php:193
+#, php-format
 msgid "%1$d of %2$d variations on sale has a sale price problem (first: variation #%3$d) — check its sale price and dates in Product data → Variations."
 msgid_plural "%1$d of %2$d variations on sale have a sale price problem (first: variation #%3$d) — check its sale price and dates in Product data → Variations."
 msgstr[0] ""
@@ -494,6 +557,7 @@ msgstr ""
 
 #. translators: 1: current short description length in characters, 2: recommended minimum length in characters.
 #: src/Rules/Short_Description_Rule.php:136
+#, php-format
 msgid "The short description is %1$d character; at least %2$d are recommended — expand it in the Product short description box."
 msgid_plural "The short description is %1$d characters; at least %2$d are recommended — expand it in the Product short description box."
 msgstr[0] ""
@@ -517,6 +581,7 @@ msgstr ""
 
 #. translators: 1: number of enabled variations without a SKU, 2: number of enabled variations, 3: the first such variation's id.
 #: src/Rules/Sku_Rule.php:175
+#, php-format
 msgid "%1$d of %2$d enabled variations has no SKU and the product has none to pass down (first: variation #%3$d) — add one in Product data → Inventory → SKU, or on each variation."
 msgid_plural "%1$d of %2$d enabled variations have no SKU and the product has none to pass down (first: variation #%3$d) — add one in Product data → Inventory → SKU, or on each variation."
 msgstr[0] ""
@@ -552,11 +617,13 @@ msgstr ""
 
 #. translators: %d is the managed stock quantity.
 #: src/Rules/Stock_Status_Rule.php:162
+#, php-format
 msgid "Stock management is on but the quantity is %d — update it in Product data → Inventory → Quantity."
 msgstr ""
 
 #. translators: 1: number of enabled variations without a stock status, 2: number of enabled variations, 3: the first such variation's id.
 #: src/Rules/Stock_Status_Rule.php:211
+#, php-format
 msgid "%1$d of %2$d enabled variations has no stock status (first: variation #%3$d) — choose one in Product data → Variations → Stock status."
 msgid_plural "%1$d of %2$d enabled variations have no stock status (first: variation #%3$d) — choose one in Product data → Variations → Stock status."
 msgstr[0] ""
@@ -564,6 +631,7 @@ msgstr[1] ""
 
 #. translators: 1: number of enabled variations in stock with a managed quantity of zero or less, 2: number of enabled variations, 3: the first such variation's id.
 #: src/Rules/Stock_Status_Rule.php:229
+#, php-format
 msgid "%1$d of %2$d enabled variations is in stock with a quantity of zero or less (first: variation #%3$d) — update the quantity in Product data → Variations, or in Product data → Inventory when the product manages stock."
 msgid_plural "%1$d of %2$d enabled variations are in stock with a quantity of zero or less (first: variation #%3$d) — update the quantity in Product data → Variations, or in Product data → Inventory when the product manages stock."
 msgstr[0] ""
@@ -571,6 +639,7 @@ msgstr[1] ""
 
 #. translators: 1: number of enabled variations marked out of stock, 2: number of enabled variations, 3: the first such variation's id.
 #: src/Rules/Stock_Status_Rule.php:247
+#, php-format
 msgid "%1$d of %2$d enabled variations is marked out of stock (first: variation #%3$d) — check Product data → Variations → Stock status."
 msgid_plural "%1$d of %2$d enabled variations are marked out of stock (first: variation #%3$d) — check Product data → Variations → Stock status."
 msgstr[0] ""
@@ -680,6 +749,7 @@ msgstr ""
 
 #. translators: %s: the name of the check being enabled.
 #: src/Settings/Settings_Page.php:290
+#, php-format
 msgid "Run the %s check"
 msgstr ""
 
@@ -746,6 +816,7 @@ msgstr ""
 
 #. translators: 1: threshold setting label, 2: the value that was stored instead.
 #: src/Settings/Settings_Sanitizer.php:218
+#, php-format
 msgid "%1$s was outside the allowed range and has been saved as %2$d."
 msgstr ""
 
@@ -763,6 +834,7 @@ msgstr ""
 
 #. translators: %s: time of day the checklist was last checked.
 #: build/editor.js:2
+#, js-format
 msgid "Checked at %s"
 msgstr ""
 

@@ -8,6 +8,8 @@
  * text label, never by colour alone.
  */
 
+@use "status-icons" as *;
+
 $sit-wcpg-pass: #00a32a;
 $sit-wcpg-warning: #996800;
 $sit-wcpg-fail: #d63638;
@@ -54,6 +56,15 @@ $sit-wcpg-brand: #00a32a;
 	color: $sit-wcpg-muted;
 }
 
+// The same filled-circle icons as the editor checklist. A cell is only ever one of these.
+@each $status in pass, warning, fail {
+
+	.sit-wcpg-readiness--#{$status} .sit-wcpg-readiness__icon {
+
+		@include sit-wcpg-status-icon($status, 14px);
+	}
+}
+
 // Column width. The list table and its header classes are core's (`column-{key}` is
 // built from Product_List_Column::COLUMN), so they cannot follow the BEM prefix pattern.
 /* stylelint-disable-next-line selector-class-pattern -- core list-table classes */
@@ -75,6 +86,11 @@ table.wp-list-table .manage-column.column-sit_wcpg_readiness {
 		max-width: 800px;
 	}
 
+	// A radio never wraps away from its own label; the two choices may still stack.
+	.sit-wcpg-settings-choice {
+		white-space: nowrap;
+	}
+
 	// Core sets `.form-table td fieldset label { margin: … !important }`, so only
 	// !important can widen the gap between two radio choices.
 	.sit-wcpg-settings-choice:first-child {
@@ -87,7 +103,7 @@ table.wp-list-table .manage-column.column-sit_wcpg_readiness {
 	}
 }
 
-// Settings page footer: the five-star review link (Settings_Footer).
+// Settings page footer: the review link (Settings_Footer).
 .sit-wcpg-rating-link {
 	color: $sit-wcpg-brand;
 	text-decoration: none;

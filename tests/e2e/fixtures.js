@@ -173,6 +173,40 @@ function definitions( shared, run ) {
 			'59.00',
 			null,
 		] ),
+		// Screenshot 1: one required failure and two warnings in the checklist.
+		shotEditor: ( ( definition ) => ( {
+			...definition,
+			product: {
+				...definition.product,
+				short_description: '',
+				tags: [],
+			},
+		} ) )(
+			variable( shared, sku( 'shot1' ), 'Merino roll-neck sweater', [
+				'69.00',
+				'69.00',
+				null,
+			] )
+		),
+		// Screenshot 4: a Bulk Edit to Published that refuses one of three.
+		shotBulkPass1: simple(
+			shared,
+			sku( 'shot4a' ),
+			'Waxed canvas apron',
+			'24.00'
+		),
+		shotBulkPass2: simple(
+			shared,
+			sku( 'shot4b' ),
+			'Waxed canvas cap',
+			'18.00'
+		),
+		shotBulkFail: simple(
+			shared,
+			sku( 'shot4c' ),
+			'Waxed canvas tote bag',
+			null
+		),
 	};
 }
 

@@ -141,6 +141,9 @@ The build uses `@wordpress/scripts` and writes the compiled files to `build/`.
 * New: the "Variations and grouped products" check. A variable product needs at least one enabled variation, and a grouped product at least one linked product that exists and is published. It ships as a warning.
 * New: a defined product-type matrix. Every check either applies to a simple, variable, grouped or external product (subscriptions included), or is shown as not applicable with the reason, so no product is blocked by a check that does not apply to its type.
 * Improved: every failure message is rewritten to name the field, the tab and the fix. A variation failure gives the first failing variation and opens the Variations tab.
+* New: a one-time welcome notice on the Plugins screen after activation, linking to the settings.
+* New: a Settings link in the plugin's row on the Plugins screen.
+* New: the settings screen's footer shows the plugin version and a link to leave a review on WordPress.org.
 * Fixed: the validation REST endpoint now refuses ids that are not products.
 * Fixed: when one request refused several new products, such as a CSV import, only one of their notices was kept.
 * Tested up to WooCommerce 11.2.

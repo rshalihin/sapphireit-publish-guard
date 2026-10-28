@@ -87,8 +87,25 @@ final class Settings_Footer_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'href="' . esc_url( Settings_Footer::REVIEW_URL ) . '"', $text );
 		$this->assertStringContainsString( 'class="sit-wcpg-rating-link"', $text );
 		$this->assertStringContainsString( 'rel="noopener noreferrer"', $text );
-		$this->assertStringContainsString( '&#9733;&#9733;&#9733;&#9733;&#9733;', $text );
+		$this->assertStringContainsString( '>review<span class="screen-reader-text"> (opens in a new tab)</span></a>', $text );
 		$this->assertStringNotContainsString( 'core text', $text );
+	}
+
+	/**
+	 * The review link is neutral: no rating is preselected or asked for.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_the_review_request_does_not_ask_for_a_rating() {
+		set_current_screen( Screen::SETTINGS_HOOK );
+
+		$text = $this->footer->filter_footer_text( 'core text' );
+
+		$this->assertStringNotContainsString( 'rate=', Settings_Footer::REVIEW_URL );
+		$this->assertStringNotContainsString( '&#9733;', $text );
+		$this->assertStringNotContainsString( 'five star', strtolower( $text ) );
 	}
 
 	/**

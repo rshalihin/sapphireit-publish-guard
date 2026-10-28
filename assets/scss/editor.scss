@@ -6,8 +6,11 @@
  * shape when React takes over.
  *
  * The three status colours are the only hard-coded palette (coding-plan.md section
- * 10.4); status is always also carried by a glyph and a visually hidden label.
+ * 10.4); status is always also carried by a glyph and a visually hidden label. The
+ * status icons' own colours live with their shapes in _status-icons.scss.
  */
+
+@use "status-icons" as *;
 
 $sit-wcpg-pass: #00a32a;
 $sit-wcpg-warning: #996800;
@@ -86,12 +89,14 @@ $sit-wcpg-rule: #dcdcde;
 	text-align: center;
 }
 
+// Centred on the label's first line: 13px × 1.5 line height, 16px icon.
 .sit-wcpg-checklist__item .sit-wcpg-checklist__icon {
 	position: absolute;
-	top: 0;
+	top: 2px;
 	left: 0;
 }
 
+// The glyph colours apply only where the icons below fall back to text.
 .sit-wcpg-checklist__item--pass .sit-wcpg-checklist__icon {
 	color: $sit-wcpg-pass;
 }
@@ -102,6 +107,23 @@ $sit-wcpg-rule: #dcdcde;
 
 .sit-wcpg-checklist__item--fail .sit-wcpg-checklist__icon {
 	color: $sit-wcpg-fail;
+}
+
+@each $status in pass, warning, fail, skipped {
+
+	.sit-wcpg-checklist__item--#{$status} .sit-wcpg-checklist__icon {
+
+		@include sit-wcpg-status-icon($status, 16px);
+	}
+}
+
+// The summary is only ever ready (pass) or not (fail).
+@each $status in pass, fail {
+
+	.sit-wcpg-checklist__summary--#{$status} .sit-wcpg-checklist__icon {
+
+		@include sit-wcpg-status-icon($status, 16px);
+	}
 }
 
 .sit-wcpg-checklist__item--skipped {

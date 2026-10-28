@@ -21,12 +21,12 @@ defined( 'ABSPATH' ) || exit;
 final class Settings_Footer {
 
 	/**
-	 * Where the review link points: the plugin's WordPress.org review form, five stars preselected.
+	 * Where the review link points: the plugin's WordPress.org review form, with no rating preselected.
 	 *
 	 * @since 1.1.0
 	 * @var string
 	 */
-	public const REVIEW_URL = 'https://wordpress.org/support/plugin/sapphireit-publish-guard/reviews?rate=5#new-post';
+	public const REVIEW_URL = 'https://wordpress.org/support/plugin/sapphireit-publish-guard/reviews/#new-post';
 
 	/**
 	 * Priority of the `update_footer` filter.
@@ -63,15 +63,15 @@ final class Settings_Footer {
 			return $text;
 		}
 
-		$stars = '<a href="' . esc_url( self::REVIEW_URL ) . '" class="sit-wcpg-rating-link" target="_blank" rel="noopener noreferrer"'
-			. ' aria-label="' . esc_attr__( 'five star rating (opens in a new tab)', 'sapphireit-publish-guard' ) . '">'
-			. '&#9733;&#9733;&#9733;&#9733;&#9733;</a>';
+		$link = '<a href="' . esc_url( self::REVIEW_URL ) . '" class="sit-wcpg-rating-link" target="_blank" rel="noopener noreferrer">'
+			. esc_html__( 'review', 'sapphireit-publish-guard' )
+			. '<span class="screen-reader-text"> ' . esc_html__( '(opens in a new tab)', 'sapphireit-publish-guard' ) . '</span></a>';
 
 		return sprintf(
-			/* translators: 1: plugin name, 2: five-star rating link. */
-			esc_html__( 'If you like %1$s please leave us a %2$s rating. A huge thanks in advance!', 'sapphireit-publish-guard' ),
+			/* translators: 1: plugin name, 2: link to the WordPress.org review form, reading "review". */
+			esc_html__( 'If %1$s helps your store, please consider leaving a %2$s on WordPress.org. Thank you!', 'sapphireit-publish-guard' ),
 			'<strong>' . esc_html__( 'SapphireIT Publish Guard', 'sapphireit-publish-guard' ) . '</strong>',
-			$stars
+			$link
 		);
 	}
 
