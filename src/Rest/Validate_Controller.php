@@ -8,6 +8,7 @@
 namespace ProductPublishGuard\Rest;
 
 use DateTimeImmutable;
+use ProductPublishGuard\Admin\Screen;
 use ProductPublishGuard\Plugin;
 use ProductPublishGuard\Support\Checklist_Service;
 use Throwable;
@@ -91,6 +92,11 @@ final class Validate_Controller {
 		'tag_ids'           => array(
 			'rule' => 'ids',
 			'cap'  => 200,
+		),
+		// Grouped children are posted with the form (D16). Variations never are (D3).
+		'child_ids'         => array(
+			'rule' => 'ids',
+			'cap'  => 100,
 		),
 	);
 
@@ -632,13 +638,21 @@ final class Validate_Controller {
 	/**
 	 * Resolve a post id to a product.
 	 *
+	 * Only a `product` post counts. A variation id would otherwise resolve to a
+	 * `WC_Product` too.
+	 *
 	 * @since 1.0.0
+	 * @since 1.1.0 Refuses every post type but `product`.
 	 *
 	 * @param int $product_id Product post identifier.
 	 * @return WC_Product|null
 	 */
 	private function get_product( int $product_id ): ?WC_Product {
 		if ( 0 === $product_id || ! function_exists( 'wc_get_product' ) ) {
+			return null;
+		}
+
+		if ( Screen::POST_TYPE !== get_post_type( $product_id ) ) {
 			return null;
 		}
 

@@ -9,13 +9,17 @@ namespace ProductPublishGuard\Tests\Integration;
 
 use ProductPublishGuard\Admin\Editor_Meta_Box;
 use ProductPublishGuard\Admin\Product_List_Column;
+use ProductPublishGuard\Engine\Child_Loader;
 use ProductPublishGuard\Engine\Rule_Registry;
 use ProductPublishGuard\Engine\Validator;
 use ProductPublishGuard\Plugin;
 use ProductPublishGuard\Settings\Settings;
 use ProductPublishGuard\Support\Checklist_Service;
 use ProductPublishGuard\Tests\Stubs\Fake_Rule;
+use WC_Product_Grouped;
 use WC_Product_Simple;
+use WC_Product_Variable;
+use WC_Product_Variation;
 use WP_Query;
 use WP_UnitTestCase;
 
@@ -470,13 +474,239 @@ final class Product_List_Column_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * The v1.0 budget still holds on a page of mixed families: 30 simple rows, 15 variable
+	 * rows with 10 variations each and 5 grouped rows add no more than ~5 queries over the
+	 * same page without the column (D11, Review Focus 3).
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_mixed_page_stays_within_the_query_budget(): void {
+		set_current_screen( 'edit-product' );
+
+		$plugin   = Plugin::instance();
+		$settings = $plugin->settings();
+		$stored   = $settings->get_defaults();
+
+		$stored['rules']['image_count']['enabled'] = true;
+		update_option( Settings::OPTION_NAME, $stored );
+		$settings->refresh();
+
+		$category_id = self::factory()->term->create( array( 'taxonomy' => 'product_cat' ) );
+		$simple_ids  = array();
+		$other_ids   = array();
+
+		for ( $i = 0; $i < 30; $i++ ) {
+			$featured = $this->image();
+			$gallery  = $this->image();
+
+			$product = new WC_Product_Simple();
+			$product->set_name( 'Simple ' . $i );
+			$product->set_status( 'publish' );
+			$product->set_description( str_repeat( 'Sentence about the product. ', 20 ) );
+			$product->set_regular_price( '19.99' );
+			$product->set_image_id( $featured );
+			$product->set_gallery_image_ids( array( $gallery ) );
+			$product->set_category_ids( array( $category_id ) );
+
+			$simple_ids[] = $product->save();
+			$other_ids[]  = $featured;
+			$other_ids[]  = $gallery;
+		}
+
+		$variable_ids = array();
+
+		for ( $i = 0; $i < 15; $i++ ) {
+			$parent_id      = $this->variable_product( array_fill( 0, 10, '10' ) );
+			$variable_ids[] = $parent_id;
+			$other_ids      = array_merge( $other_ids, wc_get_product( $parent_id )->get_children(), array( (int) get_post_thumbnail_id( $parent_id ) ) );
+		}
+
+		$grouped_ids = array();
+
+		for ( $i = 0; $i < 5; $i++ ) {
+			$grouped = new WC_Product_Grouped();
+			$grouped->set_props( array_merge( $this->complete_props(), array( 'children' => array_slice( $simple_ids, 2 * $i, 2 ) ) ) );
+
+			$grouped_ids[] = $grouped->save();
+			$other_ids[]   = (int) $grouped->get_image_id();
+		}
+
+		$product_ids = array_merge( $simple_ids, $variable_ids, $grouped_ids );
+		$column      = new Product_List_Column( $settings, $plugin->checklist() );
+
+		$this->assertCount( self::PAGE_SIZE, $product_ids );
+
+		// Warm-up: one-off reads (the rule registry, options, the user's locale) land here.
+		$this->list_page( $column, $product_ids, $other_ids );
+
+		$baseline    = $this->list_page( null, $product_ids, $other_ids );
+		$with_column = $this->list_page( $column, $product_ids, $other_ids );
+
+		$this->assertLessThanOrEqual(
+			self::QUERY_ALLOWANCE,
+			$with_column - $baseline,
+			sprintf( 'The column added %1$d queries to a mixed %2$d-product page (baseline %3$d).', $with_column - $baseline, self::PAGE_SIZE, $baseline )
+		);
+	}
+
+	/**
+	 * Saved product props that pass every shipped required rule except, for a variable or
+	 * grouped parent, the price it doesn't hold itself.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return array
+	 */
+	private function complete_props(): array {
+		return array(
+			'name'              => 'A complete product',
+			'status'            => 'draft',
+			'description'       => str_repeat( 'Sentence about the product. ', 20 ),
+			'short_description' => str_repeat( 'A short blurb. ', 6 ),
+			'image_id'          => $this->image(),
+			'category_ids'      => array( self::factory()->term->create( array( 'taxonomy' => 'product_cat' ) ) ),
+		);
+	}
+
+	/**
+	 * A saved variable product with one enabled variation per price.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param string[] $prices Regular price of each variation.
+	 * @return int Parent id.
+	 */
+	private function variable_product( array $prices ): int {
+		$parent = new WC_Product_Variable();
+		$parent->set_props( $this->complete_props() );
+		$parent_id = $parent->save();
+
+		foreach ( $prices as $menu_order => $price ) {
+			$variation = new WC_Product_Variation();
+			$variation->set_parent_id( $parent_id );
+			$variation->set_props(
+				array(
+					'status'        => 'publish',
+					'menu_order'    => $menu_order,
+					'regular_price' => $price,
+				)
+			);
+			$variation->save();
+		}
+
+		return WC_Product_Variable::sync( $parent_id, false )->save();
+	}
+
+	/**
+	 * Run the list screen's main query for a page of products, with the column priming it.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param Product_List_Column $column      The column.
+	 * @param int[]               $product_ids Products on the page.
+	 * @return void
+	 */
+	private function run_main_query( Product_List_Column $column, array $product_ids ): void {
+		global $wp_the_query, $wp_query;
+
+		add_filter( 'the_posts', array( $column, 'prime_caches' ), 10, 2 );
+
+		$query        = new WP_Query();
+		$wp_the_query = $query; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Emulating the list screen's main query.
+		$wp_query     = $query; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Emulating the list screen's main query.
+
+		$query->query(
+			array(
+				'post_type'      => 'product',
+				'post_status'    => 'any',
+				'post__in'       => $product_ids,
+				'posts_per_page' => count( $product_ids ),
+			)
+		);
+
+		remove_filter( 'the_posts', array( $column, 'prime_caches' ), 10 );
+	}
+
+	/**
+	 * Variable and grouped rows are rated from their children, through the primed path.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_variable_and_grouped_rows_render_a_status(): void {
+		set_current_screen( 'edit-product' );
+
+		$plugin   = Plugin::instance();
+		$column   = new Product_List_Column( $plugin->settings(), $plugin->checklist() );
+		$priced   = $this->variable_product( array( '10', '12' ) );
+		$unpriced = $this->variable_product( array( '10', '' ) );
+		$child    = $this->product( 'publish' );
+
+		$grouped = new WC_Product_Grouped();
+		$grouped->set_props( array_merge( $this->complete_props(), array( 'children' => array( $child ) ) ) );
+		$grouped_id = $grouped->save();
+
+		Checklist_Service::flush_memo();
+		$this->run_main_query( $column, array( $priced, $unpriced, $grouped_id ) );
+
+		$priced_cell   = $this->cell( $column, $priced );
+		$unpriced_cell = $this->cell( $column, $unpriced );
+		$grouped_cell  = $this->cell( $column, $grouped_id );
+
+		$this->assertMatchesRegularExpression( '/sit-wcpg-readiness--(pass|warning)/', $priced_cell );
+		$this->assertStringContainsString( 'sit-wcpg-readiness--fail', $unpriced_cell );
+		$this->assertStringContainsString( '1 error', $unpriced_cell );
+		$this->assertMatchesRegularExpression( '/sit-wcpg-readiness--(pass|warning)/', $grouped_cell );
+	}
+
+	/**
+	 * The page's variation ids are seeded only when a rule that reads children is enabled.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_priming_seeds_children_only_when_a_child_rule_is_enabled(): void {
+		set_current_screen( 'edit-product' );
+
+		$parent_id = $this->variable_product( array( '10' ) );
+		$plugin    = Plugin::instance();
+		$reads     = 0;
+		$counter   = static function ( $children ) use ( &$reads ) {
+			++$reads;
+
+			return $children;
+		};
+
+		// Fake rules only: none of them reads children, so there is nothing to seed.
+		Child_Loader::flush();
+		$this->run_main_query( $this->column( $this->registry( 'pass' ) ), array( $parent_id ) );
+
+		add_filter( 'woocommerce_get_children', $counter );
+		Child_Loader::variations( wc_get_product( $parent_id ) );
+		$this->assertSame( 1, $reads, 'Not seeded without a child rule.' );
+
+		// The shipped rules: price is enabled.
+		Child_Loader::flush();
+		$this->run_main_query( new Product_List_Column( $plugin->settings(), $plugin->checklist() ), array( $parent_id ) );
+
+		Child_Loader::variations( wc_get_product( $parent_id ) );
+		remove_filter( 'woocommerce_get_children', $counter );
+
+		$this->assertSame( 1, $reads, 'Seeded with a child rule enabled.' );
+	}
+
+	/**
 	 * Run the list screen's main query cold and, with a column, render every cell.
 	 *
 	 * @since 1.0.0
 	 *
 	 * @param Product_List_Column|null $column         The column, or null for the baseline.
 	 * @param int[]                    $product_ids    Products on the page.
-	 * @param int[]                    $attachment_ids Their images.
+	 * @param int[]                    $attachment_ids Their images, and any variations, whose caches are cleaned too.
 	 * @return int Queries the page ran.
 	 */
 	private function list_page( ?Product_List_Column $column, array $product_ids, array $attachment_ids ): int {

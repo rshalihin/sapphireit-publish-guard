@@ -47,7 +47,7 @@ final class Title_Rule_Test extends TestCase {
 		$result = $this->check( '' );
 
 		$this->assertSame( Status::FAIL, $result->get_status() );
-		$this->assertSame( 'Add a product title.', $result->get_message() );
+		$this->assertSame( 'The product has no title — enter one in the title field at the top of the page.', $result->get_message() );
 	}
 
 	/**

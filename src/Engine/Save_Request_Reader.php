@@ -312,6 +312,17 @@ final class Save_Request_Reader {
 			$fields['gallery_image_ids'] = self::ids( $post_data['product_image_gallery'], self::ID_CAP );
 		}
 
+		/*
+		 * Grouped children are posted with the form (D16). An emptied multi-select posts no
+		 * key at all, and WooCommerce then saves no children for a grouped product (R12), so
+		 * on a grouped save "absent" means "none". Any other save leaves them alone.
+		 */
+		if ( isset( $post_data['grouped_products'] ) ) {
+			$fields['child_ids'] = self::ids( $post_data['grouped_products'], self::ID_CAP );
+		} elseif ( 'grouped' === ( $fields['product_type'] ?? '' ) ) {
+			$fields['child_ids'] = array();
+		}
+
 		// A checkbox: absent means unticked.
 		$fields['manage_stock'] = ! empty( $post_data['_manage_stock'] );
 

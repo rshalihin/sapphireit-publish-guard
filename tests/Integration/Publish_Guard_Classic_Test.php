@@ -303,6 +303,59 @@ final class Publish_Guard_Classic_Test extends Publish_Guard_Test_Case {
 	}
 
 	/**
+	 * WordPress 7.1 answers a refused Publish with "draft updated" (10); that is replaced too,
+	 * but only after a refusal.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_the_draft_updated_message_is_replaced_only_after_a_refusal(): void {
+		$notices = Plugin::instance()->notices();
+		$core    = array( 'product' => array( 10 => 'Product draft updated.' ) );
+
+		$this->assertSame( 'Product draft updated.', $notices->filter_messages( $core )['product'][10] );
+
+		$_GET[ Notices::QUERY_ARG ] = '1';
+		$messages                   = $notices->filter_messages( $core );
+		unset( $_GET[ Notices::QUERY_ARG ] );
+
+		$this->assertSame( 'Product saved, but not published.', $messages['product'][10] );
+	}
+
+	/**
+	 * Through the hook, the replacement survives WooCommerce, which adds its own messages
+	 * filter on `init`, after this plugin registers, and replaces every product message.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_the_message_outlasts_woocommerce_rewriting_the_product_messages(): void {
+		( new Notices() )->register();
+
+		// What WC_Admin_Post_Types::post_updated_messages() does, added later at the default priority.
+		add_filter(
+			'post_updated_messages',
+			static function ( $messages ) {
+				$messages['product'] = array(
+					6  => 'Product published.',
+					10 => 'Product draft updated.',
+				);
+
+				return $messages;
+			}
+		);
+
+		$_GET[ Notices::QUERY_ARG ] = '1';
+		$messages                   = apply_filters( 'post_updated_messages', array() );
+		unset( $_GET[ Notices::QUERY_ARG ] );
+
+		$this->assertSame( 'Product saved, but not published.', $messages['product'][6] );
+		$this->assertSame( 'Product saved, but not published.', $messages['product'][10] );
+	}
+
+	/**
 	 * The notice is printed once on the product's own editor, then forgotten.
 	 *
 	 * @since 1.0.0

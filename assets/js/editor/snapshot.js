@@ -202,8 +202,33 @@ export function buildSnapshot( doc = document, win = window ) {
 
 	set( 'category_ids', readCategories( doc ) );
 	set( 'tag_ids', readTagPresence( doc, win ) );
+	set( 'child_ids', readGroupedChildren( doc ) );
 
 	return draft;
+}
+
+/**
+ * Linked products of a grouped product, from WooCommerce's multi-select (D16).
+ *
+ * Present but empty means "no children", as on the server: an emptied multi-select
+ * posts nothing and WooCommerce then saves none.
+ *
+ * @param {Document} doc Document to read from.
+ * @return {number[]|null} Product ids, or null when the field is not on the page.
+ */
+function readGroupedChildren( doc ) {
+	const select = doc.querySelector( '#grouped_products' );
+
+	if ( ! select || ! select.options ) {
+		return null;
+	}
+
+	return parseIdList(
+		Array.from( select.options )
+			.filter( ( option ) => option.selected )
+			.map( ( option ) => option.value )
+			.join( ',' )
+	);
 }
 
 /**
@@ -225,12 +250,12 @@ function normalizeText( text ) {
 }
 
 const TEXT_FIELDS = [ 'title', 'content', 'excerpt' ];
-const ID_LIST_FIELDS = [ 'gallery_image_ids', 'category_ids' ];
+const ID_LIST_FIELDS = [ 'gallery_image_ids', 'category_ids', 'child_ids' ];
 
 /**
  * A stable string that is equal for two drafts iff the server would answer them alike.
  *
- * Keys are sorted, category and gallery ids are compared as sets (their order means
+ * Keys are sorted, category, gallery and grouped-child ids are compared as sets (their order means
  * nothing to any rule), and text is compared the way the server measures it.
  *
  * @param {Object} draft A draft from buildSnapshot().

@@ -408,4 +408,81 @@ final class Save_Request_Reader_Test extends TestCase {
 		$this->assertCount( 100, $overrides['category_ids'] );
 		$this->assertCount( 200, $overrides['tag_ids'] );
 	}
+
+	/**
+	 * The classic form's grouped-products multi-select becomes the draft's children (D16).
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_classic_grouped_products_map_to_child_ids(): void {
+		$overrides = Save_Request_Reader::read(
+			self::classic(
+				array(
+					'product-type'     => 'grouped',
+					'grouped_products' => array( '31', '0', '32', '31', 'x', '33' ),
+				)
+			),
+			array(),
+			12
+		);
+
+		$this->assertSame( array( 31, 32, 33 ), $overrides['child_ids'] );
+	}
+
+	/**
+	 * An emptied multi-select posts no key, and WooCommerce then saves no children (R12).
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_emptied_grouped_field_on_a_grouped_classic_save_is_empty(): void {
+		$overrides = Save_Request_Reader::read( self::classic( array( 'product-type' => 'grouped' ) ), array(), 12 );
+
+		$this->assertArrayHasKey( 'child_ids', $overrides );
+		$this->assertSame( array(), $overrides['child_ids'] );
+	}
+
+	/**
+	 * Without a posted product type, an absent field means "unchanged": the stored children apply.
+	 *
+	 * Quick Edit and Bulk Edit post no `product-type`, and a classic save of another type
+	 * leaves the children alone.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_absent_grouped_products_without_product_type_is_absent(): void {
+		$untyped = array_diff_key( self::classic(), array( 'product-type' => true ) );
+
+		$this->assertArrayNotHasKey( 'child_ids', Save_Request_Reader::read( $untyped, array(), 12 ) );
+		$this->assertArrayNotHasKey( 'child_ids', Save_Request_Reader::read( self::quick(), array(), 12 ) );
+		$this->assertArrayNotHasKey( 'child_ids', Save_Request_Reader::read( self::bulk(), array(), 12 ) );
+		$this->assertArrayNotHasKey( 'child_ids', Save_Request_Reader::read( self::classic(), array(), 12 ) );
+	}
+
+	/**
+	 * An oversized children list is capped like every other identifier list.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_child_ids_are_capped(): void {
+		$overrides = Save_Request_Reader::read(
+			self::classic(
+				array(
+					'product-type'     => 'grouped',
+					'grouped_products' => range( 1, 5000 ),
+				)
+			),
+			array(),
+			12
+		);
+
+		$this->assertCount( 100, $overrides['child_ids'] );
+	}
 }

@@ -7,6 +7,7 @@
 
 namespace ProductPublishGuard\Tests\Integration;
 
+use ProductPublishGuard\Admin\Activation_Notice;
 use ProductPublishGuard\Admin\Assets;
 use ProductPublishGuard\Admin\Screen;
 use ProductPublishGuard\Plugin;
@@ -230,6 +231,24 @@ final class Assets_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * The Plugins screen gets the admin stylesheet while the welcome notice is pending.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	public function test_the_plugins_screen_gets_the_admin_stylesheet_for_the_welcome_notice(): void {
+		Activation_Notice::activate();
+
+		$this->enqueue_on( 'plugins.php', 'plugins' );
+
+		delete_option( Activation_Notice::OPTION );
+
+		$this->assertTrue( wp_style_is( Assets::ADMIN_HANDLE, 'enqueued' ) );
+		$this->assertFalse( wp_script_is( Assets::EDITOR_HANDLE, 'enqueued' ) );
+	}
+
+	/**
 	 * Every other screen gets nothing, including the post screens that share the
 	 * product screens' hook suffixes.
 	 *
@@ -264,6 +283,7 @@ final class Assets_Test extends WP_UnitTestCase {
 			'orders (HPOS)'       => array( 'woocommerce_page_wc-orders', 'woocommerce_page_wc-orders' ),
 			'woocommerce options' => array( 'woocommerce_page_wc-settings', 'woocommerce_page_wc-settings' ),
 			'product categories'  => array( 'edit-tags.php', 'edit-product_cat' ),
+			'plugins, no notice'  => array( 'plugins.php', 'plugins' ),
 		);
 	}
 }

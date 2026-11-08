@@ -1,15 +1,22 @@
 /**
- * Shared admin stylesheet: the products list Readiness column and the settings page.
+ * Shared admin stylesheet: the products list Readiness column, the settings page and the
+ * welcome notice on the Plugins screen.
  *
- * Enqueued as `sit-wcpg-admin` on those two screens only (coding-plan.md section 11.1).
+ * Enqueued as `sit-wcpg-admin` on those screens only (coding-plan.md section 11.1), and
+ * on the Plugins screen only while the welcome notice is pending.
  * The status colours match editor.scss; status is always also carried by a glyph and a
  * text label, never by colour alone.
  */
+
+@use "status-icons" as *;
 
 $sit-wcpg-pass: #00a32a;
 $sit-wcpg-warning: #996800;
 $sit-wcpg-fail: #d63638;
 $sit-wcpg-muted: #646970;
+
+// Brand green: the shield in the plugin icon (.wordpress-org/icon.svg).
+$sit-wcpg-brand: #00a32a;
 
 // Products list — the Readiness cell.
 .sit-wcpg-readiness {
@@ -49,9 +56,94 @@ $sit-wcpg-muted: #646970;
 	color: $sit-wcpg-muted;
 }
 
+// The same filled-circle icons as the editor checklist. A cell is only ever one of these.
+@each $status in pass, warning, fail {
+
+	.sit-wcpg-readiness--#{$status} .sit-wcpg-readiness__icon {
+
+		@include sit-wcpg-status-icon($status, 14px);
+	}
+}
+
 // Column width. The list table and its header classes are core's (`column-{key}` is
 // built from Product_List_Column::COLUMN), so they cannot follow the BEM prefix pattern.
 /* stylelint-disable-next-line selector-class-pattern -- core list-table classes */
 table.wp-list-table .manage-column.column-sit_wcpg_readiness {
 	width: 100px;
+}
+
+// Settings page. Scoped to the page wrapper, because this stylesheet also loads on the
+// products list, whose table rows must not pick these up.
+.sit-wcpg-settings {
+
+	// Wider label column than core's 200px.
+	/* stylelint-disable-next-line selector-class-pattern -- core settings-table class */
+	.form-table th {
+		width: 260px;
+	}
+
+	tr > td:first-child {
+		max-width: 800px;
+	}
+
+	// A radio never wraps away from its own label; the two choices may still stack.
+	.sit-wcpg-settings-choice {
+		white-space: nowrap;
+	}
+
+	// Core sets `.form-table td fieldset label { margin: … !important }`, so only
+	// !important can widen the gap between two radio choices.
+	.sit-wcpg-settings-choice:first-child {
+		margin-right: 12px !important;
+	}
+
+	// Space under the first checkbox's description, before the second checkbox.
+	.sit-wcpg-settings-enforcement > p:first-of-type {
+		margin-bottom: 12px;
+	}
+}
+
+// Settings page footer: the review link (Settings_Footer).
+.sit-wcpg-rating-link {
+	color: $sit-wcpg-brand;
+	text-decoration: none;
+
+	&:hover,
+	&:focus {
+		color: $sit-wcpg-brand;
+		text-decoration: underline;
+	}
+}
+
+// Plugins screen: the one-time welcome notice (Activation_Notice), logo on the left.
+// Core positions the dismiss button absolutely, so the flex row leaves it in place.
+.sit-wcpg-brand-notice {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding-top: 12px;
+	padding-bottom: 12px;
+}
+
+.sit-wcpg-brand-notice__logo {
+	flex: 0 0 64px;
+	width: 64px;
+	height: 64px;
+}
+
+.sit-wcpg-brand-notice__body {
+	min-width: 0;
+
+	p {
+		max-width: 720px;
+	}
+
+	p:last-child {
+		margin-bottom: 0;
+	}
+}
+
+.sit-wcpg-brand-notice__title {
+	margin: 0 0 4px;
+	font-size: 15px;
 }

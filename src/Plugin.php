@@ -7,11 +7,14 @@
 
 namespace ProductPublishGuard;
 
+use ProductPublishGuard\Admin\Activation_Notice;
 use ProductPublishGuard\Admin\Assets;
 use ProductPublishGuard\Admin\Block_Editor_Notice;
 use ProductPublishGuard\Admin\Editor_Meta_Box;
 use ProductPublishGuard\Admin\Notices;
+use ProductPublishGuard\Admin\Plugin_Action_Links;
 use ProductPublishGuard\Admin\Product_List_Column;
+use ProductPublishGuard\Admin\Settings_Footer;
 use ProductPublishGuard\Engine\Rule_Registry;
 use ProductPublishGuard\Engine\Validator;
 use ProductPublishGuard\Publishing\Publish_Guard;
@@ -156,6 +159,13 @@ final class Plugin {
 		 */
 		$this->publish_guard()->register();
 
+		/*
+		 * Every request as well: a variation's stock changes at checkout, and its parent's
+		 * cached checklist must not outlive that (D12). The service resolves its validator
+		 * on first use, so this builds no rule list.
+		 */
+		$this->checklist()->register();
+
 		if ( is_admin() ) {
 			/*
 			 * Constructing these is cheap: they only add hooks. Everything expensive —
@@ -164,6 +174,9 @@ final class Plugin {
 			 * ordinary admin request therefore never builds the rule list.
 			 */
 			( new Settings_Page( $this->settings() ) )->register();
+			( new Settings_Footer() )->register();
+			( new Plugin_Action_Links() )->register();
+			( new Activation_Notice() )->register();
 			( new Assets( $this->settings() ) )->register();
 			( new Editor_Meta_Box( $this->settings() ) )->register();
 			( new Product_List_Column( $this->settings() ) )->register();
@@ -230,7 +243,8 @@ final class Plugin {
 	 */
 	public function checklist(): Checklist_Service {
 		if ( null === $this->checklist ) {
-			$this->checklist = new Checklist_Service( $this->validator(), $this->settings() );
+			// The validator is resolved by the service on first use, not here: boot() builds this.
+			$this->checklist = new Checklist_Service( null, $this->settings() );
 		}
 
 		return $this->checklist;

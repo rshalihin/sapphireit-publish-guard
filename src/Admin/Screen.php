@@ -110,6 +110,24 @@ final class Screen {
 	}
 
 	/**
+	 * Whether this request is the Plugins screen.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param string $hook_suffix Hook suffix from `admin_enqueue_scripts`, or '' to ask the screen.
+	 * @return bool
+	 */
+	public static function is_plugins_screen( string $hook_suffix = '' ): bool {
+		if ( '' !== $hook_suffix ) {
+			return 'plugins.php' === $hook_suffix;
+		}
+
+		$screen = self::screen();
+
+		return null !== $screen && 'plugins' === $screen->id;
+	}
+
+	/**
 	 * The product being edited, or zero when this is not the product editor.
 	 *
 	 * Read from the global post rather than from the query string: by the time any admin

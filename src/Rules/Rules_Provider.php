@@ -12,9 +12,9 @@ use ProductPublishGuard\Engine\Rule_Registry;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Puts the eleven shipped rules into a registry, then opens it to everyone else.
+ * Puts the twelve shipped rules into a registry, then opens it to everyone else.
  *
- * This is the only file that knows the built-in catalogue. Adding a twelfth rule means
+ * This is the only file that knows the built-in catalogue. Adding a thirteenth rule means
  * writing the rule class and adding one line here; adding one from another plugin means
  * hooking `sit_wcpg_register_rules` and touching nothing in this plugin at all.
  *
@@ -57,7 +57,7 @@ final class Rules_Provider {
 	}
 
 	/**
-	 * The eleven rules this version ships with, in display order.
+	 * The twelve rules this version ships with, in display order.
 	 *
 	 * @since 1.0.0
 	 *
@@ -76,6 +76,7 @@ final class Rules_Provider {
 			new Tags_Rule(),
 			new Sku_Rule(),
 			new Stock_Status_Rule(),
+			new Child_Products_Rule(),
 		);
 	}
 }

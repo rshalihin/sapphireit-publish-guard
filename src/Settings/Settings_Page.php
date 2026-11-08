@@ -178,7 +178,7 @@ final class Settings_Page {
 
 		$values = $this->settings->get_all();
 
-		echo '<div class="wrap">';
+		echo '<div class="wrap sit-wcpg-settings">';
 		echo '<h1>' . esc_html__( 'Product Checklist', 'sapphireit-publish-guard' ) . '</h1>';
 
 		settings_errors();
@@ -359,7 +359,7 @@ final class Settings_Page {
 		echo '<h2>' . esc_html__( 'Publishing', 'sapphireit-publish-guard' ) . '</h2>';
 		echo '<table class="form-table" role="presentation"><tbody>';
 
-		echo '<tr><th scope="row">' . esc_html__( 'Enforcement', 'sapphireit-publish-guard' ) . '</th><td><fieldset>';
+		echo '<tr><th scope="row">' . esc_html__( 'Enforcement', 'sapphireit-publish-guard' ) . '</th><td><fieldset class="sit-wcpg-settings-enforcement">';
 
 		$this->render_checkbox(
 			array( 'publishing', 'block_on_required_failure' ),

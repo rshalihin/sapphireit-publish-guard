@@ -11,6 +11,7 @@ use ProductPublishGuard\Engine\Abstract_Rule;
 use ProductPublishGuard\Engine\Product_Context;
 use ProductPublishGuard\Engine\Rule_Result;
 use ProductPublishGuard\Engine\Severity;
+use ProductPublishGuard\Engine\Type_Family;
 use ProductPublishGuard\Settings\Settings;
 
 defined( 'ABSPATH' ) || exit;
@@ -21,7 +22,8 @@ defined( 'ABSPATH' ) || exit;
  * The count comes from the context, which de-duplicates the featured image against the
  * gallery, so an image used in both places is counted once. A threshold of one or less
  * makes the rule redundant with the featured-image rule, so it skips itself rather than
- * showing the merchant a row that can never say anything new.
+ * showing the merchant a row that can never say anything new. On a variable product the
+ * enabled variations' images count too, and the message says so.
  *
  * @since 1.0.0
  */
@@ -53,11 +55,12 @@ final class Image_Count_Rule extends Abstract_Rule {
 	 * Settings-screen help text.
 	 *
 	 * @since 1.0.0
+	 * @since 1.1.0 Mentions the variations' images.
 	 *
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks the total number of images on the product, counting the featured image and the gallery together.', 'sapphireit-publish-guard' );
+		return __( 'Checks the total number of images on the product, counting the featured image and the gallery together. On a variable product, images on enabled variations count too.', 'sapphireit-publish-guard' );
 	}
 
 	/**
@@ -131,22 +134,47 @@ final class Image_Count_Rule extends Abstract_Rule {
 		}
 
 		if ( $count < $minimum ) {
-			return $this->fail(
-				sprintf(
-					/* translators: 1: number of images on the product, 2: recommended minimum number of images. */
-					_n(
-						'This product has %1$d image; at least %2$d are recommended.',
-						'This product has %1$d images; at least %2$d are recommended.',
-						$count,
-						'sapphireit-publish-guard'
-					),
-					$count,
-					$minimum
-				),
-				$data
-			);
+			return $this->fail( self::shortfall_message( $context->get_type_family(), $count, $minimum ), $data );
 		}
 
 		return $this->pass( '', $data );
+	}
+
+	/**
+	 * The below-minimum message, worded for the product's family.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param string $family  The product's type family.
+	 * @param int    $count   Number of distinct images counted.
+	 * @param int    $minimum Recommended minimum.
+	 * @return string
+	 */
+	private static function shortfall_message( string $family, int $count, int $minimum ): string {
+		if ( Type_Family::VARIABLE === $family ) {
+			return sprintf(
+				/* translators: 1: number of images on the product and its enabled variations, 2: recommended minimum number of images. */
+				_n(
+					'This product and its variations have %1$d image; at least %2$d are recommended — add more in the Product gallery box or on the variations.',
+					'This product and its variations have %1$d images; at least %2$d are recommended — add more in the Product gallery box or on the variations.',
+					$count,
+					'sapphireit-publish-guard'
+				),
+				$count,
+				$minimum
+			);
+		}
+
+		return sprintf(
+			/* translators: 1: number of images on the product, 2: recommended minimum number of images. */
+			_n(
+				'This product has %1$d image; at least %2$d are recommended — add more in the Product gallery box.',
+				'This product has %1$d images; at least %2$d are recommended — add more in the Product gallery box.',
+				$count,
+				'sapphireit-publish-guard'
+			),
+			$count,
+			$minimum
+		);
 	}
 }

@@ -115,7 +115,7 @@ final class Description_Rule extends Abstract_Rule {
 		);
 
 		if ( 0 === $length ) {
-			return $this->fail( __( 'The product description is empty.', 'sapphireit-publish-guard' ), $data );
+			return $this->fail( __( 'The product description is empty — write one in the main editor below the title.', 'sapphireit-publish-guard' ), $data );
 		}
 
 		// A threshold of zero switches the advisory branch off entirely.
@@ -124,8 +124,8 @@ final class Description_Rule extends Abstract_Rule {
 				sprintf(
 					/* translators: 1: current description length in characters, 2: recommended minimum length in characters. */
 					_n(
-						'The product description is %1$d character; at least %2$d are recommended.',
-						'The product description is %1$d characters; at least %2$d are recommended.',
+						'The product description is %1$d character; at least %2$d are recommended — expand it in the main editor below the title.',
+						'The product description is %1$d characters; at least %2$d are recommended — expand it in the main editor below the title.',
 						$length,
 						'sapphireit-publish-guard'
 					),

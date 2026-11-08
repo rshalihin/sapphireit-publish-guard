@@ -224,6 +224,30 @@ final class Rule_Result {
 	}
 
 	/**
+	 * Return a copy pointing at a different fix target.
+	 *
+	 * The target is normalized as the constructor does: one without a string selector
+	 * becomes an empty array. Everything else carries over unchanged.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param array $fix Fix target descriptor.
+	 * @return Rule_Result
+	 */
+	public function with_fix( array $fix ): Rule_Result {
+		return new self(
+			$this->rule_id,
+			$this->outcome,
+			$this->severity,
+			$this->label,
+			$this->group,
+			$this->message,
+			$this->data,
+			$fix
+		);
+	}
+
+	/**
 	 * Derive the displayed status from an outcome and a configured severity.
 	 *
 	 * Only `fail` is severity-sensitive. A `warn` outcome is advisory by nature and must

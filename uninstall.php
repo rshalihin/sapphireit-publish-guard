@@ -2,10 +2,12 @@
 /**
  * Uninstall routine: remove every trace of the plugin.
  *
- * The plugin persists exactly two things:
+ * The plugin persists exactly three things:
  *
- * 1. the `sit_wcpg_settings` option, and
- * 2. short-lived `sit_wcpg_blocked_{user_id}` transients used to carry a "publishing was
+ * 1. the `sit_wcpg_settings` option,
+ * 2. the `sit_wcpg_activation_notice` option, set on activation until the welcome notice
+ *    is shown, and
+ * 3. short-lived `sit_wcpg_blocked_{user_id}` transients used to carry a "publishing was
  *    blocked" notice across the post-save redirect.
  *
  * There are no custom tables, no post meta, no custom capabilities and no role edits,
@@ -19,6 +21,7 @@
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
 delete_option( 'sit_wcpg_settings' );
+delete_option( 'sit_wcpg_activation_notice' );
 
 /*
  * Notice transients expire after 60 seconds on their own, so this loop is belt and
