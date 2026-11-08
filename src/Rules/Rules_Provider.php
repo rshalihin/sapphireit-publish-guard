@@ -50,10 +50,12 @@ final class Rules_Provider {
 		 * enforcement — with no further changes anywhere.
 		 *
 		 * @since 1.0.0
+		 * @since 1.2.0 Receives the rule API version as a second argument.
 		 *
-		 * @param Rule_Registry $registry The registry being populated.
+		 * @param Rule_Registry $registry    The registry being populated.
+		 * @param int           $api_version The rule API version, Rule_Registry::API_VERSION.
 		 */
-		do_action( 'sit_wcpg_register_rules', $registry );
+		do_action( 'sit_wcpg_register_rules', $registry, Rule_Registry::API_VERSION );
 	}
 
 	/**

@@ -1,6 +1,6 @@
 /**
- * Shared admin stylesheet: the products list Readiness column, the settings page and the
- * welcome notice on the Plugins screen.
+ * Shared admin stylesheet: the products list Readiness column, the settings page, the
+ * catalog screen and the welcome notice on the Plugins screen.
  *
  * Enqueued as `sit-wcpg-admin` on those screens only (coding-plan.md section 11.1), and
  * on the Plugins screen only while the welcome notice is pending.
@@ -72,6 +72,15 @@ table.wp-list-table .manage-column.column-sit_wcpg_readiness {
 	width: 100px;
 }
 
+// Catalog screen: which required checks fail, and how old the answer is.
+.sit-wcpg-catalog__checks {
+	color: $sit-wcpg-fail;
+}
+
+.sit-wcpg-catalog__stale {
+	color: $sit-wcpg-muted;
+}
+
 // Settings page. Scoped to the page wrapper, because this stylesheet also loads on the
 // products list, whose table rows must not pick these up.
 .sit-wcpg-settings {
@@ -100,6 +109,14 @@ table.wp-list-table .manage-column.column-sit_wcpg_readiness {
 	// Space under the first checkbox's description, before the second checkbox.
 	.sit-wcpg-settings-enforcement > p:first-of-type {
 		margin-bottom: 12px;
+	}
+
+	// A heading row above each group of rules, the same groups as the editor panel.
+	.sit-wcpg-settings-rules__group th {
+		padding-top: 12px;
+		padding-bottom: 8px;
+		background: #f0f0f1;
+		font-weight: 600;
 	}
 }
 
@@ -146,4 +163,12 @@ table.wp-list-table .manage-column.column-sit_wcpg_readiness {
 .sit-wcpg-brand-notice__title {
 	margin: 0 0 4px;
 	font-size: 15px;
+}
+
+// The review request's three choices (Review_Notice).
+.sit-wcpg-brand-notice__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 16px;
 }

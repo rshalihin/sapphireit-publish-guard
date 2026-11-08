@@ -9,11 +9,13 @@ namespace ProductPublishGuard\Tests\Unit\Engine;
 
 use ProductPublishGuard\Engine\Product_Context;
 use ProductPublishGuard\Engine\Rule_Registry;
+use ProductPublishGuard\Engine\Save_Path;
 use ProductPublishGuard\Engine\Severity;
 use ProductPublishGuard\Engine\Status;
 use ProductPublishGuard\Engine\Validator;
 use ProductPublishGuard\Settings\Settings;
 use ProductPublishGuard\Tests\Stubs\Fake_Rule;
+use ProductPublishGuard\Tests\Stubs\Path_Aware_Rule;
 use Yoast\PHPUnitPolyfills\TestCases\TestCase;
 
 /**
@@ -283,5 +285,19 @@ final class Validator_Test extends TestCase {
 
 		$this->assertTrue( $result->is_ready() );
 		$this->assertSame( array(), $result->get_results() );
+	}
+
+	/**
+	 * A rule can relax or tighten itself by the route the product is saved through.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_rule_sees_the_save_path() {
+		$validator = $this->validator( array( new Path_Aware_Rule() ), $this->settings() );
+
+		$this->assertSame( array( 'path_aware' ), $validator->validate( $this->context()->with_save_path( Save_Path::REST ) )->get_required_failures() );
+		$this->assertSame( array(), $validator->validate( $this->context()->with_save_path( Save_Path::CLASSIC ) )->get_required_failures() );
 	}
 }

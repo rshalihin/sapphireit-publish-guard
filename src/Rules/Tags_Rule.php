@@ -56,7 +56,7 @@ final class Tags_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks that the product has at least one tag.', 'sapphireit-publish-guard' );
+		return __( 'Tags help shoppers find related products. Checks that the product has at least one tag.', 'sapphireit-publish-guard' );
 	}
 
 	/**

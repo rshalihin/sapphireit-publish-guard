@@ -10,6 +10,7 @@ namespace ProductPublishGuard\Tests\Security;
 use ProductPublishGuard\Admin\Editor_Meta_Box;
 use ProductPublishGuard\Admin\Product_List_Column;
 use ProductPublishGuard\Plugin;
+use ProductPublishGuard\Support\Preflight;
 use ProductPublishGuard\Tests\Integration\Publish_Guard_Test_Case;
 
 /**
@@ -153,6 +154,27 @@ final class Output_Security_Test extends Publish_Guard_Test_Case {
 	 */
 	public function test_a_hostile_title_never_reaches_the_checklist(): void {
 		$this->assertNoPayload( $this->render_meta_box( $this->hostile_product() ), 'checklist' );
+	}
+
+	/**
+	 * The pre-flight decision holds a whitelisted kind and two integers, and nothing else.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_preflight_holds_only_a_whitelisted_kind_and_integers(): void {
+		$result = Plugin::instance()->checklist()->validate_post( $this->hostile_product() );
+
+		$preflight = Preflight::for_result( $result, true, false, 'draft' );
+
+		$this->assertSame( array( 'kind', 'required', 'warnings' ), array_keys( $preflight ) );
+		$this->assertContains(
+			$preflight['kind'],
+			array( Preflight::KIND_READY, Preflight::KIND_WARNINGS, Preflight::KIND_BLOCKED, Preflight::KIND_OVERRIDE, Preflight::KIND_ADVISORY, Preflight::KIND_LIVE )
+		);
+		$this->assertIsInt( $preflight['required'] );
+		$this->assertIsInt( $preflight['warnings'] );
 	}
 
 	/**

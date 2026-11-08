@@ -342,7 +342,7 @@ final class Price_Rule_Test extends TestCase {
 	 */
 	public function test_description_text() {
 		$this->assertSame(
-			'Checks that the product has a valid regular price. On a variable product, every enabled variation needs one; grouped products are skipped.',
+			'A product without a price can\'t be bought, and shopping channels disapprove it. Checks that the product has a valid regular price; on a variable product, every enabled variation needs one. Grouped products are skipped.',
 			( new Price_Rule() )->get_description()
 		);
 	}

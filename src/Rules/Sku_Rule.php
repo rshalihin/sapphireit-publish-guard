@@ -57,7 +57,7 @@ final class Sku_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks that the product has a SKU. On a variable product, a SKU on the product covers its variations; otherwise every enabled variation needs its own.', 'sapphireit-publish-guard' );
+		return __( 'Google requires an identifier; without a SKU, GTIN or MPN this product may be disapproved. Checks that the product has a SKU; on a variable product, a SKU on the product covers its variations, otherwise every enabled variation needs its own.', 'sapphireit-publish-guard' );
 	}
 
 	/**

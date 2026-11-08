@@ -58,7 +58,7 @@ final class Sale_Price_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks that a sale price, when one is set, is valid, lower than the regular price and has a sensible date range. On a variable product, each enabled variation on sale is checked.', 'sapphireit-publish-guard' );
+		return __( 'A sale price above the regular price, or a sale that ends before it starts, shows shoppers a broken offer. Checks that a sale price, when set, is lower than the regular price and has a sensible date range; on a variable product, each enabled variation on sale is checked.', 'sapphireit-publish-guard' );
 	}
 
 	/**

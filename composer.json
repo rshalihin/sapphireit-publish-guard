@@ -5,7 +5,7 @@
 	"license": "GPL-2.0-or-later",
 	"keywords": [ "wordpress", "woocommerce", "products", "checklist", "quality" ],
 	"require": {
-		"php": ">=8.0"
+		"php": ">=8.1"
 	},
 	"require-dev": {
 		"squizlabs/php_codesniffer": "^3.13",

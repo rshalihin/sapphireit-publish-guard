@@ -60,7 +60,7 @@ final class Image_Count_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks the total number of images on the product, counting the featured image and the gallery together. On a variable product, images on enabled variations count too.', 'sapphireit-publish-guard' );
+		return __( 'Products with several photos look complete and convert better. Checks the total number of images, counting the featured image and the gallery together; on a variable product, images on enabled variations count too.', 'sapphireit-publish-guard' );
 	}
 
 	/**

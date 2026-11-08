@@ -109,4 +109,68 @@ describe( 'ChecklistApp', () => {
 		expect( client.validate ).toHaveBeenLastCalledWith( DRAFT );
 		expect( watcher.snapshotNow ).toHaveBeenCalled();
 	} );
+
+	const BLOCKED = {
+		...RESULT,
+		preflight: { kind: 'blocked', required: 1, warnings: 0 },
+	};
+
+	const READY = {
+		...RESULT,
+		is_ready: true,
+		preflight: { kind: 'ready', required: 0, warnings: 0 },
+	};
+
+	const statement = ( container ) =>
+		container.querySelector( '.sit-wcpg-preflight' );
+
+	it( 'renders preflight statement from result', () => {
+		const { container } = render(
+			<ChecklistApp
+				data={ { restPath: '/products/12/validate', result: BLOCKED } }
+			/>
+		);
+
+		expect( statement( container ).textContent ).toBe(
+			"This product can't be published yet — 1 required check fails. Publishing now saves it as a draft."
+		);
+		expect(
+			statement( container ).classList.contains(
+				'sit-wcpg-preflight--blocked'
+			)
+		).toBe( true );
+		expect( statement( container ).getAttribute( 'role' ) ).toBe(
+			'status'
+		);
+	} );
+
+	it( 'updates statement when a new result arrives', async () => {
+		const { container } = render(
+			<ChecklistApp
+				data={ { restPath: '/products/12/validate', result: BLOCKED } }
+			/>
+		);
+
+		act( () => watcher.args.onSnapshot( { regular_price: '9' } ) );
+		await act( async () => client.pending[ 0 ].resolve( READY ) );
+
+		expect( statement( container ).textContent ).toBe(
+			'This product can be published now.'
+		);
+		expect(
+			statement( container ).classList.contains(
+				'sit-wcpg-preflight--ready'
+			)
+		).toBe( true );
+	} );
+
+	it( 'renders no statement for a result without one', () => {
+		const { container } = render(
+			<ChecklistApp
+				data={ { restPath: '/products/12/validate', result: RESULT } }
+			/>
+		);
+
+		expect( statement( container ) ).toBeNull();
+	} );
 } );

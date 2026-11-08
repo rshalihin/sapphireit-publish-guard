@@ -17,6 +17,7 @@ defined( 'ABSPATH' ) || exit;
  * readiness rules live here exactly once.
  *
  * @since 1.0.0
+ * @api
  */
 final class Validation_Result {
 
@@ -109,6 +110,7 @@ final class Validation_Result {
 	 * Aggregate a set of rule results for a product context.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param Product_Context $context       The context the rules were run against.
 	 * @param array           $results       Rule_Result objects in display order.
@@ -189,6 +191,7 @@ final class Validation_Result {
 	 * Product identifier.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return int
 	 */
@@ -200,6 +203,7 @@ final class Validation_Result {
 	 * WooCommerce product type.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -211,6 +215,7 @@ final class Validation_Result {
 	 * Rule results in display order.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return array
 	 */
@@ -222,6 +227,7 @@ final class Validation_Result {
 	 * Result counts.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return array
 	 */
@@ -233,6 +239,7 @@ final class Validation_Result {
 	 * Whether the product is ready: no result has the `fail` status.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return bool
 	 */
@@ -246,6 +253,7 @@ final class Validation_Result {
 	 * Publishing is blocked only when this is non-empty and enforcement is enabled.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return array
 	 */
@@ -257,6 +265,7 @@ final class Validation_Result {
 	 * Unix timestamp of the run.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return int
 	 */
@@ -268,6 +277,7 @@ final class Validation_Result {
 	 * Hash of the settings this run was made under.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -282,6 +292,7 @@ final class Validation_Result {
 	 * rule labels and messages, not UI chrome.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -303,6 +314,7 @@ final class Validation_Result {
 	 * JSON-safe representation, in the shape defined in coding-plan.md section 5.4.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return array
 	 */

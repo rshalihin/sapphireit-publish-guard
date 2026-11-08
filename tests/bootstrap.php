@@ -55,11 +55,18 @@ if ( $sit_wcpg_wp_tests && file_exists( $sit_wcpg_wp_tests . '/includes/function
 	require $sit_wcpg_wp_tests . '/includes/bootstrap.php';
 
 	/*
+	 * Tests flush the indexer themselves. At process end, what is left pending names rows
+	 * that have been rolled back, and handing those on would queue jobs for nothing.
+	 */
+	remove_action( 'shutdown', array( ProductPublishGuard\Plugin::instance()->readiness_indexer(), 'flush_pending' ), 1 );
+
+	/*
 	 * After the suite has booted, the plugin's autoloader is registered, so the rule
 	 * double can be declared. The integration tests use it to build a registry whose
 	 * rules are known, rather than asserting against the twelve shipped ones.
 	 */
 	require_once __DIR__ . '/stubs/class-fake-rule.php';
+	require_once __DIR__ . '/stubs/class-no-scheduler-rebuild.php';
 	require_once __DIR__ . '/Integration/Publish_Guard_Test_Case.php';
 
 	return;
@@ -87,3 +94,4 @@ ProductPublishGuard\Autoloader::register();
 
 require_once __DIR__ . '/stubs/class-fake-rule.php';
 require_once __DIR__ . '/stubs/class-legacy-rule.php';
+require_once __DIR__ . '/stubs/class-path-aware-rule.php';

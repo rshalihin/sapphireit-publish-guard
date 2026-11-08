@@ -131,6 +131,19 @@ final class Rules_Provider_Test extends TestCase {
 	}
 
 	/**
+	 * A built-in description says what the check prevents before it says what it checks (D16).
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_every_description_leads_with_a_consequence() {
+		foreach ( $this->registry->all() as $rule ) {
+			$this->assertStringStartsNotWith( 'Checks', $rule->get_description(), $rule->get_id() . ' leads with the mechanism.' );
+		}
+	}
+
+	/**
 	 * The shipped severities are the ones the plan settled on: five requirements, seven
 	 * advisories.
 	 *
@@ -177,7 +190,40 @@ final class Rules_Provider_Test extends TestCase {
 
 		$this->assertCount( 1, $fired );
 		$this->assertSame( 'sit_wcpg_register_rules', $fired[0]['hook'] );
-		$this->assertSame( array( $this->registry ), $fired[0]['args'] );
+		$this->assertSame( array( $this->registry, Rule_Registry::API_VERSION ), $fired[0]['args'] );
+	}
+
+	/**
+	 * The hook tells a listener which rule API it is talking to.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_register_rules_receives_the_api_version() {
+		$args = $GLOBALS['sit_wcpg_test_actions'][0]['args'];
+
+		$this->assertCount( 2, $args );
+		$this->assertSame( 2, $args[1] );
+		$this->assertIsInt( $args[1] );
+	}
+
+	/**
+	 * A listener written before the version argument existed keeps working.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_one_argument_listeners_still_work() {
+		$args     = $GLOBALS['sit_wcpg_test_actions'][0]['args'];
+		$listener = static function ( Rule_Registry $registry ) {
+			$registry->register( new Fake_Rule( 'legacy_listener' ) );
+		};
+
+		$listener( ...$args );
+
+		$this->assertTrue( $this->registry->has( 'legacy_listener' ) );
 	}
 
 	/**

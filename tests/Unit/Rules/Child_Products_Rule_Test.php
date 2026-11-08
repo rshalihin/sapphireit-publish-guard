@@ -83,7 +83,7 @@ final class Child_Products_Rule_Test extends TestCase {
 		$this->assertSame( Severity::WARNING, $rule->get_default_severity() );
 		$this->assertTrue( $rule->is_enabled_by_default() );
 		$this->assertSame(
-			'Checks that a variable product has at least one enabled variation, and that a grouped product contains at least one existing product that is published.',
+			'A variable product with no enabled variation, or a grouped product with nothing published in it, shows shoppers an empty page. Checks that variable and grouped products have something to sell.',
 			$rule->get_description()
 		);
 	}

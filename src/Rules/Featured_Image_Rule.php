@@ -55,7 +55,7 @@ final class Featured_Image_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks that the product has a featured image and that the image is still in the media library.', 'sapphireit-publish-guard' );
+		return __( 'Shopping channels such as Google disapprove products without an image, and shoppers skip them. Checks that the product has a featured image that is still in the media library.', 'sapphireit-publish-guard' );
 	}
 
 	/**

@@ -349,7 +349,7 @@ final class Image_Count_Rule_Test extends TestCase {
 	 */
 	public function test_description_text() {
 		$this->assertSame(
-			'Checks the total number of images on the product, counting the featured image and the gallery together. On a variable product, images on enabled variations count too.',
+			'Products with several photos look complete and convert better. Checks the total number of images, counting the featured image and the gallery together; on a variable product, images on enabled variations count too.',
 			( new Image_Count_Rule() )->get_description()
 		);
 	}

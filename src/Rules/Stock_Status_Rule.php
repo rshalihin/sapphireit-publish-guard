@@ -65,7 +65,7 @@ final class Stock_Status_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks that the product has a stock status and that a managed quantity agrees with it. On a variable product, each enabled variation is checked; grouped and external products are skipped.', 'sapphireit-publish-guard' );
+		return __( 'A product with a missing or contradictory stock status can show as unavailable or be dropped from feeds. Checks that the stock status is set and agrees with a managed quantity; on a variable product, each enabled variation is checked. Grouped and external products are skipped.', 'sapphireit-publish-guard' );
 	}
 
 	/**

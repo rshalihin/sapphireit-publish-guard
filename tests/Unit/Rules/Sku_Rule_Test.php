@@ -283,7 +283,7 @@ final class Sku_Rule_Test extends TestCase {
 	 */
 	public function test_description_text() {
 		$this->assertSame(
-			'Checks that the product has a SKU. On a variable product, a SKU on the product covers its variations; otherwise every enabled variation needs its own.',
+			'Google requires an identifier; without a SKU, GTIN or MPN this product may be disapproved. Checks that the product has a SKU; on a variable product, a SKU on the product covers its variations, otherwise every enabled variation needs its own.',
 			( new Sku_Rule() )->get_description()
 		);
 	}

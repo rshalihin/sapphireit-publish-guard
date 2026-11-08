@@ -24,6 +24,7 @@ defined( 'ABSPATH' ) || exit;
  * and Bulk Edit (which posts only a status) correct with no special-casing in the rules.
  *
  * @since 1.0.0
+ * @api
  */
 final class Product_Context {
 
@@ -42,6 +43,17 @@ final class Product_Context {
 	 * @var array
 	 */
 	private array $values;
+
+	/**
+	 * How this product is being saved; one of the Save_Path constants.
+	 *
+	 * A property rather than a value: no draft, REST payload or `from_array()` key can set
+	 * it, only the guard, through `with_save_path()` (D3).
+	 *
+	 * @since 1.2.0
+	 * @var string
+	 */
+	private string $save_path = Save_Path::NONE;
 
 	/**
 	 * The keys an override array may set, mapped to their normalizer.
@@ -117,6 +129,7 @@ final class Product_Context {
 	 * Build a context from a saved product.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param \WC_Product $product The saved product.
 	 * @return Product_Context
@@ -129,6 +142,7 @@ final class Product_Context {
 	 * Build a context from a saved product plus an unsaved draft snapshot.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param \WC_Product $product   The saved product.
 	 * @param array       $overrides Sanitized draft values; only present keys win.
@@ -146,6 +160,7 @@ final class Product_Context {
 	 * accessor then falls back to its empty value.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param \WC_Product|null $product   The stored product, or null for a new post.
 	 * @param array            $overrides `Save_Request_Reader` output; only present keys win.
@@ -162,6 +177,7 @@ final class Product_Context {
 	 * WooCommerce function is called for anything but the text-length normalization.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param array $data Context values; absent keys take a safe default.
 	 * @return Product_Context
@@ -436,6 +452,7 @@ final class Product_Context {
 	 * The stored product, when there is one.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return \WC_Product|null
 	 */
@@ -444,9 +461,41 @@ final class Product_Context {
 	}
 
 	/**
+	 * A copy of this context carrying the route the product is being saved through.
+	 *
+	 * @since 1.2.0
+	 * @api
+	 *
+	 * @param string $path One of the Save_Path constants; anything else becomes `none`.
+	 * @return Product_Context A new instance; this one is unchanged.
+	 */
+	public function with_save_path( string $path ): Product_Context {
+		$copy = clone $this;
+
+		$copy->save_path = Save_Path::is_valid( $path ) ? $path : Save_Path::NONE;
+
+		return $copy;
+	}
+
+	/**
+	 * The route the product is being saved through.
+	 *
+	 * Always `none` for a checklist read, because cached results must not depend on it.
+	 *
+	 * @since 1.2.0
+	 * @api
+	 *
+	 * @return string One of the Save_Path constants.
+	 */
+	public function get_save_path(): string {
+		return $this->save_path;
+	}
+
+	/**
 	 * Product identifier. Zero for a product that has never been saved.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return int
 	 */
@@ -463,6 +512,7 @@ final class Product_Context {
 	 * WooCommerce product type, for example `simple` or `variable`.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -483,6 +533,7 @@ final class Product_Context {
 	 * back to the unfiltered one.
 	 *
 	 * @since 1.1.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -503,6 +554,7 @@ final class Product_Context {
 	 * Post status of the product.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -519,6 +571,7 @@ final class Product_Context {
 	 * Product title.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -535,6 +588,7 @@ final class Product_Context {
 	 * Long description, as stored.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -551,6 +605,7 @@ final class Product_Context {
 	 * Short description, as stored.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -567,6 +622,7 @@ final class Product_Context {
 	 * Character count of the long description, markup and shortcodes removed.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return int
 	 */
@@ -583,6 +639,7 @@ final class Product_Context {
 	 * Character count of the short description, markup and shortcodes removed.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return int
 	 */
@@ -599,6 +656,7 @@ final class Product_Context {
 	 * Featured image attachment identifier. Zero when there is none.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return int
 	 */
@@ -615,6 +673,7 @@ final class Product_Context {
 	 * Whether the featured image exists in the media library and is an image.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return bool
 	 */
@@ -633,6 +692,7 @@ final class Product_Context {
 	 * Gallery attachment identifiers.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return array
 	 */
@@ -652,6 +712,7 @@ final class Product_Context {
 	 *
 	 * @since 1.0.0
 	 * @since 1.1.0 Counts the enabled variations' images on a variable product.
+	 * @api
 	 *
 	 * @return int
 	 */
@@ -675,6 +736,7 @@ final class Product_Context {
 	 * Regular price, as stored. Kept as a string so "0" and "" stay distinguishable.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -691,6 +753,7 @@ final class Product_Context {
 	 * Sale price, as stored.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -707,6 +770,7 @@ final class Product_Context {
 	 * Start of the sale window as `Y-m-d H:i:s`, or an empty string.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -723,6 +787,7 @@ final class Product_Context {
 	 * End of the sale window as `Y-m-d H:i:s`, or an empty string.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -739,6 +804,7 @@ final class Product_Context {
 	 * Product SKU.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -755,6 +821,7 @@ final class Product_Context {
 	 * Stock status, for example `instock`.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -771,6 +838,7 @@ final class Product_Context {
 	 * Whether stock is managed at product level.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return bool
 	 */
@@ -787,6 +855,7 @@ final class Product_Context {
 	 * Managed stock quantity, or null when stock is not managed.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return int|null
 	 */
@@ -811,6 +880,7 @@ final class Product_Context {
 	 * Product category term identifiers.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return array
 	 */
@@ -827,6 +897,7 @@ final class Product_Context {
 	 * Product tag term identifiers.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return array
 	 */
@@ -843,6 +914,7 @@ final class Product_Context {
 	 * The store's default product category term identifier.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return int
 	 */
@@ -859,6 +931,7 @@ final class Product_Context {
 	 * Whether the only category on the product is the store default.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return bool
 	 */
@@ -881,6 +954,7 @@ final class Product_Context {
 	 * before the form is submitted, so at publish time they are stored.
 	 *
 	 * @since 1.1.0
+	 * @api
 	 *
 	 * @return Variation_Data[]
 	 */
@@ -901,6 +975,7 @@ final class Product_Context {
 	 * The linked products that still exist. Empty unless the family is grouped.
 	 *
 	 * @since 1.1.0
+	 * @api
 	 *
 	 * @return int[]
 	 */
@@ -916,6 +991,7 @@ final class Product_Context {
 	 * How many of the existing linked products are published. Zero unless grouped.
 	 *
 	 * @since 1.1.0
+	 * @api
 	 *
 	 * @return int
 	 */

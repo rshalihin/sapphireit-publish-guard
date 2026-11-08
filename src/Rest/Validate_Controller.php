@@ -11,6 +11,7 @@ use DateTimeImmutable;
 use ProductPublishGuard\Admin\Screen;
 use ProductPublishGuard\Plugin;
 use ProductPublishGuard\Support\Checklist_Service;
+use ProductPublishGuard\Support\Preflight;
 use Throwable;
 use WC_Product;
 use WP_Error;
@@ -316,7 +317,17 @@ final class Validate_Controller {
 			return self::not_found();
 		}
 
-		return rest_ensure_response( $result->to_array() );
+		$plugin = Plugin::instance();
+		$data   = $result->to_array();
+
+		$data['preflight'] = Preflight::for_result(
+			$result,
+			$plugin->settings()->blocks_publishing(),
+			$plugin->publish_guard()->can_override( get_current_user_id() ),
+			(string) get_post_status( $product_id )
+		);
+
+		return rest_ensure_response( $data );
 	}
 
 	/**

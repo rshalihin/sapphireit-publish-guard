@@ -56,7 +56,7 @@ final class Description_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks that the product has a description, and warns when it is shorter than the minimum length.', 'sapphireit-publish-guard' );
+		return __( 'Shoppers and search engines use the description to understand what you sell, and a thin one costs sales. Checks that the product has a description, and warns when it is shorter than the minimum length.', 'sapphireit-publish-guard' );
 	}
 
 	/**

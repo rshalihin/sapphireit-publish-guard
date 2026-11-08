@@ -19,6 +19,7 @@ defined( 'ABSPATH' ) || exit;
  * and they must not depend on each other or on execution order.
  *
  * @since 1.0.0
+ * @api
  */
 interface Rule_Interface {
 
@@ -26,6 +27,7 @@ interface Rule_Interface {
 	 * Stable, snake_case identifier. Used as the settings key and in the JSON payload.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -35,6 +37,7 @@ interface Rule_Interface {
 	 * Short translated label shown in the checklist row.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -44,6 +47,7 @@ interface Rule_Interface {
 	 * Translated help text shown on the settings screen.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -53,6 +57,7 @@ interface Rule_Interface {
 	 * Rule group: content, media, pricing, organization or inventory.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -62,6 +67,7 @@ interface Rule_Interface {
 	 * Display order, in steps of ten. Display order only: rules never depend on it.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return int
 	 */
@@ -71,6 +77,7 @@ interface Rule_Interface {
 	 * Severity applied until the merchant changes it.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string One of the Severity constants.
 	 */
@@ -80,6 +87,7 @@ interface Rule_Interface {
 	 * Whether the rule is enabled on a site that has never saved the settings.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return bool
 	 */
@@ -91,6 +99,7 @@ interface Rule_Interface {
 	 * An unsupported rule is not run and does not appear in the checklist.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param Product_Context $context The product being validated.
 	 * @return bool
@@ -101,6 +110,7 @@ interface Rule_Interface {
 	 * Where the merchant should go to fix a failure.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return array Keys `selector`, `label` and `panel`, or an empty array.
 	 */
@@ -113,6 +123,7 @@ interface Rule_Interface {
 	 * validator catches throwables, but a rule that throws is a bug.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param Product_Context $context  The product being validated.
 	 * @param Settings        $settings The merchant's configuration.

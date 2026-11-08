@@ -81,9 +81,10 @@ final class Checklist_Service {
 	 * while its parent can still be resolved.
 	 *
 	 * @since 1.1.0
+	 * @since 1.2.0 Public: the readiness indexer listens to the same writes.
 	 * @var string[]
 	 */
-	private const VARIATION_HOOKS = array(
+	public const VARIATION_HOOKS = array(
 		'woocommerce_new_product_variation',
 		'woocommerce_update_product_variation',
 		'woocommerce_before_delete_product_variation',

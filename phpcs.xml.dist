@@ -17,9 +17,9 @@
 	<arg name="colors"/>
 	<arg value="ps"/>
 
-	<!-- Targets. Both are the floors settled in coding-plan.md section 2. -->
+	<!-- Targets. Both are the declared floors; PHP is 8.1 since v1.2.0 (coding-plan.md D1). -->
 	<config name="minimum_wp_version" value="6.5"/>
-	<config name="testVersion" value="8.0-"/>
+	<config name="testVersion" value="8.1-"/>
 
 	<rule ref="WordPress">
 		<!--

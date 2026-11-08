@@ -127,6 +127,34 @@ final class Editor_Meta_Box_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Without JavaScript the statement is on the page too, in its tone.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_fallback_prints_preflight_statement(): void {
+		$post = $this->product();
+
+		wp_update_post(
+			array(
+				'ID'          => $post->ID,
+				'post_status' => 'draft',
+			)
+		);
+
+		$registry = new Rule_Registry();
+		$registry->register( new Fake_Rule( 'beta', 'fail', 20 ) );
+
+		$html = $this->render( $this->box( $registry ), get_post( $post->ID ) );
+
+		$this->assertStringContainsString(
+			'<p class="sit-wcpg-preflight sit-wcpg-preflight--blocked">' . esc_html( "This product can't be published yet — 1 required check fails. Publishing now saves it as a draft." ) . '</p>',
+			$html
+		);
+	}
+
+	/**
 	 * The box is registered in the side column of the product screen.
 	 *
 	 * @since 1.0.0

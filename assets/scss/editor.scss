@@ -10,6 +10,7 @@
  * status icons' own colours live with their shapes in _status-icons.scss.
  */
 
+@use "sass:map";
 @use "status-icons" as *;
 
 $sit-wcpg-pass: #00a32a;
@@ -50,6 +51,20 @@ $sit-wcpg-rule: #dcdcde;
 .sit-wcpg-checklist__spinner {
 	display: inline-flex;
 	margin-left: auto;
+}
+
+// The pre-flight statement. Its words carry the meaning; the border only sets the tone.
+.sit-wcpg-preflight {
+	margin: 0 0 8px;
+	padding: 2px 0 2px 8px;
+	border-left: 3px solid map.get($sit-wcpg-status-icon-colors, skipped);
+}
+
+@each $kind, $status in (ready: pass, warnings: warning, blocked: fail, override: warning, advisory: warning, live: skipped) {
+
+	.sit-wcpg-preflight--#{$kind} {
+		border-left-color: map.get($sit-wcpg-status-icon-colors, $status);
+	}
 }
 
 .sit-wcpg-checklist__body {

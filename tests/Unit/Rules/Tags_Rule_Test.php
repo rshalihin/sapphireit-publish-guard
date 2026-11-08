@@ -80,4 +80,18 @@ final class Tags_Rule_Test extends TestCase {
 		$this->assertSame( Severity::WARNING, $rule->get_default_severity() );
 		$this->assertSame( Status::WARNING, $this->check( array() )->with_severity( Severity::WARNING )->get_status() );
 	}
+
+	/**
+	 * The settings screen leads with what the check prevents.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_description_text() {
+		$this->assertSame(
+			'Tags help shoppers find related products. Checks that the product has at least one tag.',
+			( new Tags_Rule() )->get_description()
+		);
+	}
 }

@@ -55,7 +55,7 @@ final class Short_Description_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks that the product has a short description, and warns when it is shorter than the minimum length.', 'sapphireit-publish-guard' );
+		return __( 'The short description is what shoppers read next to the price and the Add to cart button. Checks that the product has one, and warns when it is shorter than the minimum length.', 'sapphireit-publish-guard' );
 	}
 
 	/**

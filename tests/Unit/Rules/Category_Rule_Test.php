@@ -111,4 +111,18 @@ final class Category_Rule_Test extends TestCase {
 	public function test_no_configured_default_means_no_default_only_warning() {
 		$this->assertSame( Status::PASS, $this->check( array( 15 ), 0 )->get_status() );
 	}
+
+	/**
+	 * The settings screen leads with what the check prevents.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_description_text() {
+		$this->assertSame(
+			'Products left only in the default category are hard to browse and poorly matched by shopping channels. Checks that the product is in at least one category, and warns when the only one is the store default.',
+			( new Category_Rule() )->get_description()
+		);
+	}
 }

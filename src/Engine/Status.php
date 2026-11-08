@@ -12,10 +12,10 @@ defined( 'ABSPATH' ) || exit;
 /**
  * The four statuses a checklist row can have.
  *
- * A class of constants rather than a PHP enum: the declared floor is PHP 8.0 and
- * enums are 8.1+.
+ * A class of constants rather than a PHP enum: enums stay out of the `@api` types.
  *
  * @since 1.0.0
+ * @api
  */
 final class Status {
 
@@ -23,6 +23,7 @@ final class Status {
 	 * The rule's requirement is met.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 * @var string
 	 */
 	public const PASS = 'pass';
@@ -31,6 +32,7 @@ final class Status {
 	 * The rule's requirement is not met, but publishing is not blocked by it.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 * @var string
 	 */
 	public const WARNING = 'warning';
@@ -39,6 +41,7 @@ final class Status {
 	 * The rule's requirement is not met and the rule is configured as required.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 * @var string
 	 */
 	public const FAIL = 'fail';
@@ -47,6 +50,7 @@ final class Status {
 	 * The rule does not apply to this product, so it is excluded from the counts.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 * @var string
 	 */
 	public const SKIPPED = 'skipped';
@@ -68,6 +72,7 @@ final class Status {
 	 * Every valid status.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string[]
 	 */
@@ -79,6 +84,7 @@ final class Status {
 	 * Whether a value is one of the four statuses.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param string $status Candidate status.
 	 * @return bool
@@ -94,6 +100,7 @@ final class Status {
 	 * An unknown status sorts last so a bad value can never hide a real failure.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param string $status Status to weigh.
 	 * @return int

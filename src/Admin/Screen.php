@@ -48,6 +48,14 @@ final class Screen {
 	public const SETTINGS_HOOK = 'woocommerce_page_' . Settings_Page::MENU_SLUG;
 
 	/**
+	 * Hook suffix of the catalog screen, as produced by a submenu of Products (R8).
+	 *
+	 * @since 1.2.0
+	 * @var string
+	 */
+	public const CATALOG_HOOK = 'product_page_' . Catalog_Page::MENU_SLUG;
+
+	/**
 	 * Hook suffixes that render a single post.
 	 *
 	 * @since 1.0.0
@@ -107,6 +115,24 @@ final class Screen {
 		$screen = self::screen();
 
 		return null !== $screen && self::SETTINGS_HOOK === $screen->id;
+	}
+
+	/**
+	 * Whether this request is the catalog screen.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param string $hook_suffix Hook suffix from `admin_enqueue_scripts`, or '' to ask the screen.
+	 * @return bool
+	 */
+	public static function is_catalog_screen( string $hook_suffix = '' ): bool {
+		if ( '' !== $hook_suffix ) {
+			return self::CATALOG_HOOK === $hook_suffix;
+		}
+
+		$screen = self::screen();
+
+		return null !== $screen && self::CATALOG_HOOK === $screen->id;
 	}
 
 	/**

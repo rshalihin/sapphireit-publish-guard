@@ -1,6 +1,6 @@
 {
 	"core": "WordPress/WordPress#6.5",
-	"phpVersion": "8.0",
+	"phpVersion": "8.1",
 	"plugins": [
 		".",
 		"https://downloads.wordpress.org/plugin/woocommerce.9.0.0.zip"

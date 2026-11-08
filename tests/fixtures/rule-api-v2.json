@@ -1,0 +1,204 @@
+{
+    "api_version": 2,
+    "types": {
+        "ProductPublishGuard\\Engine\\Rule_Interface": {
+            "constants": [],
+            "methods": {
+                "get_id": "(): string",
+                "get_label": "(): string",
+                "get_description": "(): string",
+                "get_group": "(): string",
+                "get_priority": "(): int",
+                "get_default_severity": "(): string",
+                "is_enabled_by_default": "(): bool",
+                "supports": "(ProductPublishGuard\\Engine\\Product_Context $context): bool",
+                "get_fix_target": "(): array",
+                "check": "(ProductPublishGuard\\Engine\\Product_Context $context, ProductPublishGuard\\Settings\\Settings $settings): ProductPublishGuard\\Engine\\Rule_Result"
+            }
+        },
+        "ProductPublishGuard\\Engine\\Abstract_Rule": {
+            "constants": [],
+            "methods": {
+                "get_id": "(): string",
+                "get_label": "(): string",
+                "get_description": "(): string",
+                "get_group": "(): string",
+                "get_priority": "(): int",
+                "get_default_severity": "(): string",
+                "is_enabled_by_default": "(): bool",
+                "supports": "(ProductPublishGuard\\Engine\\Product_Context $context): bool",
+                "get_fix_target": "(): array",
+                "pass": "(string $message = '', array $data = array()): ProductPublishGuard\\Engine\\Rule_Result",
+                "fail": "(string $message, array $data = array()): ProductPublishGuard\\Engine\\Rule_Result",
+                "warn": "(string $message, array $data = array()): ProductPublishGuard\\Engine\\Rule_Result",
+                "skip": "(string $message = '', array $data = array()): ProductPublishGuard\\Engine\\Rule_Result"
+            }
+        },
+        "ProductPublishGuard\\Engine\\Product_Context": {
+            "constants": [],
+            "methods": {
+                "from_product": "(WC_Product $product): ProductPublishGuard\\Engine\\Product_Context",
+                "from_product_with_overrides": "(WC_Product $product, array $overrides): ProductPublishGuard\\Engine\\Product_Context",
+                "from_save_request": "(?WC_Product $product, array $overrides): ProductPublishGuard\\Engine\\Product_Context",
+                "from_array": "(array $data): ProductPublishGuard\\Engine\\Product_Context",
+                "get_product": "(): ?WC_Product",
+                "with_save_path": "(string $path): ProductPublishGuard\\Engine\\Product_Context",
+                "get_save_path": "(): string",
+                "get_product_id": "(): int",
+                "get_product_type": "(): string",
+                "get_type_family": "(): string",
+                "get_post_status": "(): string",
+                "get_title": "(): string",
+                "get_description": "(): string",
+                "get_short_description": "(): string",
+                "get_description_length": "(): int",
+                "get_short_description_length": "(): int",
+                "get_featured_image_id": "(): int",
+                "has_valid_featured_image": "(): bool",
+                "get_gallery_image_ids": "(): array",
+                "get_image_count": "(): int",
+                "get_regular_price": "(): string",
+                "get_sale_price": "(): string",
+                "get_sale_from": "(): string",
+                "get_sale_to": "(): string",
+                "get_sku": "(): string",
+                "get_stock_status": "(): string",
+                "get_manage_stock": "(): bool",
+                "get_stock_quantity": "(): ?int",
+                "get_category_ids": "(): array",
+                "get_tag_ids": "(): array",
+                "get_default_category_id": "(): int",
+                "is_only_default_category": "(): bool",
+                "get_variations": "(): array",
+                "get_child_ids": "(): array",
+                "get_published_child_count": "(): int"
+            }
+        },
+        "ProductPublishGuard\\Engine\\Rule_Result": {
+            "constants": [],
+            "methods": {
+                "pass": "(string $rule_id, string $label, string $group, string $message = '', array $data = array(), array $fix = array()): ProductPublishGuard\\Engine\\Rule_Result",
+                "fail": "(string $rule_id, string $label, string $group, string $message = '', array $data = array(), array $fix = array()): ProductPublishGuard\\Engine\\Rule_Result",
+                "warn": "(string $rule_id, string $label, string $group, string $message = '', array $data = array(), array $fix = array()): ProductPublishGuard\\Engine\\Rule_Result",
+                "skip": "(string $rule_id, string $label, string $group, string $message = '', array $data = array(), array $fix = array()): ProductPublishGuard\\Engine\\Rule_Result",
+                "with_severity": "(string $severity): ProductPublishGuard\\Engine\\Rule_Result",
+                "with_fix": "(array $fix): ProductPublishGuard\\Engine\\Rule_Result",
+                "get_rule_id": "(): string",
+                "get_outcome": "(): string",
+                "get_status": "(): string",
+                "get_severity": "(): string",
+                "get_label": "(): string",
+                "get_message": "(): string",
+                "get_group": "(): string",
+                "get_data": "(): array",
+                "get_fix": "(): array",
+                "to_array": "(): array"
+            }
+        },
+        "ProductPublishGuard\\Engine\\Validation_Result": {
+            "constants": [],
+            "methods": {
+                "from_results": "(ProductPublishGuard\\Engine\\Product_Context $context, array $results, string $settings_hash = ''): ProductPublishGuard\\Engine\\Validation_Result",
+                "get_product_id": "(): int",
+                "get_product_type": "(): string",
+                "get_results": "(): array",
+                "get_counts": "(): array",
+                "is_ready": "(): bool",
+                "get_required_failures": "(): array",
+                "get_generated_at": "(): int",
+                "get_settings_hash": "(): string",
+                "get_summary_label": "(): string",
+                "to_array": "(): array"
+            }
+        },
+        "ProductPublishGuard\\Engine\\Rule_Registry": {
+            "constants": {
+                "API_VERSION": 2
+            },
+            "methods": {
+                "register": "(ProductPublishGuard\\Engine\\Rule_Interface $rule): bool",
+                "has": "(string $id): bool",
+                "get": "(string $id): ?ProductPublishGuard\\Engine\\Rule_Interface",
+                "all": "(): array"
+            }
+        },
+        "ProductPublishGuard\\Engine\\Severity": {
+            "constants": {
+                "REQUIRED": "required",
+                "WARNING": "warning"
+            },
+            "methods": {
+                "all": "(): array",
+                "is_valid": "(string $severity): bool",
+                "label": "(string $severity): string"
+            }
+        },
+        "ProductPublishGuard\\Engine\\Status": {
+            "constants": {
+                "PASS": "pass",
+                "WARNING": "warning",
+                "FAIL": "fail",
+                "SKIPPED": "skipped"
+            },
+            "methods": {
+                "all": "(): array",
+                "is_valid": "(string $status): bool",
+                "weight": "(string $status): int"
+            }
+        },
+        "ProductPublishGuard\\Engine\\Save_Path": {
+            "constants": {
+                "CLASSIC": "classic",
+                "QUICK_EDIT": "quick_edit",
+                "BULK_EDIT": "bulk_edit",
+                "REST": "rest",
+                "PROGRAMMATIC": "programmatic",
+                "CRUD": "crud",
+                "SCHEDULED": "scheduled",
+                "CLI": "cli",
+                "NONE": "none"
+            },
+            "methods": {
+                "all": "(): array",
+                "is_valid": "(string $path): bool",
+                "admin_paths": "(): array"
+            }
+        },
+        "ProductPublishGuard\\Engine\\Type_Family": {
+            "constants": {
+                "SIMPLE": "simple",
+                "VARIABLE": "variable",
+                "GROUPED": "grouped",
+                "EXTERNAL": "external"
+            },
+            "methods": {
+                "all": "(): array",
+                "is_valid": "(string $family): bool",
+                "from_type": "(string $type): string"
+            }
+        },
+        "ProductPublishGuard\\Settings\\Settings": {
+            "constants": [],
+            "methods": {
+                "rule_is_enabled": "(string $rule_id): bool",
+                "rule_severity": "(string $rule_id): string",
+                "threshold": "(string $key): int"
+            }
+        }
+    },
+    "hooks": {
+        "public": [
+            "sit_wcpg_register_rules",
+            "sit_wcpg_product_type_family",
+            "sit_wcpg_validation_result",
+            "sit_wcpg_should_enforce",
+            "sit_wcpg_can_override_publish_guard",
+            "sit_wcpg_publish_blocked",
+            "sit_wcpg_publish_overridden"
+        ],
+        "internal": [
+            "sit_wcpg_rebuild_readiness",
+            "sit_wcpg_reindex_products"
+        ]
+    }
+}

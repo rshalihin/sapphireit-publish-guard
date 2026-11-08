@@ -36,41 +36,46 @@ final class Save_Request_Reader {
 	 * Source: the classic product editor (`post.php`).
 	 *
 	 * @since 1.0.0
+	 * @since 1.2.0 Alias of Save_Path::CLASSIC.
 	 * @var string
 	 */
-	public const SOURCE_CLASSIC = 'classic';
+	public const SOURCE_CLASSIC = Save_Path::CLASSIC;
 
 	/**
 	 * Source: Quick Edit on the products list (`inline-save`).
 	 *
 	 * @since 1.0.0
+	 * @since 1.2.0 Alias of Save_Path::QUICK_EDIT.
 	 * @var string
 	 */
-	public const SOURCE_QUICK_EDIT = 'quick_edit';
+	public const SOURCE_QUICK_EDIT = Save_Path::QUICK_EDIT;
 
 	/**
 	 * Source: Bulk Edit on the products list.
 	 *
 	 * @since 1.0.0
+	 * @since 1.2.0 Alias of Save_Path::BULK_EDIT.
 	 * @var string
 	 */
-	public const SOURCE_BULK_EDIT = 'bulk_edit';
+	public const SOURCE_BULK_EDIT = Save_Path::BULK_EDIT;
 
 	/**
 	 * Source: a REST request.
 	 *
 	 * @since 1.0.0
+	 * @since 1.2.0 Alias of Save_Path::REST.
 	 * @var string
 	 */
-	public const SOURCE_REST = 'rest';
+	public const SOURCE_REST = Save_Path::REST;
 
 	/**
 	 * Source: any other write — another plugin, a theme, an importer.
 	 *
 	 * @since 1.0.0
+	 * @since 1.2.0 Alias of Save_Path::PROGRAMMATIC.
 	 * @var string
 	 */
-	public const SOURCE_PROGRAMMATIC = 'programmatic';
+	public const SOURCE_PROGRAMMATIC = Save_Path::PROGRAMMATIC;
 
 	/**
 	 * Most identifiers read from one list, applied before any per-item work (section 9.9).
@@ -114,7 +119,7 @@ final class Save_Request_Reader {
 	 * @return string[]
 	 */
 	public static function admin_sources(): array {
-		return array( self::SOURCE_CLASSIC, self::SOURCE_QUICK_EDIT, self::SOURCE_BULK_EDIT );
+		return Save_Path::admin_paths();
 	}
 
 	/**

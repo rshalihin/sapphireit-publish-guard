@@ -102,4 +102,24 @@ final class Publish_Guard_Scope_Test extends Publish_Guard_Test_Case {
 		$this->assertSame( 'publish', $this->status_of( $id ) );
 		$this->assertContains( array( $id, Save_Request_Reader::SOURCE_PROGRAMMATIC ), $seen );
 	}
+
+	/**
+	 * Every layer tells the rules how the product is being saved.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @dataProvider layer_provider
+	 *
+	 * @param string $layer One of the guard layers.
+	 * @return void
+	 */
+	public function test_judged_context_carries_the_save_path( string $layer ): void {
+		$this->publish_through( $layer, $this->failing_product() );
+
+		$this->assertNotEmpty( $this->judged_contexts, 'The layer judged nothing.' );
+
+		foreach ( $this->judged_contexts as $context ) {
+			$this->assertSame( self::LAYER_PATHS[ $layer ], $context->get_save_path() );
+		}
+	}
 }

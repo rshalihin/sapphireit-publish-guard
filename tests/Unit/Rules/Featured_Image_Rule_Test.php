@@ -120,4 +120,18 @@ final class Featured_Image_Rule_Test extends TestCase {
 
 		$this->assertSame( array( 'image_count' => 2 ), $result->get_data() );
 	}
+
+	/**
+	 * The settings screen leads with what the check prevents.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_description_text() {
+		$this->assertSame(
+			'Shopping channels such as Google disapprove products without an image, and shoppers skip them. Checks that the product has a featured image that is still in the media library.',
+			( new Featured_Image_Rule() )->get_description()
+		);
+	}
 }

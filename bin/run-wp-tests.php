@@ -16,7 +16,7 @@
  *
  * PHP binary:
  *   current  SIT_WCPG_CURRENT_PHP, else the PHP running this script (composer's).
- *   floor    SIT_WCPG_FLOOR_PHP, else `php` on PATH (the PHP 8.0 floor).
+ *   floor    SIT_WCPG_FLOOR_PHP, else `php` on PATH (the PHP 8.1 floor).
  *
  * Options: --target=current|floor, --dir=PATH (the installer's --dir). Every other
  * argument is passed on to PHPUnit.

@@ -7,10 +7,13 @@
 
 namespace ProductPublishGuard\Settings;
 
+use ProductPublishGuard\Admin\Editor_Meta_Box;
+use ProductPublishGuard\Admin\Screen;
 use ProductPublishGuard\Engine\Rule_Interface;
 use ProductPublishGuard\Engine\Rule_Registry;
 use ProductPublishGuard\Engine\Severity;
 use ProductPublishGuard\Plugin;
+use ProductPublishGuard\Support\Readiness_Rebuild;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -74,19 +77,30 @@ final class Settings_Page {
 	private ?Rule_Registry $registry;
 
 	/**
+	 * The rebuild, resolved on first use.
+	 *
+	 * @since 1.2.0
+	 * @var Readiness_Rebuild|null
+	 */
+	private ?Readiness_Rebuild $rebuild;
+
+	/**
 	 * Construct the page.
 	 *
 	 * The registry is resolved on first use, so the rule list is built only on this
 	 * screen and on a save — not on every other admin request that merely loads the menu.
 	 *
 	 * @since 1.0.0
+	 * @since 1.2.0 Added `$rebuild`.
 	 *
-	 * @param Settings           $settings The merchant's configuration.
-	 * @param Rule_Registry|null $registry Rules to list. Null resolves the plugin's own.
+	 * @param Settings               $settings The merchant's configuration.
+	 * @param Rule_Registry|null     $registry Rules to list. Null resolves the plugin's own.
+	 * @param Readiness_Rebuild|null $rebuild  The rebuild. Null resolves the plugin's own.
 	 */
-	public function __construct( Settings $settings, ?Rule_Registry $registry = null ) {
+	public function __construct( Settings $settings, ?Rule_Registry $registry = null, ?Readiness_Rebuild $rebuild = null ) {
 		$this->settings = $settings;
 		$this->registry = $registry;
+		$this->rebuild  = $rebuild;
 	}
 
 	/**
@@ -99,7 +113,19 @@ final class Settings_Page {
 	public function register(): void {
 		add_action( 'admin_menu', array( $this, 'add_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
+		add_action( 'load-' . Screen::SETTINGS_HOOK, array( $this, 'on_load' ), 10, 0 );
 		add_filter( 'option_page_capability_' . self::OPTION_GROUP, array( $this, 'filter_capability' ) );
+	}
+
+	/**
+	 * Start a rebuild when the screen opens on stale flags.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function on_load(): void {
+		$this->rebuild()->ensure_current();
 	}
 
 	/**
@@ -191,6 +217,7 @@ final class Settings_Page {
 		$this->render_rules_section( $values );
 		$this->render_thresholds_section( $values );
 		$this->render_publishing_section( $values );
+		$this->render_readiness_section();
 
 		submit_button();
 
@@ -232,7 +259,7 @@ final class Settings_Page {
 	private function render_rules_section( array $values ): void {
 		echo '<h2>' . esc_html__( 'Rules', 'sapphireit-publish-guard' ) . '</h2>';
 		echo '<p class="description">';
-		echo esc_html__( 'A required check must pass before a product can be published. A warning is advisory and never blocks publishing.', 'sapphireit-publish-guard' );
+		echo esc_html__( 'Each check protects against a specific problem. A required check must pass before a product can be published; a warning is shown but never blocks publishing.', 'sapphireit-publish-guard' );
 		echo '</p>';
 
 		$rules = $this->registry()->all();
@@ -247,13 +274,61 @@ final class Settings_Page {
 		echo '<th scope="col">' . esc_html__( 'Check', 'sapphireit-publish-guard' ) . '</th>';
 		echo '<th scope="col">' . esc_html__( 'Enabled', 'sapphireit-publish-guard' ) . '</th>';
 		echo '<th scope="col">' . esc_html__( 'Severity', 'sapphireit-publish-guard' ) . '</th>';
-		echo '</tr></thead><tbody>';
+		echo '</tr></thead>';
 
-		foreach ( $rules as $rule ) {
-			$this->render_rule_row( $rule, $values );
+		foreach ( $this->group_rules( $rules ) as $group ) {
+			echo '<tbody><tr class="sit-wcpg-settings-rules__group"><th colspan="3" scope="colgroup">' . esc_html( $group['label'] ) . '</th></tr>';
+
+			foreach ( $group['rules'] as $rule ) {
+				$this->render_rule_row( $rule, $values );
+			}
+
+			echo '</tbody>';
 		}
 
-		echo '</tbody></table>';
+		echo '</table>';
+	}
+
+	/**
+	 * Bucket rules under the editor panel's headings, in its order.
+	 *
+	 * A group the panel has no heading for, as a third-party rule can have, goes last.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param Rule_Interface[] $rules Rules, in display order.
+	 * @return array<int, array{label: string, rules: Rule_Interface[]}> The groups that have rules.
+	 */
+	private function group_rules( array $rules ): array {
+		$labels  = Editor_Meta_Box::group_labels();
+		$buckets = array_fill_keys( array_keys( $labels ), array() );
+		$other   = array();
+
+		foreach ( $rules as $rule ) {
+			if ( isset( $buckets[ $rule->get_group() ] ) ) {
+				$buckets[ $rule->get_group() ][] = $rule;
+			} else {
+				$other[] = $rule;
+			}
+		}
+
+		$groups = array();
+
+		foreach ( array_filter( $buckets ) as $key => $bucket ) {
+			$groups[] = array(
+				'label' => $labels[ $key ],
+				'rules' => $bucket,
+			);
+		}
+
+		if ( array() !== $other ) {
+			$groups[] = array(
+				'label' => __( 'Other', 'sapphireit-publish-guard' ),
+				'rules' => $other,
+			);
+		}
+
+		return $groups;
 	}
 
 	/**
@@ -406,6 +481,61 @@ final class Settings_Page {
 	}
 
 	/**
+	 * Say whether the products-list filter is up to date.
+	 *
+	 * Left out while the checklist is switched off: nothing is checked then, so every
+	 * status line would be untrue.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	private function render_readiness_section(): void {
+		if ( ! $this->settings->is_enabled() ) {
+			return;
+		}
+
+		echo '<h2>' . esc_html__( 'Readiness filter', 'sapphireit-publish-guard' ) . '</h2>';
+		echo '<table class="form-table" role="presentation"><tbody><tr><td colspan="2">';
+		echo esc_html( $this->readiness_status_line() );
+		echo '</td></tr></tbody></table>';
+	}
+
+	/**
+	 * The sentence describing the stored readiness flags.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return string
+	 */
+	private function readiness_status_line(): string {
+		$status = $this->rebuild()->status();
+
+		if ( $status['is_current'] ) {
+			return sprintf(
+				/* translators: %d: number of products. */
+				__( 'All %d products have been checked against these settings.', 'sapphireit-publish-guard' ),
+				$status['total']
+			);
+		}
+
+		if ( ! $status['scheduler'] ) {
+			return __( 'Background rechecks need WooCommerce\'s Action Scheduler, which isn\'t available. Run "wp sit-wcpg reindex" to update the products list filter.', 'sapphireit-publish-guard' );
+		}
+
+		if ( Readiness_Rebuild::STATE_BUILDING === $status['state'] ) {
+			return sprintf(
+				/* translators: 1: products rechecked so far, 2: products to recheck in total. */
+				__( 'Rechecking products against these settings: %1$d of %2$d done.', 'sapphireit-publish-guard' ),
+				$status['done'],
+				$status['total']
+			);
+		}
+
+		return __( 'Products will be rechecked against these settings in the background.', 'sapphireit-publish-guard' );
+	}
+
+	/**
 	 * Build the form field name for a path inside the option.
 	 *
 	 * Every field on this screen posts inside `sit_wcpg_settings[…]`, which is what makes
@@ -478,5 +608,20 @@ final class Settings_Page {
 		}
 
 		return $this->registry;
+	}
+
+	/**
+	 * The rebuild, resolved on first use.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return Readiness_Rebuild
+	 */
+	private function rebuild(): Readiness_Rebuild {
+		if ( null === $this->rebuild ) {
+			$this->rebuild = Plugin::instance()->readiness_rebuild();
+		}
+
+		return $this->rebuild;
 	}
 }

@@ -16,7 +16,7 @@ This file is the developer documentation. The user-facing description is `readme
 
 | | Minimum | Tested up to |
 |---|---|---|
-| PHP | 8.0 | 8.3 |
+| PHP | 8.1 | 8.3 |
 | WordPress | 6.5 | 7.1 |
 | WooCommerce | 9.0 | 11.2 |
 
@@ -175,14 +175,40 @@ demoted. Otherwise, a settings change could take a whole catalogue offline.
 
 All hooks are available once the plugin has booted (`plugins_loaded`, priority 5).
 
+### Rule API v2 — stability contract
+
+Pro and third-party rules register through `sit_wcpg_register_rules`. The second argument
+is the rule API version, so check `$api_version >= 2` before relying on anything below.
+
+* Members tagged `@api` change only with an `API_VERSION` bump. That covers removing a
+  member and changing a signature.
+* Additions are not breaking, so a new method or constant does not bump the version.
+* The internal Action Scheduler hooks are not part of the API.
+
+`Product_Context::get_save_path()` says how the product is being saved. It returns one of
+the `Save_Path` constants: `classic`, `quick_edit`, `bulk_edit`, `rest`, `programmatic`,
+`crud`, `scheduled`, `cli` or `none`. These are the same strings `sit_wcpg_should_enforce`
+receives as `$source`. A checklist read is always `none`, and no draft or REST payload can
+set it. A rule can relax itself on one route:
+
+```php
+public function check( Product_Context $context, Settings $settings ): Rule_Result {
+	if ( Save_Path::REST === $context->get_save_path() ) {
+		return $this->skip( __( 'Not checked for API imports.', 'acme' ) );
+	}
+	return '' === $context->get_sku() ? $this->fail( __( 'Add a SKU.', 'acme' ) ) : $this->pass();
+}
+```
+
 ### `sit_wcpg_register_rules` (action)
 
 ```php
-do_action( 'sit_wcpg_register_rules', Rule_Registry $registry );
+do_action( 'sit_wcpg_register_rules', Rule_Registry $registry, int $api_version );
 ```
 
 Fires once per request, after the 12 built-in rules are registered and before anything
-reads the registry. Register your own rules here. A registered rule automatically gets a
+reads the registry. `$api_version` is `Rule_Registry::API_VERSION`; a callback that takes
+only `$registry` keeps working. Register your own rules here. A registered rule automatically gets a
 settings row (enabled + severity), a checklist row, a list-column contribution and, when
 set to required, publishing enforcement. Its default settings apply until the merchant
 saves the settings page.
@@ -387,6 +413,39 @@ add_filter(
 );
 ```
 
+### `sit_wcpg_publish_blocked` (action)
+
+```php
+do_action( 'sit_wcpg_publish_blocked', int $product_id, int $user_id, string[] $rule_ids, string $save_path );
+```
+
+Fires once when a publish is refused, with the product's final id, including a new product
+that only gets its id once the save finishes. `$user_id` is the user told about it, which is
+the post author for a scheduled publish. `$rule_ids` lists the required rules that failed, and
+`$save_path` is a `Save_Path` value. An exception thrown here is caught and cannot change the
+refusal.
+
+```php
+add_action( 'sit_wcpg_publish_blocked', static function ( int $product_id, int $user_id, array $rule_ids, string $save_path ): void {
+	acme_count_refusal( $product_id, $rule_ids, $save_path );
+}, 10, 4 );
+```
+
+### `sit_wcpg_publish_overridden` (action)
+
+```php
+do_action( 'sit_wcpg_publish_overridden', int $product_id, int $user_id, string[] $rule_ids, string $save_path );
+```
+
+Fires once when a user publishes past failing required checks, with the same arguments as
+`sit_wcpg_publish_blocked`. The plugin's own override log listens here.
+
+```php
+add_action( 'sit_wcpg_publish_overridden', static function ( int $product_id, int $user_id, array $rule_ids, string $save_path ): void {
+	acme_notify_reviewer( $product_id, $user_id, $rule_ids );
+}, 10, 4 );
+```
+
 ### Reading readiness from your own code
 
 ```php
@@ -407,16 +466,64 @@ logged-in user who can `edit_post` the product, plus the usual REST cookie nonce
 endpoint performs no writes. It exists for the editor panel and is not a stable public
 API in 1.x.
 
+## WP-CLI
+
+Registered as `wp sit-wcpg` only when WP-CLI is running. Output holds product ids, statuses
+and rule ids, never product text. A WP-CLI request is still excluded from enforcement, so
+these commands report and never block.
+
+### `wp sit-wcpg check [<id>...]`
+
+Validates products live and writes nothing.
+
+| Option | Default | Values |
+|---|---|---|
+| `<id>...` | the whole catalog | product ids; anything that is not a product is skipped |
+| `--status=<status>` | `any` | `any` (published, scheduled, draft, pending and private), `publish`, `draft`, `pending`, `future`, `private`. Ignored when ids are given |
+| `--fail-only` | off | list only products that fail a required check |
+| `--format=<format>` | `table` | `table`, `json`, `count`, `ids` |
+| `--strict` | off | exit 1 when any product fails a required check |
+
+Columns: `id`, `status` (`pass`, `warning`, `fail` or `skipped`), `required_failures`
+(comma-separated rule ids) and `warnings` (how many non-required checks did not pass).
+The `table` format also prints a summary line, counted across everything checked even
+with `--fail-only`.
+
+### `wp sit-wcpg reindex`
+
+Rechecks every product in this process and updates the stored flags behind the products
+list filter and the catalog screen. It needs no Action Scheduler.
+
+### Exit codes
+
+| Code | When |
+|---|---|
+| `0` | the command ran; without `--strict`, failing products are still `0` |
+| `1` | the checklist is switched off, or `--strict` found a failing product |
+
+### Examples
+
+```bash
+wp sit-wcpg check --status=publish --fail-only
+wp sit-wcpg check --format=json
+wp sit-wcpg reindex
+```
+
 ## Stored data
 
 | Name | Kind | Removed on uninstall |
 |---|---|---|
 | `sit_wcpg_settings` | option (autoloaded, one row) | yes |
 | `sit_wcpg_activation_notice` | option (not autoloaded), set on activation and deleted once the welcome notice is shown | yes |
+| `sit_wcpg_override_log` | option (not autoloaded), at most 200 entries, each dropped after 90 days. Holds ids and rule ids, never product text | yes |
+| `sit_wcpg_readiness_index` | option (not autoloaded), the state and progress of the last background recheck | yes |
+| `sit_wcpg_review_notice` | option (not autoloaded): when the review request's clock started, when the checklist first stopped a product, when to ask next and whether to stop asking | yes |
 | `sit_wcpg_blocked_{user_id}` | transient, 60 s | yes |
+| `sit-wcpg` | Action Scheduler group of the background recheck jobs, `sit_wcpg_rebuild_readiness` and `sit_wcpg_reindex_products` (internal, not part of the rule API). They run only after a settings change, a plugin update or a save on the storefront; nothing recurs | unscheduled if Action Scheduler is loaded |
+| `_sit_wcpg_readiness`, `_sit_wcpg_readiness_sig`, `_sit_wcpg_readiness_data` | protected post meta on each product: its stored readiness status, the signature it was computed under, and the failing rule ids with the time of the check | yes |
 | `sit_wcpg` | object-cache group (non-persistent unless you run an object cache) | n/a |
 
-No custom tables, post types, taxonomies, post meta, capabilities or role edits.
+No custom tables, post types, taxonomies, capabilities or role edits.
 
 ## Development
 
@@ -482,7 +589,7 @@ The integration and security suites run on two targets, with no Docker needed:
 | Target | WordPress | WooCommerce | PHP | Database |
 |---|---|---|---|---|
 | current | 7.1.3 | 11.2.1 | `SIT_WCPG_CURRENT_PHP`, else the PHP running Composer | `sit_wcpg_tests` |
-| floor | 6.5.11 | 9.0.0 | `SIT_WCPG_FLOOR_PHP`, else `php` on `PATH` (the PHP 8.0 floor) | `sit_wcpg_tests_floor` |
+| floor | 6.5.11 | 9.0.0 | `SIT_WCPG_FLOOR_PHP`, else `php` on `PATH` (the PHP 8.1 floor) | `sit_wcpg_tests_floor` |
 
 ```bash
 composer test:setup              # install the current target (once)
@@ -512,7 +619,7 @@ installed at the pinned version is skipped.
 `bin/run-wp-tests.php`, behind the `test:integration*` scripts, points `WP_PHPUNIT__DIR`
 and `WP_PHPUNIT__TESTS_CONFIG` at the target and runs PHPUnit. When the chosen PHP binary
 doesn't load ext/mysqli, it adds `-d extension=mysqli` (for example with a stock system
-PHP 8.0). To run the current target on another PHP:
+PHP). To run the current target on another PHP:
 
 ```bash
 SIT_WCPG_CURRENT_PHP=G:/laragon/bin/php/php-8.3.33-Win32-vs16-x64/php.exe composer test:integration
@@ -522,7 +629,7 @@ As an alternative, `wp-env` (Docker) is configured with two profiles:
 
 ```bash
 npm run env:current  # latest WordPress + latest WooCommerce, PHP 8.3
-npm run env:floor    # WordPress 6.5 + WooCommerce 9.0.0, PHP 8.0 (the declared floor)
+npm run env:floor    # WordPress 6.5 + WooCommerce 9.0.0, PHP 8.1 (the declared floor)
 ```
 
 `env:floor` works by copying `.wp-env.floor.json` over `.wp-env.override.json`;
@@ -573,7 +680,7 @@ src/                          PHP only, PSR-4 under ProductPublishGuard\
   Plugin.php                  Lazy service locator + hook wiring
   Compat/                     Requirements gate, WooCommerce feature declarations
   Engine/  Rules/             The rule engine and the 12 built-in rules
-  Settings/  Admin/  Rest/  Publishing/  Support/
+  Settings/  Admin/  Rest/  Publishing/  Support/  Cli/
 assets/                       React and SCSS sources of build/ (shipped)
 build/                        Generated by wp-scripts (shipped)
 languages/                    sapphireit-publish-guard.pot (shipped)

@@ -509,7 +509,7 @@ final class Sale_Price_Rule_Test extends TestCase {
 	 */
 	public function test_description_text() {
 		$this->assertSame(
-			'Checks that a sale price, when one is set, is valid, lower than the regular price and has a sensible date range. On a variable product, each enabled variation on sale is checked.',
+			'A sale price above the regular price, or a sale that ends before it starts, shows shoppers a broken offer. Checks that a sale price, when set, is lower than the regular price and has a sensible date range; on a variable product, each enabled variation on sale is checked.',
 			( new Sale_Price_Rule() )->get_description()
 		);
 	}

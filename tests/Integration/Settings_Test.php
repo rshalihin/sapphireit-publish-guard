@@ -7,13 +7,23 @@
 
 namespace ProductPublishGuard\Tests\Integration;
 
+use ProductPublishGuard\Admin\Editor_Meta_Box;
+use ProductPublishGuard\Admin\Screen;
+use ProductPublishGuard\Admin\Settings_Footer;
+use ProductPublishGuard\Engine\Abstract_Rule;
+use ProductPublishGuard\Engine\Product_Context;
 use ProductPublishGuard\Engine\Rule_Registry;
+use ProductPublishGuard\Engine\Rule_Result;
 use ProductPublishGuard\Engine\Severity;
 use ProductPublishGuard\Rules\Rules_Provider;
 use ProductPublishGuard\Settings\Settings;
 use ProductPublishGuard\Settings\Settings_Page;
 use ProductPublishGuard\Settings\Settings_Sanitizer;
+use ProductPublishGuard\Support\Readiness_Indexer;
+use ProductPublishGuard\Support\Readiness_Rebuild;
+use ProductPublishGuard\Support\Readiness_Store;
 use ProductPublishGuard\Tests\Stubs\Fake_Rule;
+use ProductPublishGuard\Tests\Stubs\No_Scheduler_Rebuild;
 use WP_UnitTestCase;
 
 /**
@@ -35,6 +45,7 @@ final class Settings_Test extends WP_UnitTestCase {
 		parent::set_up();
 
 		delete_option( Settings::OPTION_NAME );
+		delete_option( Readiness_Rebuild::OPTION );
 	}
 
 	/**
@@ -377,7 +388,7 @@ final class Settings_Test extends WP_UnitTestCase {
 		$field = Settings::OPTION_NAME . '[rules][child_products]';
 
 		$this->assertStringContainsString( '<strong>Variations and grouped products</strong>', $output );
-		$this->assertStringContainsString( 'Checks that a variable product has at least one enabled variation', $output );
+		$this->assertStringContainsString( 'Checks that variable and grouped products have something to sell.', $output );
 		$this->assertMatchesRegularExpression(
 			'/name="' . preg_quote( $field . '[enabled]', '/' ) . '"[^>]*checked=/',
 			$output,
@@ -391,6 +402,301 @@ final class Settings_Test extends WP_UnitTestCase {
 		$this->assertDoesNotMatchRegularExpression(
 			'/name="' . preg_quote( $field . '[severity]', '/' ) . '" value="' . Severity::REQUIRED . '"\s*checked=/',
 			$output
+		);
+	}
+
+	/**
+	 * The settings screen as an administrator sees it.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param Rule_Registry          $registry Rules to list.
+	 * @param Readiness_Rebuild|null $rebuild  The rebuild. Null builds an ordinary one.
+	 * @return string
+	 */
+	private function render_screen( Rule_Registry $registry, ?Readiness_Rebuild $rebuild = null ): string {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+
+		$settings = new Settings( $registry );
+
+		ob_start();
+		( new Settings_Page( $settings, $registry, $rebuild ?? $this->rebuild_for( $settings ) ) )->render_page();
+
+		return (string) ob_get_clean();
+	}
+
+	/**
+	 * A rebuild over the given settings.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param Settings $settings The merchant's configuration.
+	 * @return Readiness_Rebuild
+	 */
+	private function rebuild_for( Settings $settings ): Readiness_Rebuild {
+		return new Readiness_Rebuild( $settings, new Readiness_Indexer( $settings, new Readiness_Store() ) );
+	}
+
+	/**
+	 * Record a rebuild.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param string $signature The signature it was for.
+	 * @param string $state     Its state.
+	 * @param int    $total     Products in the catalog.
+	 * @param int    $done      Products rechecked so far.
+	 * @return void
+	 */
+	private function store_index( string $signature, string $state, int $total, int $done ): void {
+		update_option(
+			Readiness_Rebuild::OPTION,
+			array(
+				'version'    => SIT_WCPG_VERSION,
+				'signature'  => $signature,
+				'state'      => $state,
+				'total'      => $total,
+				'done'       => $done,
+				'started_at' => time(),
+			),
+			false
+		);
+	}
+
+	/**
+	 * Headings follow the editor panel's order, and each rule sits under its own.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_rules_render_under_group_headings_in_editor_order(): void {
+		$output = $this->render_screen( $this->built_in_registry() );
+
+		preg_match_all( '#<tr class="sit-wcpg-settings-rules__group"><th colspan="3" scope="colgroup">([^<]+)</th></tr>#', $output, $matches );
+
+		$this->assertSame( array_values( Editor_Meta_Box::group_labels() ), $matches[1] );
+
+		$price = strpos( $output, '<strong>Regular price</strong>' );
+
+		$this->assertGreaterThan( strpos( $output, '>Pricing</th>' ), $price );
+		$this->assertLessThan( strpos( $output, '>Organization</th>' ), $price );
+		$this->assertSame( count( $matches[1] ), substr_count( $output, '<tr class="sit-wcpg-settings-rules__group">' ) );
+		$this->assertSame( count( $matches[1] ), substr_count( $output, '<tbody><tr class="sit-wcpg-settings-rules__group">' ), 'Each group is its own tbody.' );
+	}
+
+	/**
+	 * A rule in a group the editor has no heading for still gets a row, after the known groups.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_third_party_rule_with_unknown_group_renders_under_other(): void {
+		$registry = $this->built_in_registry();
+
+		$registry->register(
+			new class() extends Abstract_Rule {
+
+				/**
+				 * Rule identifier.
+				 *
+				 * @return string
+				 */
+				public function get_id(): string {
+					return 'acme_check';
+				}
+
+				/**
+				 * Rule label.
+				 *
+				 * @return string
+				 */
+				public function get_label(): string {
+					return 'Acme check';
+				}
+
+				/**
+				 * A group core has no heading for.
+				 *
+				 * @return string
+				 */
+				public function get_group(): string {
+					return 'acme';
+				}
+
+				/**
+				 * Always passes.
+				 *
+				 * @param Product_Context $context  The product.
+				 * @param Settings        $settings The configuration.
+				 * @return Rule_Result
+				 */
+				public function check( Product_Context $context, Settings $settings ): Rule_Result {
+					unset( $context, $settings );
+
+					return $this->pass();
+				}
+			}
+		);
+
+		$output = $this->render_screen( $registry );
+
+		$this->assertGreaterThan( strpos( $output, '>Inventory</th>' ), strpos( $output, '>Other</th>' ) );
+		$this->assertGreaterThan( strpos( $output, '>Other</th>' ), strpos( $output, '<strong>Acme check</strong>' ) );
+	}
+
+	/**
+	 * A screen with nothing in an unknown group has no "Other" heading.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_no_other_heading_without_unknown_groups(): void {
+		$this->assertStringNotContainsString( '>Other</th>', $this->render_screen( $this->built_in_registry() ) );
+	}
+
+	/**
+	 * Every flag was built under these settings.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_readiness_line_current(): void {
+		$registry = $this->built_in_registry();
+
+		$this->store_index( Readiness_Store::signature( new Settings( $registry ) ), Readiness_Rebuild::STATE_COMPLETE, 7, 7 );
+
+		$output = $this->render_screen( $registry );
+
+		$this->assertStringContainsString( '<h2>Readiness filter</h2>', $output );
+		$this->assertStringContainsString( 'All 7 products have been checked against these settings.', $output );
+	}
+
+	/**
+	 * A rebuild is running.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_readiness_line_building(): void {
+		$registry = $this->built_in_registry();
+
+		$this->store_index( Readiness_Store::signature( new Settings( $registry ) ), Readiness_Rebuild::STATE_BUILDING, 9, 4 );
+
+		$this->assertStringContainsString( 'Rechecking products against these settings: 4 of 9 done.', $this->render_screen( $registry ) );
+	}
+
+	/**
+	 * Stale flags, and Action Scheduler is here to fix them.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_readiness_line_stale_with_scheduler(): void {
+		$this->store_index( 'an-older-signature', Readiness_Rebuild::STATE_COMPLETE, 3, 3 );
+
+		$this->assertStringContainsString(
+			'Products will be rechecked against these settings in the background.',
+			$this->render_screen( $this->built_in_registry() )
+		);
+	}
+
+	/**
+	 * Stale flags, and nothing can fix them in the background.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_readiness_line_no_scheduler(): void {
+		$registry = $this->built_in_registry();
+		$settings = new Settings( $registry );
+
+		$this->store_index( 'an-older-signature', Readiness_Rebuild::STATE_COMPLETE, 3, 3 );
+
+		$output = $this->render_screen( $registry, new No_Scheduler_Rebuild( $settings, new Readiness_Indexer( $settings, new Readiness_Store() ) ) );
+
+		$this->assertStringContainsString(
+			esc_html( 'Background rechecks need WooCommerce\'s Action Scheduler, which isn\'t available. Run "wp sit-wcpg reindex" to update the products list filter.' ),
+			$output
+		);
+	}
+
+	/**
+	 * The status line has nothing true to say while nothing is being checked.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_no_readiness_section_while_the_checklist_is_off(): void {
+		update_option( Settings::OPTION_NAME, array( 'enabled' => false ) );
+
+		$this->assertStringNotContainsString( 'Readiness filter', $this->render_screen( $this->built_in_registry() ) );
+	}
+
+	/**
+	 * Opening the screen on stale flags starts a rebuild.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_settings_screen_load_starts_a_rebuild_when_stale(): void {
+		$registry = $this->built_in_registry();
+		$settings = new Settings( $registry );
+		$page     = new Settings_Page( $settings, $registry, $this->rebuild_for( $settings ) );
+
+		$page->register();
+
+		$this->assertNotFalse( has_action( 'load-' . Screen::SETTINGS_HOOK, array( $page, 'on_load' ) ) );
+
+		$page->on_load();
+
+		$index = get_option( Readiness_Rebuild::OPTION );
+
+		$this->assertSame( Readiness_Rebuild::STATE_BUILDING, $index['state'] );
+		$this->assertSame( Readiness_Store::signature( $settings ), $index['signature'] );
+
+		as_unschedule_all_actions( Readiness_Rebuild::HOOK );
+	}
+
+	/**
+	 * Free never links out from this screen.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_settings_page_has_no_outbound_links(): void {
+		preg_match_all( '/\bhref="([^"]*)"/', $this->render_screen( $this->built_in_registry() ), $matches );
+
+		$outbound = array_filter(
+			$matches[1],
+			static function ( string $href ): bool {
+				return Settings_Footer::REVIEW_URL !== $href && 1 !== preg_match( '#(^|/)(admin|options)\.php(\?|$)#', $href );
+			}
+		);
+
+		$this->assertSame( array(), array_values( $outbound ) );
+	}
+
+	/**
+	 * The screen primes nothing by selling it.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_settings_page_mentions_no_pro(): void {
+		$this->assertDoesNotMatchRegularExpression(
+			'/\b(pro|upgrade|premium)\b/i',
+			$this->render_screen( $this->built_in_registry() )
 		);
 	}
 }

@@ -61,7 +61,7 @@ final class Child_Products_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks that a variable product has at least one enabled variation, and that a grouped product contains at least one existing product that is published.', 'sapphireit-publish-guard' );
+		return __( 'A variable product with no enabled variation, or a grouped product with nothing published in it, shows shoppers an empty page. Checks that variable and grouped products have something to sell.', 'sapphireit-publish-guard' );
 	}
 
 	/**

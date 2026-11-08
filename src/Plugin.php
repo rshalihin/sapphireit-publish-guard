@@ -10,19 +10,29 @@ namespace ProductPublishGuard;
 use ProductPublishGuard\Admin\Activation_Notice;
 use ProductPublishGuard\Admin\Assets;
 use ProductPublishGuard\Admin\Block_Editor_Notice;
+use ProductPublishGuard\Admin\Catalog_Page;
 use ProductPublishGuard\Admin\Editor_Meta_Box;
 use ProductPublishGuard\Admin\Notices;
 use ProductPublishGuard\Admin\Plugin_Action_Links;
 use ProductPublishGuard\Admin\Product_List_Column;
+use ProductPublishGuard\Admin\Readiness_Filter;
+use ProductPublishGuard\Admin\Review_Notice;
 use ProductPublishGuard\Admin\Settings_Footer;
+use ProductPublishGuard\Cli\Gate_Command;
+use ProductPublishGuard\Cli\Gate_Runner;
 use ProductPublishGuard\Engine\Rule_Registry;
 use ProductPublishGuard\Engine\Validator;
 use ProductPublishGuard\Publishing\Publish_Guard;
+use ProductPublishGuard\Rest\Review_Notice_Controller;
 use ProductPublishGuard\Rest\Validate_Controller;
 use ProductPublishGuard\Rules\Rules_Provider;
 use ProductPublishGuard\Settings\Settings;
 use ProductPublishGuard\Settings\Settings_Page;
 use ProductPublishGuard\Support\Checklist_Service;
+use ProductPublishGuard\Support\Override_Log;
+use ProductPublishGuard\Support\Readiness_Indexer;
+use ProductPublishGuard\Support\Readiness_Rebuild;
+use ProductPublishGuard\Support\Readiness_Store;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -101,6 +111,38 @@ final class Plugin {
 	private ?Publish_Guard $publish_guard = null;
 
 	/**
+	 * Lazily constructed readiness store.
+	 *
+	 * @since 1.2.0
+	 * @var Readiness_Store|null
+	 */
+	private ?Readiness_Store $readiness_store = null;
+
+	/**
+	 * Lazily constructed readiness indexer.
+	 *
+	 * @since 1.2.0
+	 * @var Readiness_Indexer|null
+	 */
+	private ?Readiness_Indexer $readiness_indexer = null;
+
+	/**
+	 * Lazily constructed readiness rebuild.
+	 *
+	 * @since 1.2.0
+	 * @var Readiness_Rebuild|null
+	 */
+	private ?Readiness_Rebuild $readiness_rebuild = null;
+
+	/**
+	 * Lazily constructed WP-CLI gate runner.
+	 *
+	 * @since 1.2.0
+	 * @var Gate_Runner|null
+	 */
+	private ?Gate_Runner $gate_runner = null;
+
+	/**
 	 * Private constructor: use instance().
 	 *
 	 * @since 1.0.0
@@ -152,6 +194,7 @@ final class Plugin {
 		 * is add one `rest_api_init` callback, which no other kind of request ever fires.
 		 */
 		( new Validate_Controller() )->register();
+		( new Review_Notice_Controller() )->register();
 
 		/*
 		 * Not gated on is_admin() either: REST, importers and cron are exactly the paths a
@@ -165,6 +208,29 @@ final class Plugin {
 		 * on first use, so this builds no rule list.
 		 */
 		$this->checklist()->register();
+
+		/*
+		 * Every request as well: an override can arrive over REST or from cron. Registering
+		 * adds two hooks, and nothing is read until one fires.
+		 */
+		( new Override_Log() )->register();
+
+		/*
+		 * Every request as well: a product can be written from anywhere. Registering adds
+		 * hooks, and marking a product only adds its id to a list.
+		 */
+		$this->readiness_indexer()->register();
+
+		/*
+		 * Every request as well: Action Scheduler runs its jobs in cron and async requests.
+		 */
+		$this->readiness_rebuild()->register();
+
+		/*
+		 * Every request as well: a publish can be refused over REST. Registering adds one
+		 * hook outside the admin, and nothing is read until a refusal fires it.
+		 */
+		( new Review_Notice() )->register();
 
 		if ( is_admin() ) {
 			/*
@@ -180,8 +246,14 @@ final class Plugin {
 			( new Assets( $this->settings() ) )->register();
 			( new Editor_Meta_Box( $this->settings() ) )->register();
 			( new Product_List_Column( $this->settings() ) )->register();
+			( new Readiness_Filter( $this->settings() ) )->register();
+			( new Catalog_Page( $this->settings() ) )->register();
 			( new Block_Editor_Notice( $this->settings() ) )->register();
 			$this->notices()->register();
+		}
+
+		if ( defined( 'WP_CLI' ) && WP_CLI && class_exists( '\WP_CLI' ) ) {
+			\WP_CLI::add_command( Gate_Command::COMMAND, new Gate_Command( $this->gate_runner() ) );
 		}
 	}
 
@@ -278,5 +350,65 @@ final class Plugin {
 		}
 
 		return $this->publish_guard;
+	}
+
+	/**
+	 * Get the readiness store.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return Readiness_Store
+	 */
+	public function readiness_store(): Readiness_Store {
+		if ( null === $this->readiness_store ) {
+			$this->readiness_store = new Readiness_Store();
+		}
+
+		return $this->readiness_store;
+	}
+
+	/**
+	 * Get the readiness indexer.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return Readiness_Indexer
+	 */
+	public function readiness_indexer(): Readiness_Indexer {
+		if ( null === $this->readiness_indexer ) {
+			$this->readiness_indexer = new Readiness_Indexer( $this->settings(), $this->readiness_store() );
+		}
+
+		return $this->readiness_indexer;
+	}
+
+	/**
+	 * Get the readiness rebuild.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return Readiness_Rebuild
+	 */
+	public function readiness_rebuild(): Readiness_Rebuild {
+		if ( null === $this->readiness_rebuild ) {
+			$this->readiness_rebuild = new Readiness_Rebuild( $this->settings(), $this->readiness_indexer() );
+		}
+
+		return $this->readiness_rebuild;
+	}
+
+	/**
+	 * Get the WP-CLI gate runner.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return Gate_Runner
+	 */
+	public function gate_runner(): Gate_Runner {
+		if ( null === $this->gate_runner ) {
+			$this->gate_runner = new Gate_Runner( $this->settings(), $this->checklist(), $this->readiness_indexer(), $this->readiness_rebuild() );
+		}
+
+		return $this->gate_runner;
 	}
 }

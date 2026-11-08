@@ -9,9 +9,12 @@ namespace ProductPublishGuard\Admin;
 
 use ProductPublishGuard\Engine\Validation_Result;
 use ProductPublishGuard\Plugin;
+use ProductPublishGuard\Rest\Review_Notice_Controller;
 use ProductPublishGuard\Rest\Validate_Controller;
 use ProductPublishGuard\Settings\Settings;
+use ProductPublishGuard\Settings\Settings_Page;
 use ProductPublishGuard\Support\Checklist_Service;
+use ProductPublishGuard\Support\Preflight;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -20,14 +23,18 @@ defined( 'ABSPATH' ) || exit;
  *
  * | Screen                              | JS           | CSS         | Inline payload  |
  * | product editor (`post.php`/`post-new.php`) | `sit-wcpg-editor` | editor.css | `sitWcpgEditorData` |
- * | products list (`edit.php`)          | none         | admin.css   | none            |
- * | plugin settings page                | none         | admin.css   | none            |
+ * | products list (`edit.php`)          | review*      | admin.css   | review*         |
+ * | plugin settings page                | review*      | admin.css   | review*         |
+ * | catalog screen                      | review*      | admin.css   | review*         |
  * | Plugins screen, welcome notice pending | none      | admin.css   | none            |
  * | everything else                     | none         | none        | none            |
  *
+ * `review*`: `sit-wcpg-review-notice` and `sitWcpgReviewNotice`, only while the review
+ * request is due and only for a user who can answer it.
+ *
  * The screen is decided before the settings are read, because reading a setting builds
  * the rule registry and the overwhelming majority of admin requests are none of these
- * three screens.
+ * screens.
  *
  * Every build artefact is checked with `file_exists()` first. A plugin installed from a
  * checkout that has not been built still renders a correct, static checklist from the
@@ -60,6 +67,22 @@ final class Assets {
 	 * @var string
 	 */
 	public const PAYLOAD_GLOBAL = 'sitWcpgEditorData';
+
+	/**
+	 * Handle of the review-request script.
+	 *
+	 * @since 1.2.0
+	 * @var string
+	 */
+	public const REVIEW_HANDLE = 'sit-wcpg-review-notice';
+
+	/**
+	 * The global the review-request script reads its payload from.
+	 *
+	 * @since 1.2.0
+	 * @var string
+	 */
+	public const REVIEW_PAYLOAD_GLOBAL = 'sitWcpgReviewNotice';
 
 	/**
 	 * The merchant's configuration.
@@ -122,13 +145,44 @@ final class Assets {
 			return;
 		}
 
-		if (
-			Screen::is_product_list_screen( $hook_suffix )
-			|| Screen::is_settings_screen( $hook_suffix )
-			|| ( Screen::is_plugins_screen( $hook_suffix ) && Activation_Notice::is_pending() )
-		) {
+		$is_review_screen = Review_Notice::is_listed_screen( $hook_suffix );
+
+		if ( $is_review_screen || ( Screen::is_plugins_screen( $hook_suffix ) && Activation_Notice::is_pending() ) ) {
 			$this->enqueue_style( self::ADMIN_HANDLE, 'admin.css', SIT_WCPG_VERSION );
 		}
+
+		if ( $is_review_screen && current_user_can( Settings_Page::CAPABILITY ) && Review_Notice::is_due() ) {
+			$this->enqueue_review_notice();
+		}
+	}
+
+	/**
+	 * Enqueue the script that records an answer to the review request.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	private function enqueue_review_notice(): void {
+		if ( ! file_exists( SIT_WCPG_PATH . 'build/review-notice.js' ) ) {
+			return;
+		}
+
+		$asset = $this->read_asset_file( 'review-notice' );
+
+		wp_enqueue_script(
+			self::REVIEW_HANDLE,
+			SIT_WCPG_URL . 'build/review-notice.js',
+			$asset['dependencies'],
+			$asset['version'],
+			true
+		);
+
+		wp_add_inline_script(
+			self::REVIEW_HANDLE,
+			'window.' . self::REVIEW_PAYLOAD_GLOBAL . ' = ' . wp_json_encode( array( 'restPath' => '/' . Validate_Controller::REST_NAMESPACE . Review_Notice_Controller::ROUTE ) ) . ';',
+			'before'
+		);
 	}
 
 	/**
@@ -198,7 +252,7 @@ final class Assets {
 			 * the publish warning is pointless on a product that is already live.
 			 */
 			'postStatus' => (string) get_post_status( $product_id ),
-			'result'     => $result instanceof Validation_Result ? $result->to_array() : null,
+			'result'     => $result instanceof Validation_Result ? $this->result_payload( $result, $product_id ) : null,
 			'settings'   => array(
 				'blocksPublishing' => $this->settings->blocks_publishing(),
 
@@ -212,6 +266,28 @@ final class Assets {
 			'restPath'   => '/' . Validate_Controller::REST_NAMESPACE . '/products/' . $product_id . '/validate',
 			'groups'     => Editor_Meta_Box::group_labels(),
 		);
+	}
+
+	/**
+	 * A result as the panel reads it, with the pre-flight decision the REST route adds too.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param Validation_Result $result     The product's result.
+	 * @param int               $product_id The product being edited.
+	 * @return array
+	 */
+	private function result_payload( Validation_Result $result, int $product_id ): array {
+		$data = $result->to_array();
+
+		$data['preflight'] = Preflight::for_result(
+			$result,
+			$this->settings->blocks_publishing(),
+			Plugin::instance()->publish_guard()->can_override( get_current_user_id() ),
+			(string) get_post_status( $product_id )
+		);
+
+		return $data;
 	}
 
 	/**

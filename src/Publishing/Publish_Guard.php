@@ -9,6 +9,7 @@ namespace ProductPublishGuard\Publishing;
 
 use ProductPublishGuard\Admin\Notices;
 use ProductPublishGuard\Engine\Product_Context;
+use ProductPublishGuard\Engine\Save_Path;
 use ProductPublishGuard\Engine\Save_Request_Reader;
 use ProductPublishGuard\Engine\Validation_Result;
 use ProductPublishGuard\Plugin;
@@ -44,17 +45,19 @@ final class Publish_Guard {
 	 * Source name for a WooCommerce CRUD write outside a REST request.
 	 *
 	 * @since 1.0.0
+	 * @since 1.2.0 Alias of Save_Path::CRUD.
 	 * @var string
 	 */
-	public const SOURCE_CRUD = 'crud';
+	public const SOURCE_CRUD = Save_Path::CRUD;
 
 	/**
 	 * Source name for the scheduled-publish backstop.
 	 *
 	 * @since 1.0.0
+	 * @since 1.2.0 Alias of Save_Path::SCHEDULED.
 	 * @var string
 	 */
-	public const SOURCE_SCHEDULED = 'scheduled';
+	public const SOURCE_SCHEDULED = Save_Path::SCHEDULED;
 
 	/**
 	 * Statuses that count as an attempt to publish.
@@ -149,7 +152,8 @@ final class Publish_Guard {
 	 * share key 0, and an import refusing several would report only the last (section 6.1).
 	 *
 	 * @since 1.1.0
-	 * @var array<int, array{user_id: int, result: Validation_Result, kind: string}>
+	 * @since 1.2.0 Frames carry the save path.
+	 * @var array<int, array{user_id: int, result: Validation_Result, kind: string, save_path: string}>
 	 */
 	private array $held_saves = array();
 
@@ -160,7 +164,8 @@ final class Publish_Guard {
 	 * wrote, so a nested insert that finishes first is not mistaken for it.
 	 *
 	 * @since 1.1.0
-	 * @var array<int, array{title: string, user_id: int, result: Validation_Result, kind: string}>
+	 * @since 1.2.0 Frames carry the save path.
+	 * @var array<int, array{title: string, user_id: int, result: Validation_Result, kind: string, save_path: string}>
 	 */
 	private array $held_inserts = array();
 
@@ -265,7 +270,7 @@ final class Publish_Guard {
 				array_splice( $this->held_inserts, $i, 1 );
 
 				try {
-					$this->report( $held['user_id'], (int) $post_id, $held['result'], $held['kind'] );
+					$this->report( $held['user_id'], (int) $post_id, $held['result'], $held['kind'], $held['save_path'] );
 				} catch ( Throwable $error ) {
 					self::log_failure( 'wp_insert_post', $error );
 				}
@@ -331,7 +336,7 @@ final class Publish_Guard {
 			$post_id = $product instanceof WC_Product ? (int) $product->get_id() : 0;
 
 			try {
-				$this->report( $held['user_id'], $post_id, $held['result'], $held['kind'] );
+				$this->report( $held['user_id'], $post_id, $held['result'], $held['kind'], $held['save_path'] );
 			} catch ( Throwable $error ) {
 				self::log_failure( 'woocommerce_after_product_object_save', $error );
 			}
@@ -474,9 +479,10 @@ final class Publish_Guard {
 			$overrides['product_type'] = 'simple';
 		}
 
-		$context = Product_Context::from_save_request( $stored, $overrides );
+		$source  = Save_Request_Reader::detect_source( $postarr, $post_id );
+		$context = Product_Context::from_save_request( $stored, $overrides )->with_save_path( $source );
 
-		if ( ! $this->should_enforce( $context, Save_Request_Reader::detect_source( $postarr, $post_id ) ) ) {
+		if ( ! $this->should_enforce( $context, $source ) ) {
 			return $data;
 		}
 
@@ -494,13 +500,14 @@ final class Publish_Guard {
 		}
 
 		if ( $post_id > 0 ) {
-			$this->report( $user_id, $post_id, $result, $kind );
+			$this->report( $user_id, $post_id, $result, $kind, $source );
 		} else {
 			$this->held_inserts[] = array(
-				'title'   => wp_unslash( isset( $data['post_title'] ) && is_string( $data['post_title'] ) ? $data['post_title'] : '' ),
-				'user_id' => $user_id,
-				'result'  => $result,
-				'kind'    => $kind,
+				'title'     => wp_unslash( isset( $data['post_title'] ) && is_string( $data['post_title'] ) ? $data['post_title'] : '' ),
+				'user_id'   => $user_id,
+				'result'    => $result,
+				'kind'      => $kind,
+				'save_path' => $source,
 			);
 		}
 
@@ -527,8 +534,8 @@ final class Publish_Guard {
 			return;
 		}
 
-		$context = Product_Context::from_product_with_overrides( $product, self::pending_terms( $product ) );
-		$source  = ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ? Save_Request_Reader::SOURCE_REST : self::SOURCE_CRUD;
+		$source  = wp_is_rest_endpoint() ? Save_Path::REST : Save_Path::CRUD;
+		$context = Product_Context::from_product_with_overrides( $product, self::pending_terms( $product ) )->with_save_path( $source );
 
 		if ( ! $this->should_enforce( $context, $source ) ) {
 			return;
@@ -548,12 +555,13 @@ final class Publish_Guard {
 		}
 
 		if ( $product_id > 0 ) {
-			$this->report( $user_id, $product_id, $result, $kind );
+			$this->report( $user_id, $product_id, $result, $kind, $source );
 		} else {
 			$this->held_saves[ spl_object_id( $product ) ] = array(
-				'user_id' => $user_id,
-				'result'  => $result,
-				'kind'    => $kind,
+				'user_id'   => $user_id,
+				'result'    => $result,
+				'kind'      => $kind,
+				'save_path' => $source,
 			);
 		}
 	}
@@ -580,10 +588,10 @@ final class Publish_Guard {
 			return;
 		}
 
-		$context = Product_Context::from_product( $product );
+		$context = Product_Context::from_product( $product )->with_save_path( Save_Path::SCHEDULED );
 
 		// Cron is this layer's whole case, so the scope's cron exclusion does not apply.
-		if ( ! $this->filter_enforce( true, $context, self::SOURCE_SCHEDULED ) ) {
+		if ( ! $this->filter_enforce( true, $context, Save_Path::SCHEDULED ) ) {
 			return;
 		}
 
@@ -594,27 +602,26 @@ final class Publish_Guard {
 			return;
 		}
 
-		if ( $this->can_override( $author ) ) {
-			$this->notices->queue( $author, $post_id, $result, Notices::KIND_OVERRIDE );
+		$kind = $this->can_override( $author ) ? Notices::KIND_OVERRIDE : Notices::KIND_BLOCKED;
 
-			return;
+		if ( Notices::KIND_BLOCKED === $kind ) {
+			self::$reverting = true;
+
+			try {
+				wp_update_post(
+					array(
+						'ID'          => $post_id,
+						'post_status' => 'draft',
+					)
+				);
+			} finally {
+				self::$reverting = false;
+			}
+
+			$this->checklist()->flush_post( $post_id );
 		}
 
-		self::$reverting = true;
-
-		try {
-			wp_update_post(
-				array(
-					'ID'          => $post_id,
-					'post_status' => 'draft',
-				)
-			);
-		} finally {
-			self::$reverting = false;
-		}
-
-		$this->checklist()->flush_post( $post_id );
-		$this->refuse( $author, $post_id, $result );
+		$this->report( $author, $post_id, $result, $kind, Save_Path::SCHEDULED );
 	}
 
 	/**
@@ -636,19 +643,63 @@ final class Publish_Guard {
 	/**
 	 * Report a refused or overridden publish.
 	 *
-	 * @since 1.1.0
+	 * The one place an outcome is announced, so each fires exactly once with its final id.
+	 * Listeners run inside a guard of their own: by now the decision is made, and in Layer A
+	 * the downgraded row has not been returned yet, so an exception escaping from a listener
+	 * would reach the fail-open path and publish the product.
 	 *
-	 * @param int               $user_id The user to tell; 0 tells nobody.
-	 * @param int               $post_id The product; 0 for one that was never saved.
-	 * @param Validation_Result $result  The result that decided the outcome.
-	 * @param string            $kind    One of the Notices::KIND_* constants.
+	 * @since 1.1.0
+	 * @since 1.2.0 Takes the save path; fires the outcome's action.
+	 *
+	 * @param int               $user_id   The user to tell; 0 tells nobody.
+	 * @param int               $post_id   The product; 0 for one that was never saved.
+	 * @param Validation_Result $result    The result that decided the outcome.
+	 * @param string            $kind      One of the Notices::KIND_* constants.
+	 * @param string            $save_path One of the Save_Path constants.
 	 * @return void
 	 */
-	private function report( int $user_id, int $post_id, Validation_Result $result, string $kind ): void {
+	private function report( int $user_id, int $post_id, Validation_Result $result, string $kind, string $save_path ): void {
 		if ( Notices::KIND_BLOCKED === $kind ) {
 			$this->refuse( $user_id, $post_id, $result );
 		} else {
 			$this->notices->queue( $user_id, $post_id, $result, Notices::KIND_OVERRIDE );
+		}
+
+		// A save that never produced a row has no product to announce.
+		if ( $post_id <= 0 ) {
+			return;
+		}
+
+		$rule_ids = $result->get_required_failures();
+
+		try {
+			if ( Notices::KIND_BLOCKED === $kind ) {
+				/**
+				 * Fires when a publish is refused because required checks failed.
+				 *
+				 * @since 1.2.0
+				 *
+				 * @param int      $product_id The product, under its final id.
+				 * @param int      $user_id    The user told about it: the author for a scheduled publish.
+				 * @param string[] $rule_ids   The required rules that failed.
+				 * @param string   $save_path  One of the Save_Path constants.
+				 */
+				do_action( 'sit_wcpg_publish_blocked', $post_id, $user_id, $rule_ids, $save_path );
+			} else {
+				/**
+				 * Fires when a user publishes past failing required checks.
+				 *
+				 * @since 1.2.0
+				 *
+				 * @param int      $product_id The product, under its final id.
+				 * @param int      $user_id    The user who overrode: the author for a scheduled publish.
+				 * @param string[] $rule_ids   The required rules that failed.
+				 * @param string   $save_path  One of the Save_Path constants.
+				 */
+				do_action( 'sit_wcpg_publish_overridden', $post_id, $user_id, $rule_ids, $save_path );
+			}
+		} catch ( Throwable $error ) {
+			self::log_failure( 'publish guard listener', $error );
 		}
 	}
 

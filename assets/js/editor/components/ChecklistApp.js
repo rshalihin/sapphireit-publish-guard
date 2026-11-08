@@ -21,6 +21,7 @@ import { ChecklistFooter } from './ChecklistFooter';
 import { ChecklistGroup } from './ChecklistGroup';
 import { ChecklistItem } from './ChecklistItem';
 import { ChecklistSummary } from './ChecklistSummary';
+import { PreflightStatement } from './PreflightStatement';
 
 /**
  * Rows grouped for display: known groups in the payload's order, then any group a
@@ -167,6 +168,7 @@ export function ChecklistApp( { data } ) {
 	return (
 		<div className="sit-wcpg-checklist__app" aria-busy={ loading }>
 			<ChecklistSummary result={ result } loading={ loading } />
+			<PreflightStatement preflight={ result?.preflight } />
 			{ mode && (
 				<Notice
 					status="warning"

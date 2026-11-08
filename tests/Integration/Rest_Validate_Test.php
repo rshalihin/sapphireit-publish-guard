@@ -8,6 +8,7 @@
 namespace ProductPublishGuard\Tests\Integration;
 
 use ProductPublishGuard\Engine\Status;
+use ProductPublishGuard\Plugin;
 use ProductPublishGuard\Rest\Validate_Controller;
 use ProductPublishGuard\Settings\Settings;
 use ProductPublishGuard\Support\Checklist_Service;
@@ -71,6 +72,8 @@ final class Rest_Validate_Test extends WP_UnitTestCase {
 
 		$wp_rest_server = null;
 
+		delete_option( Settings::OPTION_NAME );
+		Plugin::instance()->settings()->refresh();
 		Checklist_Service::flush_memo();
 
 		parent::tear_down();
@@ -115,6 +118,114 @@ final class Rest_Validate_Test extends WP_UnitTestCase {
 		$request->set_body( wp_json_encode( null === $draft ? array() : array( 'draft' => $draft ) ) );
 
 		return $this->server->dispatch( $request );
+	}
+
+	/**
+	 * A saved product whose only status is draft, with required checks failing.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return int Product id.
+	 */
+	private function failing_draft(): int {
+		$id = $this->product()->get_id();
+
+		wp_update_post(
+			array(
+				'ID'          => $id,
+				'post_status' => 'draft',
+			)
+		);
+
+		return $id;
+	}
+
+	/**
+	 * Allow the admin override, and act as someone who can edit products but cannot manage
+	 * WooCommerce.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	private function act_as_product_editor_with_override_on(): void {
+		$settings = Plugin::instance()->settings();
+		$stored   = $settings->get_defaults();
+
+		$stored['publishing']['allow_admin_override'] = true;
+
+		update_option( Settings::OPTION_NAME, $stored );
+		$settings->refresh();
+
+		$user = self::factory()->user->create_and_get( array( 'role' => 'editor' ) );
+
+		$user->add_cap( 'edit_products' );
+		$user->add_cap( 'edit_others_products' );
+		$user->add_cap( 'edit_published_products' );
+
+		wp_set_current_user( $user->ID );
+	}
+
+	/**
+	 * Every response says whether the product can be published.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_response_carries_preflight(): void {
+		$data = $this->dispatch( $this->failing_draft() )->get_data();
+
+		$this->assertSame( 'blocked', $data['preflight']['kind'] );
+		$this->assertGreaterThanOrEqual( 1, $data['preflight']['required'] );
+		$this->assertSame( count( $data['required_failure_ids'] ), $data['preflight']['required'] );
+	}
+
+	/**
+	 * The statement follows the draft, not the stored product.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_preflight_reflects_the_draft(): void {
+		$id     = $this->failing_draft();
+		$before = $this->dispatch( $id )->get_data()['preflight']['required'];
+		$after  = $this->dispatch( $id, array( 'regular_price' => '' ) )->get_data()['preflight']['required'];
+
+		$this->assertSame( $before + 1, $after );
+	}
+
+	/**
+	 * The override wording comes from the guard's own authority, filter included.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_preflight_uses_server_override_authority(): void {
+		$id = $this->failing_draft();
+
+		$this->act_as_product_editor_with_override_on();
+
+		$this->assertSame( 'blocked', $this->dispatch( $id )->get_data()['preflight']['kind'] );
+
+		add_filter( 'sit_wcpg_can_override_publish_guard', '__return_true' );
+
+		$this->assertSame( 'override', $this->dispatch( $id )->get_data()['preflight']['kind'] );
+	}
+
+	/**
+	 * A published product is told it stays live.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_preflight_live_for_published_product(): void {
+		$data = $this->dispatch( $this->product()->get_id() )->get_data();
+
+		$this->assertSame( 'live', $data['preflight']['kind'] );
 	}
 
 	/**
@@ -183,6 +294,7 @@ final class Rest_Validate_Test extends WP_UnitTestCase {
 				'summary_label',
 				'generated_at',
 				'settings_hash',
+				'preflight',
 			),
 			array_keys( $data )
 		);

@@ -54,7 +54,7 @@ final class Category_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks that the product is in at least one category, and warns when the only category is the store default.', 'sapphireit-publish-guard' );
+		return __( 'Products left only in the default category are hard to browse and poorly matched by shopping channels. Checks that the product is in at least one category, and warns when the only one is the store default.', 'sapphireit-publish-guard' );
 	}
 
 	/**

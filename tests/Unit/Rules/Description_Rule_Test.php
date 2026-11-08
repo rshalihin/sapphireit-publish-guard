@@ -179,4 +179,18 @@ final class Description_Rule_Test extends TestCase {
 
 		$this->assertSame( 9, $result->get_data()['length'] );
 	}
+
+	/**
+	 * The settings screen leads with what the check prevents.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_description_text() {
+		$this->assertSame(
+			'Shoppers and search engines use the description to understand what you sell, and a thin one costs sales. Checks that the product has a description, and warns when it is shorter than the minimum length.',
+			( new Description_Rule() )->get_description()
+		);
+	}
 }

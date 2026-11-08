@@ -159,4 +159,18 @@ final class Short_Description_Rule_Test extends TestCase {
 	public function test_it_ships_as_a_warning() {
 		$this->assertSame( Severity::WARNING, ( new Short_Description_Rule() )->get_default_severity() );
 	}
+
+	/**
+	 * The settings screen leads with what the check prevents.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_description_text() {
+		$this->assertSame(
+			'The short description is what shoppers read next to the price and the Add to cart button. Checks that the product has one, and warns when it is shorter than the minimum length.',
+			( new Short_Description_Rule() )->get_description()
+		);
+	}
 }

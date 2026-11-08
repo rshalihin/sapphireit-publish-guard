@@ -16,9 +16,10 @@ defined( 'ABSPATH' ) || exit;
  * a simple product and a variable subscription like a variable one. Any type the plugin
  * does not know is treated as simple, which is the v1.0 behaviour.
  *
- * A class of constants rather than a PHP enum: the declared floor is PHP 8.0.
+ * A class of constants rather than a PHP enum: enums stay out of the `@api` types.
  *
  * @since 1.1.0
+ * @api
  */
 final class Type_Family {
 
@@ -26,6 +27,7 @@ final class Type_Family {
 	 * A product with its own price and stock.
 	 *
 	 * @since 1.1.0
+	 * @api
 	 * @var string
 	 */
 	public const SIMPLE = 'simple';
@@ -34,6 +36,7 @@ final class Type_Family {
 	 * A parent whose price and stock live on its variations.
 	 *
 	 * @since 1.1.0
+	 * @api
 	 * @var string
 	 */
 	public const VARIABLE = 'variable';
@@ -42,6 +45,7 @@ final class Type_Family {
 	 * A collection of linked products, with no price or stock of its own.
 	 *
 	 * @since 1.1.0
+	 * @api
 	 * @var string
 	 */
 	public const GROUPED = 'grouped';
@@ -50,6 +54,7 @@ final class Type_Family {
 	 * A product sold elsewhere, with a price but no stock.
 	 *
 	 * @since 1.1.0
+	 * @api
 	 * @var string
 	 */
 	public const EXTERNAL = 'external';
@@ -76,6 +81,7 @@ final class Type_Family {
 	 * Every family, in display order.
 	 *
 	 * @since 1.1.0
+	 * @api
 	 *
 	 * @return string[]
 	 */
@@ -87,6 +93,7 @@ final class Type_Family {
 	 * Whether a value is one of the four families.
 	 *
 	 * @since 1.1.0
+	 * @api
 	 *
 	 * @param string $family Candidate family.
 	 * @return bool
@@ -99,6 +106,7 @@ final class Type_Family {
 	 * The family a WooCommerce product type belongs to. Pure: no filter is applied here.
 	 *
 	 * @since 1.1.0
+	 * @api
 	 *
 	 * @param string $type WooCommerce product type.
 	 * @return string One of the family constants.

@@ -9,10 +9,12 @@ namespace ProductPublishGuard\Tests\Integration;
 
 use ProductPublishGuard\Admin\Notices;
 use ProductPublishGuard\Engine\Product_Context;
+use ProductPublishGuard\Engine\Save_Path;
 use ProductPublishGuard\Engine\Validation_Result;
 use ProductPublishGuard\Plugin;
 use ProductPublishGuard\Settings\Settings;
 use ProductPublishGuard\Support\Checklist_Service;
+use ProductPublishGuard\Support\Readiness_Indexer;
 use WC_Product;
 use WC_Product_External;
 use WC_Product_Grouped;
@@ -46,6 +48,21 @@ abstract class Publish_Guard_Test_Case extends WP_UnitTestCase {
 	 * @var string[]
 	 */
 	protected const LAYERS = array( 'classic', 'quick_edit', 'bulk_edit', 'crud', 'rest', 'scheduled' );
+
+	/**
+	 * The save path each layer reports.
+	 *
+	 * @since 1.2.0
+	 * @var array<string, string>
+	 */
+	protected const LAYER_PATHS = array(
+		'classic'    => Save_Path::CLASSIC,
+		'quick_edit' => Save_Path::QUICK_EDIT,
+		'bulk_edit'  => Save_Path::BULK_EDIT,
+		'crud'       => Save_Path::CRUD,
+		'rest'       => Save_Path::REST,
+		'scheduled'  => Save_Path::SCHEDULED,
+	);
 
 	/**
 	 * The acting administrator.
@@ -93,6 +110,7 @@ abstract class Publish_Guard_Test_Case extends WP_UnitTestCase {
 		delete_option( Settings::OPTION_NAME );
 		Plugin::instance()->settings()->refresh();
 		Checklist_Service::flush_memo();
+		Readiness_Indexer::reset();
 
 		parent::tear_down();
 	}
@@ -174,6 +192,26 @@ abstract class Publish_Guard_Test_Case extends WP_UnitTestCase {
 		$product->set_props( $this->passing_props( $status, $props ) );
 
 		return $this->save_unguarded( $product );
+	}
+
+	/**
+	 * A saved simple product with nothing to warn about either: a tag and a second image.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param string $status Post status to save it with.
+	 * @return int Product id.
+	 */
+	protected function spotless_product( string $status = 'draft' ): int {
+		$tag = wp_insert_term( 'sit-wcpg-' . wp_generate_password( 6, false ), 'product_tag' );
+
+		return $this->passing_product(
+			$status,
+			array(
+				'tag_ids'           => array( (int) $tag['term_id'] ),
+				'gallery_image_ids' => array( $this->image() ),
+			)
+		);
 	}
 
 	/**

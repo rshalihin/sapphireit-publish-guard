@@ -22,6 +22,7 @@ defined( 'ABSPATH' ) || exit;
  * response, because the value object will not carry it.
  *
  * @since 1.0.0
+ * @api
  */
 final class Rule_Result {
 
@@ -136,6 +137,7 @@ final class Rule_Result {
 	 * The rule's requirement is met.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param string $rule_id Rule identifier.
 	 * @param string $label   Translated rule label.
@@ -153,6 +155,7 @@ final class Rule_Result {
 	 * The requirement is not met. Severity decides whether this blocks publishing.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param string $rule_id Rule identifier.
 	 * @param string $label   Translated rule label.
@@ -170,6 +173,7 @@ final class Rule_Result {
 	 * The finding is advisory by nature and is never escalated to a failure.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param string $rule_id Rule identifier.
 	 * @param string $label   Translated rule label.
@@ -187,6 +191,7 @@ final class Rule_Result {
 	 * The rule does not apply to this product; it is excluded from the counts.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param string $rule_id Rule identifier.
 	 * @param string $label   Translated rule label.
@@ -206,6 +211,7 @@ final class Rule_Result {
 	 * This is where the status derivation matrix is applied; the original is untouched.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param string $severity One of the Severity constants.
 	 * @return Rule_Result
@@ -230,6 +236,7 @@ final class Rule_Result {
 	 * becomes an empty array. Everything else carries over unchanged.
 	 *
 	 * @since 1.1.0
+	 * @api
 	 *
 	 * @param array $fix Fix target descriptor.
 	 * @return Rule_Result
@@ -311,6 +318,7 @@ final class Rule_Result {
 	 * Rule identifier.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -322,6 +330,7 @@ final class Rule_Result {
 	 * What the rule reported, before severity was applied.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -333,6 +342,7 @@ final class Rule_Result {
 	 * The displayed status.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -344,6 +354,7 @@ final class Rule_Result {
 	 * The configured severity this result was evaluated under.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -355,6 +366,7 @@ final class Rule_Result {
 	 * Translated rule label.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -366,6 +378,7 @@ final class Rule_Result {
 	 * Translated message.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -377,6 +390,7 @@ final class Rule_Result {
 	 * Rule group.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -388,6 +402,7 @@ final class Rule_Result {
 	 * Numeric and boolean context.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return array
 	 */
@@ -399,6 +414,7 @@ final class Rule_Result {
 	 * Fix target descriptor, or an empty array.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return array
 	 */
@@ -410,6 +426,7 @@ final class Rule_Result {
 	 * JSON-safe representation, in the shape defined in coding-plan.md section 5.4.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return array
 	 */

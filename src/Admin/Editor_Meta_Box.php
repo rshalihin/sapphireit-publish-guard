@@ -13,6 +13,7 @@ use ProductPublishGuard\Engine\Validation_Result;
 use ProductPublishGuard\Plugin;
 use ProductPublishGuard\Settings\Settings;
 use ProductPublishGuard\Support\Checklist_Service;
+use ProductPublishGuard\Support\Preflight;
 use WP_Post;
 
 defined( 'ABSPATH' ) || exit;
@@ -266,6 +267,15 @@ final class Editor_Meta_Box {
 		}
 
 		echo '</p>';
+
+		$preflight = Preflight::for_result(
+			$result,
+			$this->settings->blocks_publishing(),
+			Plugin::instance()->publish_guard()->can_override( get_current_user_id() ),
+			(string) get_post_status( $result->get_product_id() )
+		);
+
+		echo '<p class="sit-wcpg-preflight sit-wcpg-preflight--' . esc_attr( $preflight['kind'] ) . '">' . esc_html( Preflight::message( $preflight ) ) . '</p>';
 	}
 
 	/**

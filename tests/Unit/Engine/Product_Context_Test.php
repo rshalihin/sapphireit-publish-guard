@@ -9,6 +9,7 @@ namespace ProductPublishGuard\Tests\Unit\Engine;
 
 use ProductPublishGuard\Engine\Child_Loader;
 use ProductPublishGuard\Engine\Product_Context;
+use ProductPublishGuard\Engine\Save_Path;
 use ProductPublishGuard\Engine\Type_Family;
 use ProductPublishGuard\Engine\Variation_Data;
 use WC_Product;
@@ -893,5 +894,85 @@ final class Product_Context_Test extends TestCase {
 
 		$this->assertSame( 3, Product_Context::from_array( array( 'product_type' => 'variable' ) + $seeded )->get_image_count() );
 		$this->assertSame( 2, Product_Context::from_array( array( 'product_type' => 'simple' ) + $seeded )->get_image_count() );
+	}
+
+	/**
+	 * A context nobody stamped is not being saved.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_save_path_defaults_to_none() {
+		$this->assertSame( Save_Path::NONE, Product_Context::from_array( array() )->get_save_path() );
+		$this->assertSame( Save_Path::NONE, Product_Context::from_product( new WC_Product() )->get_save_path() );
+	}
+
+	/**
+	 * Stamping does not touch the original: the same context may be judged and read.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_with_save_path_returns_a_new_instance() {
+		$original = Product_Context::from_array( array() );
+		$stamped  = $original->with_save_path( Save_Path::REST );
+
+		$this->assertNotSame( $original, $stamped );
+		$this->assertSame( Save_Path::REST, $stamped->get_save_path() );
+		$this->assertSame( Save_Path::NONE, $original->get_save_path() );
+	}
+
+	/**
+	 * Stamping changes the path and nothing else.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_with_save_path_keeps_every_value() {
+		$original = Product_Context::from_array(
+			array(
+				'title'         => 'A title',
+				'regular_price' => '10',
+				'product_type'  => 'variable',
+				'variations'    => array( array( 'id' => 21 ) ),
+			)
+		);
+		$stamped  = $original->with_save_path( Save_Path::CRUD );
+
+		$this->assertSame( 'A title', $stamped->get_title() );
+		$this->assertSame( '10', $stamped->get_regular_price() );
+		$this->assertSame( $original->get_variations(), $stamped->get_variations() );
+	}
+
+	/**
+	 * A value that is not a path never reaches a rule.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_invalid_save_path_becomes_none() {
+		$context = Product_Context::from_array( array() );
+
+		$this->assertSame( Save_Path::NONE, $context->with_save_path( 'editor' )->get_save_path() );
+		$this->assertSame( Save_Path::NONE, $context->with_save_path( Save_Path::REST )->with_save_path( '' )->get_save_path() );
+	}
+
+	/**
+	 * The path is a property, not a draft value: no payload can claim one (D3).
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_save_path_cannot_come_from_an_array_or_override() {
+		$claimed = array( 'save_path' => Save_Path::REST );
+
+		$this->assertSame( Save_Path::NONE, Product_Context::from_array( $claimed )->get_save_path() );
+		$this->assertSame( Save_Path::NONE, Product_Context::from_product_with_overrides( new WC_Product(), $claimed )->get_save_path() );
+		$this->assertSame( Save_Path::NONE, Product_Context::from_save_request( null, $claimed )->get_save_path() );
 	}
 }

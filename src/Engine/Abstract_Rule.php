@@ -17,6 +17,7 @@ defined( 'ABSPATH' ) || exit;
  * stamp the rule identity onto each result so no rule repeats it.
  *
  * @since 1.0.0
+ * @api
  */
 abstract class Abstract_Rule implements Rule_Interface {
 
@@ -24,6 +25,7 @@ abstract class Abstract_Rule implements Rule_Interface {
 	 * Stable, snake_case identifier.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -33,6 +35,7 @@ abstract class Abstract_Rule implements Rule_Interface {
 	 * Short translated label shown in the checklist row.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -42,6 +45,7 @@ abstract class Abstract_Rule implements Rule_Interface {
 	 * Translated help text shown on the settings screen.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -53,6 +57,7 @@ abstract class Abstract_Rule implements Rule_Interface {
 	 * Rule group.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -64,6 +69,7 @@ abstract class Abstract_Rule implements Rule_Interface {
 	 * Display order.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return int
 	 */
@@ -75,6 +81,7 @@ abstract class Abstract_Rule implements Rule_Interface {
 	 * Severity applied until the merchant changes it.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -86,6 +93,7 @@ abstract class Abstract_Rule implements Rule_Interface {
 	 * Whether the rule is enabled before the settings are ever saved.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return bool
 	 */
@@ -97,6 +105,7 @@ abstract class Abstract_Rule implements Rule_Interface {
 	 * Whether the rule applies to this product.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param Product_Context $context The product being validated.
 	 * @return bool
@@ -109,6 +118,7 @@ abstract class Abstract_Rule implements Rule_Interface {
 	 * Where the merchant should go to fix a failure.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return array
 	 */
@@ -120,6 +130,7 @@ abstract class Abstract_Rule implements Rule_Interface {
 	 * Build a passing result for this rule.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param string $message Optional translated message.
 	 * @param array  $data    Optional numeric and boolean context.
@@ -133,6 +144,7 @@ abstract class Abstract_Rule implements Rule_Interface {
 	 * Build an unmet-requirement result for this rule.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param string $message Translated message.
 	 * @param array  $data    Optional numeric and boolean context.
@@ -146,6 +158,7 @@ abstract class Abstract_Rule implements Rule_Interface {
 	 * Build an advisory result for this rule. Never escalated to a failure.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param string $message Translated message.
 	 * @param array  $data    Optional numeric and boolean context.
@@ -159,6 +172,7 @@ abstract class Abstract_Rule implements Rule_Interface {
 	 * Build a not-applicable result for this rule.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param string $message Translated reason.
 	 * @param array  $data    Optional numeric and boolean context.

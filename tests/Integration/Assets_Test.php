@@ -9,8 +9,10 @@ namespace ProductPublishGuard\Tests\Integration;
 
 use ProductPublishGuard\Admin\Activation_Notice;
 use ProductPublishGuard\Admin\Assets;
+use ProductPublishGuard\Admin\Review_Notice;
 use ProductPublishGuard\Admin\Screen;
 use ProductPublishGuard\Plugin;
+use ProductPublishGuard\Rest\Review_Notice_Controller;
 use ProductPublishGuard\Rest\Validate_Controller;
 use ProductPublishGuard\Settings\Settings;
 use ProductPublishGuard\Support\Checklist_Service;
@@ -167,6 +169,26 @@ final class Assets_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * The first paint knows the pre-flight statement without a request.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_payload_result_carries_preflight(): void {
+		$this->require_build();
+
+		$product_id = $this->open_product_editor();
+		$inline     = implode( '', (array) wp_scripts()->get_data( Assets::EDITOR_HANDLE, 'before' ) );
+		$payload    = json_decode( substr( $inline, strlen( 'window.' . Assets::PAYLOAD_GLOBAL . ' = ' ), -1 ), true );
+
+		$this->assertSame( $product_id, $payload['productId'] );
+		$this->assertSame( 'live', $payload['result']['preflight']['kind'] );
+		$this->assertIsInt( $payload['result']['preflight']['required'] );
+		$this->assertIsInt( $payload['result']['preflight']['warnings'] );
+	}
+
+	/**
 	 * A new product's editor is the product editor too.
 	 *
 	 * @since 1.0.0
@@ -231,6 +253,33 @@ final class Assets_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * The catalog screen gets the admin stylesheet.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_admin_style_loads_on_catalog_screen(): void {
+		$this->enqueue_on( Screen::CATALOG_HOOK, Screen::CATALOG_HOOK );
+
+		$this->assertTrue( wp_style_is( Assets::ADMIN_HANDLE, 'enqueued' ) );
+	}
+
+	/**
+	 * The catalog screen is server-rendered and needs no JavaScript.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_no_script_loads_on_catalog_screen(): void {
+		$this->enqueue_on( Screen::CATALOG_HOOK, Screen::CATALOG_HOOK );
+
+		$this->assertFalse( wp_script_is( Assets::EDITOR_HANDLE, 'enqueued' ) );
+		$this->assertFalse( wp_style_is( Assets::EDITOR_HANDLE, 'enqueued' ) );
+	}
+
+	/**
 	 * The Plugins screen gets the admin stylesheet while the welcome notice is pending.
 	 *
 	 * @since 1.1.0
@@ -246,6 +295,158 @@ final class Assets_Test extends WP_UnitTestCase {
 
 		$this->assertTrue( wp_style_is( Assets::ADMIN_HANDLE, 'enqueued' ) );
 		$this->assertFalse( wp_script_is( Assets::EDITOR_HANDLE, 'enqueued' ) );
+	}
+
+	/**
+	 * Make the review request due, or not.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param bool $due Whether it should be due.
+	 * @return void
+	 */
+	private function set_review_due( bool $due ): void {
+		update_option(
+			Review_Notice::OPTION,
+			array(
+				'first_seen' => time() - 31 * DAY_IN_SECONDS,
+				'blocked_at' => $due ? time() - DAY_IN_SECONDS : 0,
+				'ask_after'  => 0,
+				'done'       => false,
+			),
+			false
+		);
+	}
+
+	/**
+	 * The screens the review request can appear on.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return array<string, array{string, string}>
+	 */
+	public function data_review_screens(): array {
+		return array(
+			'products list' => array( 'edit.php', 'edit-' . Screen::POST_TYPE ),
+			'settings'      => array( Screen::SETTINGS_HOOK, Screen::SETTINGS_HOOK ),
+			'catalog'       => array( Screen::CATALOG_HOOK, Screen::CATALOG_HOOK ),
+		);
+	}
+
+	/**
+	 * Skip when the review script has not been built.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	private function require_review_build(): void {
+		if ( ! file_exists( SIT_WCPG_PATH . 'build/review-notice.js' ) ) {
+			$this->markTestSkipped( 'Run `npm run build` first: build/review-notice.js is missing.' );
+		}
+	}
+
+	/**
+	 * The script loads only with the notice it drives.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @dataProvider data_review_screens
+	 *
+	 * @param string $hook_suffix The admin page's hook suffix.
+	 * @param string $screen_id   The screen core would set up for it.
+	 * @return void
+	 */
+	public function test_review_script_only_when_due_on_listed_screens( string $hook_suffix, string $screen_id ): void {
+		$this->require_review_build();
+
+		$this->set_review_due( false );
+		$this->enqueue_on( $hook_suffix, $screen_id );
+
+		$this->assertFalse( wp_script_is( Assets::REVIEW_HANDLE, 'enqueued' ), 'Enqueued before it was due.' );
+
+		$this->reset_dependencies();
+		$this->set_review_due( true );
+		$this->enqueue_on( $hook_suffix, $screen_id );
+
+		delete_option( Review_Notice::OPTION );
+
+		$this->assertTrue( wp_script_is( Assets::REVIEW_HANDLE, 'enqueued' ) );
+		$this->assertContains( 'wp-api-fetch', wp_scripts()->registered[ Assets::REVIEW_HANDLE ]->deps );
+	}
+
+	/**
+	 * A due request adds nothing to any other screen.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @dataProvider data_other_screens
+	 *
+	 * @param string $hook_suffix The admin page's hook suffix.
+	 * @param string $screen_id   The screen core would set up for it.
+	 * @return void
+	 */
+	public function test_review_script_not_on_other_screens( string $hook_suffix, string $screen_id ): void {
+		$this->set_review_due( true );
+		$this->enqueue_on( $hook_suffix, $screen_id );
+
+		delete_option( Review_Notice::OPTION );
+
+		$this->assertFalse( wp_script_is( Assets::REVIEW_HANDLE, 'enqueued' ) );
+	}
+
+	/**
+	 * A user who cannot see the notice does not get its script.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_review_script_not_for_shop_manager_without_manage_woocommerce(): void {
+		$role = 'sit_wcpg_catalog_editor';
+
+		add_role(
+			$role,
+			'SIT-WCPG catalog editor',
+			array(
+				'read'          => true,
+				'edit_products' => true,
+			)
+		);
+
+		wp_set_current_user( self::factory()->user->create( array( 'role' => $role ) ) );
+
+		$this->set_review_due( true );
+		$this->enqueue_on( 'edit.php', 'edit-' . Screen::POST_TYPE );
+
+		delete_option( Review_Notice::OPTION );
+		remove_role( $role );
+
+		$this->assertFalse( wp_script_is( Assets::REVIEW_HANDLE, 'enqueued' ) );
+	}
+
+	/**
+	 * The script is told where to post, and never works it out.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_review_payload_has_rest_path(): void {
+		$this->require_review_build();
+
+		$this->set_review_due( true );
+		$this->enqueue_on( Screen::SETTINGS_HOOK, Screen::SETTINGS_HOOK );
+
+		delete_option( Review_Notice::OPTION );
+
+		$inline = implode( '', (array) wp_scripts()->get_data( Assets::REVIEW_HANDLE, 'before' ) );
+
+		$this->assertStringStartsWith( 'window.' . Assets::REVIEW_PAYLOAD_GLOBAL . ' = ', $inline );
+		$this->assertStringContainsString(
+			wp_json_encode( '/' . Validate_Controller::REST_NAMESPACE . Review_Notice_Controller::ROUTE ),
+			$inline
+		);
 	}
 
 	/**

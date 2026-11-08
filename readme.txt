@@ -3,7 +3,7 @@ Contributors: sapphireit
 Tags: woocommerce, products, checklist, quality control, publishing
 Requires at least: 6.5
 Tested up to: 7.1
-Requires PHP: 8.0
+Requires PHP: 8.1
 Requires Plugins: woocommerce
 WC requires at least: 9.0
 WC tested up to: 11.2
@@ -47,8 +47,8 @@ Each check can be turned off, or set to **required** (it must pass before the pr
 **Light footprint.**
 
 * One settings row, plus a temporary flag that is removed once the welcome notice has been shown. No custom tables, post meta, roles or capabilities.
-* Assets load only on the product editor, the products list and the settings screen, and once on the Plugins screen for the welcome notice.
-* No outbound network requests, tracking or upsell notices.
+* Assets load only on the product editor, the products list, the catalog screen and the settings screen, once on the Plugins screen for the welcome notice, and, when the review request is due, a small script for it on those list, catalog and settings screens.
+* No outbound network requests, tracking or upsell notices. After 30 days, and only once the checklist has stopped an incomplete product, it asks once for a review; you can dismiss it for good.
 
 SapphireIT Publish Guard for WooCommerce is an independent plugin. It is not affiliated with or endorsed by WooCommerce or Automattic.
 

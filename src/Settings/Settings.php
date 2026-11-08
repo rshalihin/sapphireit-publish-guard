@@ -267,6 +267,7 @@ class Settings {
 	 * answering false here stops a stale stored key from resurrecting anything.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param string $rule_id Rule identifier.
 	 * @return bool
@@ -279,6 +280,7 @@ class Settings {
 	 * Configured severity for a rule.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param string $rule_id Rule identifier.
 	 * @return string One of the Severity constants.
@@ -293,6 +295,7 @@ class Settings {
 	 * Configured content threshold.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param string $key Threshold key.
 	 * @return int Zero for an unknown key, which every rule reads as "no threshold".

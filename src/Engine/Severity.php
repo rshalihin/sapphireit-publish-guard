@@ -15,9 +15,10 @@ defined( 'ABSPATH' ) || exit;
  * Severity is a *setting*, not a rule property: the rule reports an outcome and the
  * merchant's severity decides whether an unmet requirement blocks publishing.
  *
- * A class of constants rather than a PHP enum: the declared floor is PHP 8.0.
+ * A class of constants rather than a PHP enum: enums stay out of the `@api` types.
  *
  * @since 1.0.0
+ * @api
  */
 final class Severity {
 
@@ -25,6 +26,7 @@ final class Severity {
 	 * An unmet requirement blocks publishing (when enforcement is on).
 	 *
 	 * @since 1.0.0
+	 * @api
 	 * @var string
 	 */
 	public const REQUIRED = 'required';
@@ -33,6 +35,7 @@ final class Severity {
 	 * An unmet requirement is advisory only.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 * @var string
 	 */
 	public const WARNING = 'warning';
@@ -41,6 +44,7 @@ final class Severity {
 	 * Every valid severity.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return string[]
 	 */
@@ -52,6 +56,7 @@ final class Severity {
 	 * Whether a value is one of the two severities.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param string $severity Candidate severity.
 	 * @return bool
@@ -64,6 +69,7 @@ final class Severity {
 	 * Translated label for the settings screen.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param string $severity Severity to label.
 	 * @return string Empty string for an unknown severity.

@@ -8,13 +8,20 @@
 namespace ProductPublishGuard\Tests\Unit;
 
 use ProductPublishGuard\Admin\Assets;
+use ProductPublishGuard\Admin\Catalog_Page;
 use ProductPublishGuard\Admin\Editor_Meta_Box;
 use ProductPublishGuard\Admin\Product_List_Column;
+use ProductPublishGuard\Admin\Readiness_Filter;
+use ProductPublishGuard\Admin\Review_Notice;
 use ProductPublishGuard\Admin\Screen;
+use ProductPublishGuard\Cli\Gate_Command;
 use ProductPublishGuard\Rest\Validate_Controller;
 use ProductPublishGuard\Settings\Settings;
 use ProductPublishGuard\Settings\Settings_Page;
 use ProductPublishGuard\Support\Checklist_Service;
+use ProductPublishGuard\Support\Override_Log;
+use ProductPublishGuard\Support\Readiness_Rebuild;
+use ProductPublishGuard\Support\Readiness_Store;
 use Yoast\PHPUnitPolyfills\TestCases\TestCase;
 
 /**
@@ -35,6 +42,17 @@ final class Naming_Contract_Test extends TestCase {
 	 */
 	public function test_settings_hook_is_derived_from_the_menu_slug() {
 		$this->assertSame( 'woocommerce_page_' . Settings_Page::MENU_SLUG, Screen::SETTINGS_HOOK );
+	}
+
+	/**
+	 * The catalog screen hook is the one core derives from the Products submenu (R8).
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_catalog_hook_is_derived_from_the_menu_slug() {
+		$this->assertSame( 'product_page_' . Catalog_Page::MENU_SLUG, Screen::CATALOG_HOOK );
 	}
 
 	/**
@@ -77,7 +95,26 @@ final class Naming_Contract_Test extends TestCase {
 			'meta box id'  => array( Editor_Meta_Box::ID ),
 			'list column'  => array( Product_List_Column::COLUMN ),
 			'cache group'  => array( Checklist_Service::CACHE_GROUP ),
+			'override log' => array( Override_Log::OPTION ),
+			'index option' => array( Readiness_Rebuild::OPTION ),
+			'rebuild hook' => array( Readiness_Rebuild::HOOK ),
+			'reindex hook' => array( Readiness_Rebuild::PRODUCTS_HOOK ),
+			'filter var'   => array( Readiness_Filter::QUERY_VAR ),
+			'review state' => array( Review_Notice::OPTION ),
 		);
+	}
+
+	/**
+	 * Hidden post meta uses `_sit_wcpg`.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_hidden_meta_keys_carry_the_hidden_prefix() {
+		foreach ( Readiness_Store::meta_keys() as $key ) {
+			$this->assertMatchesRegularExpression( '/^_sit_wcpg(_[a-z0-9]+)*$/', $key );
+		}
 	}
 
 	/**
@@ -108,6 +145,10 @@ final class Naming_Contract_Test extends TestCase {
 			'editor handle'  => array( Assets::EDITOR_HANDLE ),
 			'admin handle'   => array( Assets::ADMIN_HANDLE ),
 			'rest namespace' => array( Validate_Controller::REST_NAMESPACE ),
+			'as group'       => array( Readiness_Rebuild::GROUP ),
+			'catalog slug'   => array( Catalog_Page::MENU_SLUG ),
+			'review handle'  => array( Assets::REVIEW_HANDLE ),
+			'cli command'    => array( Gate_Command::COMMAND ),
 		);
 	}
 
@@ -120,6 +161,22 @@ final class Naming_Contract_Test extends TestCase {
 	 */
 	public function test_payload_global_carries_the_camel_prefix() {
 		$this->assertMatchesRegularExpression( '/^sitWcpg[A-Z][A-Za-z0-9]*$/', Assets::PAYLOAD_GLOBAL );
+		$this->assertMatchesRegularExpression( '/^sitWcpg[A-Z][A-Za-z0-9]*$/', Assets::REVIEW_PAYLOAD_GLOBAL );
+	}
+
+	/**
+	 * The review script reads the global the enqueuer writes, and hardcodes no route.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_review_script_matches_the_php_constants() {
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local source file.
+		$source = (string) file_get_contents( dirname( __DIR__, 2 ) . '/assets/js/review-notice/index.js' );
+
+		$this->assertStringContainsString( 'window.' . Assets::REVIEW_PAYLOAD_GLOBAL . '.restPath', $source );
+		$this->assertStringNotContainsString( Validate_Controller::REST_NAMESPACE, $source );
 	}
 
 	/**

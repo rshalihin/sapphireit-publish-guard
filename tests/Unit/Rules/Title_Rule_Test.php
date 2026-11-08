@@ -110,4 +110,18 @@ final class Title_Rule_Test extends TestCase {
 	public function test_the_fix_target_is_the_title_field() {
 		$this->assertSame( '#title', $this->check( '' )->get_fix()['selector'] );
 	}
+
+	/**
+	 * The settings screen leads with what the check prevents.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_description_text() {
+		$this->assertSame(
+			'A product without a title of its own can\'t be found by shoppers or search engines. Checks that the product has a title.',
+			( new Title_Rule() )->get_description()
+		);
+	}
 }

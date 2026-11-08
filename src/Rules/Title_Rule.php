@@ -54,7 +54,7 @@ final class Title_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks that the product has a title of its own.', 'sapphireit-publish-guard' );
+		return __( 'A product without a title of its own can\'t be found by shoppers or search engines. Checks that the product has a title.', 'sapphireit-publish-guard' );
 	}
 
 	/**

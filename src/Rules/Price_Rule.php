@@ -56,7 +56,7 @@ final class Price_Rule extends Abstract_Rule {
 	 * @return string
 	 */
 	public function get_description(): string {
-		return __( 'Checks that the product has a valid regular price. On a variable product, every enabled variation needs one; grouped products are skipped.', 'sapphireit-publish-guard' );
+		return __( 'A product without a price can\'t be bought, and shopping channels disapprove it. Checks that the product has a valid regular price; on a variable product, every enabled variation needs one. Grouped products are skipped.', 'sapphireit-publish-guard' );
 	}
 
 	/**

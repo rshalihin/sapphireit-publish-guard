@@ -18,8 +18,21 @@ defined( 'ABSPATH' ) || exit;
  * assertions are stable however the rules were registered.
  *
  * @since 1.0.0
+ * @api
  */
 final class Rule_Registry {
+
+	/**
+	 * The rule API version, passed to `sit_wcpg_register_rules`.
+	 *
+	 * Bumped when a member tagged `@api` is removed or changes signature. Additions do not
+	 * bump it.
+	 *
+	 * @since 1.2.0
+	 * @api
+	 * @var int
+	 */
+	public const API_VERSION = 2;
 
 	/**
 	 * Registered rules, keyed by identifier.
@@ -44,6 +57,7 @@ final class Rule_Registry {
 	 * rule would make the settings for the original identifier apply to different logic.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param Rule_Interface $rule The rule to register.
 	 * @return bool True when the rule was registered.
@@ -80,6 +94,7 @@ final class Rule_Registry {
 	 * Whether a rule identifier is registered.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param string $id Rule identifier.
 	 * @return bool
@@ -92,6 +107,7 @@ final class Rule_Registry {
 	 * Get one rule by identifier.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @param string $id Rule identifier.
 	 * @return Rule_Interface|null
@@ -104,6 +120,7 @@ final class Rule_Registry {
 	 * Every registered rule, sorted by priority and then by identifier.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return array
 	 */
