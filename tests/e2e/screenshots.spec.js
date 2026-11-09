@@ -4,7 +4,9 @@
  * 1. the checklist panel in the product editor;
  * 3. the settings screen;
  * 4. the notice after a Bulk Edit refused a product;
- * 5. publishing refused, with the reason and where to fix it.
+ * 5. publishing refused, with the reason and where to fix it;
+ * 6. the live products that would fail the current rules;
+ * 7. the pre-flight statement on a product that can't be published yet.
  *
  * Screenshot 2, the products list with its readiness column, needs a catalog
  * that looks like a real store, so it is still taken by hand.
@@ -28,11 +30,15 @@ import { expect, test } from '@wordpress/e2e-test-utils-playwright';
  * Internal dependencies
  */
 import {
+	BASELINE,
 	checklist,
 	fixtures,
 	guardNotice,
 	openProduct,
+	preflight,
 	publish,
+	runRebuildQueue,
+	saveSettings,
 } from './utils';
 
 const OUT_DIR = path.resolve( __dirname, '../../.wordpress-org' );
@@ -71,6 +77,45 @@ test.describe( 'WordPress.org screenshots', () => {
 
 			await page.evaluate( () => window.scrollTo( 0, 0 ) );
 			await page.screenshot( { path: out( 1 ) } );
+		} );
+
+		test( 'screenshot-7: the pre-flight statement on a blocked product', async ( {
+			page,
+		} ) => {
+			const { products } = fixtures();
+
+			await openProduct( page, products.shotPreflight );
+			await expect( preflight( page ) ).toHaveClass(
+				/sit-wcpg-preflight--blocked/
+			);
+
+			await page.evaluate( () => window.scrollTo( 0, 0 ) );
+			await page.screenshot( { path: out( 7 ) } );
+		} );
+	} );
+
+	test.describe( 'the catalog screen', () => {
+		// Back to the baseline, with flags to match, even when the capture failed.
+		test.afterEach( async ( { page } ) => {
+			await saveSettings( page, BASELINE );
+			runRebuildQueue();
+		} );
+
+		test( 'screenshot-6: live products that would fail your rules', async ( {
+			page,
+		} ) => {
+			await saveSettings( page, {
+				radios: { 'rules][sku][severity': 'required' },
+			} );
+			runRebuildQueue();
+
+			await page.goto(
+				'/wp-admin/edit.php?post_type=product&page=sit-wcpg-catalog'
+			);
+			await expect( page.locator( '#the-list > tr' ) ).toHaveCount( 3 );
+
+			await page.evaluate( () => window.scrollTo( 0, 0 ) );
+			await page.screenshot( { path: out( 6 ) } );
 		} );
 	} );
 

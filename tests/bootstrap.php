@@ -79,7 +79,7 @@ if ( $sit_wcpg_wp_tests && file_exists( $sit_wcpg_wp_tests . '/includes/function
 // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
 defined( 'ABSPATH' ) || define( 'ABSPATH', $sit_wcpg_root . '/' );
 defined( 'SIT_WCPG_PATH' ) || define( 'SIT_WCPG_PATH', $sit_wcpg_root . '/' );
-defined( 'SIT_WCPG_VERSION' ) || define( 'SIT_WCPG_VERSION', '1.1.0' );
+defined( 'SIT_WCPG_VERSION' ) || define( 'SIT_WCPG_VERSION', '1.2.0' );
 
 require_once __DIR__ . '/stubs/wordpress-functions.php';
 

@@ -14,6 +14,7 @@ import { loadFixtures } from './fixtures';
 import { SAVE_TIMEOUT } from './settings';
 
 export { BASELINE, saveSettings } from './settings';
+export { runRebuildQueue, wp } from './wp-cli';
 
 /**
  * The fixture ids global setup created.
@@ -209,4 +210,35 @@ export function postMessage( page ) {
  */
 export function guardNotice( page, kind ) {
 	return page.locator( `.sit-wcpg-notice--${ kind }` );
+}
+
+/**
+ * The pre-flight statement on the product editor.
+ *
+ * @param {Object} page Playwright page.
+ * @return {Object} Locator.
+ */
+export function preflight( page ) {
+	return page.locator( '.sit-wcpg-preflight' );
+}
+
+/**
+ * Picks a readiness in the products list's filter and applies it.
+ *
+ * @param {Object} page  Playwright page, on the products list.
+ * @param {string} value `ready`, `warning`, `fail` or `unchecked`.
+ * @return {Promise<void>}
+ */
+export async function readinessFilter( page, value ) {
+	await page.locator( '#sit-wcpg-readiness-filter' ).selectOption( value );
+
+	await Promise.all( [
+		page.waitForURL(
+			new RegExp( `[?&]sit_wcpg_readiness=${ value }(&|$)` ),
+			{
+				timeout: SAVE_TIMEOUT,
+			}
+		),
+		page.locator( '#post-query-submit' ).click( { noWaitAfter: true } ),
+	] );
 }

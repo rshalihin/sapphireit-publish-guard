@@ -7,7 +7,7 @@ Requires PHP: 8.1
 Requires Plugins: woocommerce
 WC requires at least: 9.0
 WC tested up to: 11.2
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -15,9 +15,11 @@ A pre-publish quality checklist for WooCommerce products, with optional server-s
 
 == Description ==
 
-A product published without a price, an image or a SKU is a half-finished listing: it sells badly or not at all. SapphireIT Publish Guard stops it at the publish button. It checks every product against a configurable checklist of required fields before it goes live, so incomplete products never reach your customers.
+Products published without an identifier or an image can get disapproved by shopping channels, and a disapproved product earns nothing. SapphireIT Publish Guard stops them at the publish button. It checks every product against a configurable checklist of required fields before it goes live, so incomplete products never reach your customers.
 
 It is product validation for the WooCommerce catalog you already have. A missing SKU, an empty description, a variation without a price or a thin image gallery shows up while you edit, and a product that fails a required check is kept as a draft until it is fixed.
+
+Google expects an identifier such as a GTIN. This plugin checks the identifier WooCommerce itself has, the SKU, so a product with none is caught before it goes live.
 
 **A live checklist in the product editor.** A panel in the classic WooCommerce product editor lists every check, grouped by content, media, pricing, organization and inventory. It refreshes on its own as you type, upload images or pick categories. You don't need to save first. Each failing item links to the field that fixes it.
 
@@ -44,9 +46,20 @@ Each check can be turned off, or set to **required** (it must pass before the pr
 
 **A readiness column in the products list.** See at a glance which products are ready and which need work.
 
+**A readiness filter across the whole catalog.** A dropdown above the products list finds products that are Ready, have Warnings, are Not ready or are Not checked yet, on every page of the list and not just the one you are looking at.
+
+**Live products that would fail your rules.** A screen under Products, then Publish Guard, lists every published product that would be refused if it were published today, and the required checks it fails. They stay live: Publish Guard never takes a product offline.
+
+**A pre-flight statement in the editor.** One sentence tells you whether this product can be published right now, how many required checks stand in the way, and what will happen when you press Publish.
+
+**WP-CLI.** `wp sit-wcpg check` runs the checklist across the catalog from the command line, and `--strict` exits with an error when a product fails a required check. `wp sit-wcpg reindex` rechecks every product straight away.
+
+**Overrides are recorded.** If you let some users publish anyway, each override is recorded for your records; nothing is shown or sent anywhere.
+
 **Light footprint.**
 
-* One settings row, plus a temporary flag that is removed once the welcome notice has been shown. No custom tables, post meta, roles or capabilities.
+* Five options (the settings, a temporary flag removed once the welcome notice has been shown, the capped override record, the progress of the background recheck and the state of the review request) and three hidden post meta keys on each product holding its stored readiness. No custom tables, roles or capabilities. All of it is removed when you delete the plugin.
+* Background rechecks run through WooCommerce's own Action Scheduler, only after something has changed, such as your settings or the plugin version. Nothing runs on a recurring schedule.
 * Assets load only on the product editor, the products list, the catalog screen and the settings screen, once on the Plugins screen for the welcome notice, and, when the review request is due, a small script for it on those list, catalog and settings screens.
 * No outbound network requests, tracking or upsell notices. After 30 days, and only once the checklist has stopped an incomplete product, it asks once for a review; you can dismiss it for good.
 
@@ -103,7 +116,17 @@ Not in this plugin. The SKU check covers the identifier WooCommerce itself uses.
 
 = Can I sort or filter the products list by readiness? =
 
-Not in this version. Readiness is calculated when the list is shown and is not stored.
+You can filter it but not sort it. The dropdown above the products list shows the products that are Ready, have Warnings, are Not ready or are Not checked yet, across the whole catalog.
+
+= What happens when I change the settings? =
+
+Your products are rechecked against the new settings in the background, through WooCommerce's Action Scheduler. While that runs, a filtered products list shows how far the recheck has got, so you know the results aren't complete yet. The readiness column is worked out live, so it is right straight away. Nothing is unpublished.
+
+If Action Scheduler isn't available, the list says so, and `wp sit-wcpg reindex` updates the filter.
+
+= Who overrode a publish? =
+
+When you allow overrides, each one is recorded: who published, which required checks failed and when. Up to 200 entries are kept, each for up to 90 days, and they hold ids and check names only, never product text. If that user is later deleted, their entries are anonymized. The record stays in your database and is never sent anywhere. Viewing it is not part of the free plugin.
 
 = Can developers add their own checks? =
 
@@ -111,7 +134,7 @@ Yes. Register a rule on the `sit_wcpg_register_rules` action. It gets a settings
 
 = Does it slow down the products list? =
 
-The readiness column adds three database queries for a page of simple products, and four for a page that includes variable or grouped products, whatever the page size or the number of variations.
+The readiness column adds three database queries for a page of simple products, and four for a page that includes variable or grouped products, whatever the page size or the number of variations. Filtering by readiness adds at most one more.
 
 == Screenshots ==
 
@@ -120,6 +143,8 @@ The readiness column adds three database queries for a page of simple products, 
 3. The settings screen under WooCommerce, then Product Checklist.
 4. The notice shown when a product could not be published.
 5. Publishing refused, with the reason and where to fix it.
+6. Live products that would fail your rules.
+7. The pre-flight statement on a product that can't be published yet.
 
 == Source Code ==
 
@@ -135,6 +160,19 @@ To rebuild the compiled files from source, install Node.js and npm, then run:
 The build uses `@wordpress/scripts` and writes the compiled files to `build/`.
 
 == Changelog ==
+
+= 1.2.0 =
+* New: a readiness filter on the products list finds products that are ready, have warnings, are not ready or have not been checked yet, across the whole catalog. Readiness is stored when a product is saved and rechecked in the background when the settings change.
+* New: overrides are recorded: who published past which required checks, and when. At most 200 entries, each kept for up to 90 days. Nothing is shown or sent anywhere.
+* New: a pre-flight statement in the product editor says in one sentence whether the product can be published right now.
+* Improved: the settings screen explains what each check protects against, and groups the checks.
+* Changed: Requires PHP 8.1.
+* New for developers: rules can read how a product is being saved through `Product_Context::get_save_path()`.
+* New for developers: the rule API is versioned and documented. `sit_wcpg_register_rules` now passes the API version, and `sit_wcpg_publish_blocked` and `sit_wcpg_publish_overridden` report each outcome.
+* New: Products, then Publish Guard, lists the live products that would fail your rules, and why.
+* New: WP-CLI commands `wp sit-wcpg check` and `wp sit-wcpg reindex`.
+* New: after 30 days, and only once the checklist has stopped an incomplete product, it asks once for a review. You can dismiss it for good.
+* Improved: the plugin description and FAQ cover these features.
 
 = 1.1.0 =
 * New: variation-level checks. On variable products, regular price, sale price, SKU and stock status are checked on every enabled variation. Disabled variations are ignored.
@@ -157,6 +195,9 @@ The build uses `@wordpress/scripts` and writes the compiled files to `build/`.
 * Developer hooks: `sit_wcpg_register_rules`, `sit_wcpg_validation_result`, `sit_wcpg_should_enforce` and `sit_wcpg_can_override_publish_guard`.
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+Requires PHP 8.1. After updating, products are rechecked in the background so the new readiness filter can find them.
 
 = 1.1.0 =
 Variable products are now checked per variation. A variable product with an unpriced enabled variation can no longer be published while Regular price is required. Products that are already live are not changed.

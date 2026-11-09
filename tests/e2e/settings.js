@@ -35,6 +35,7 @@ const BASELINE = {
 	},
 	radios: {
 		'rules][child_products][severity': 'warning',
+		'rules][sku][severity': 'warning',
 		'publishing][enforce_scope': 'authenticated',
 	},
 };

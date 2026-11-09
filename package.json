@@ -1,6 +1,6 @@
 {
 	"name": "sapphireit-publish-guard",
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"description": "A pre-publish quality checklist for WooCommerce products.",
 	"license": "GPL-2.0-or-later",
 	"private": true,

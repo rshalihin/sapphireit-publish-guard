@@ -3,9 +3,10 @@
 A pre-publish quality checklist for WooCommerce products, with optional **server-side**
 publishing enforcement.
 
-The plugin adds a checklist panel to the classic WooCommerce product editor, a readiness
-column to the products list, and one settings screen under **WooCommerce → Product
-Checklist**. Twelve built-in rules cover the title, description, short description,
+The plugin adds a checklist panel and a pre-flight statement to the classic WooCommerce
+product editor, a readiness column and filter to the products list, a list of failing live
+products under **Products → Publish Guard**, and one settings screen under **WooCommerce →
+Product Checklist**. Twelve built-in rules cover the title, description, short description,
 featured image, image count, price, sale price validity, category, tags, SKU, stock
 status, and variations and grouped products. Each rule can be disabled or set to
 *required* / *warning*.
@@ -127,14 +128,53 @@ it. Variable and grouped parents are not refused for their missing children, bec
 
 `can_override()` is true only when **Allow users who can manage WooCommerce to publish
 anyway** is on (off by default) and the user has `manage_woocommerce`. An overridden
-publish goes through and shows an "override used" notice. No capability is registered
-and no role is modified.
+publish goes through, shows an "override used" notice and is added to the override log
+(see "Stored data"). No capability is registered and no role is modified.
 
 ### Products that are already live
 
 Enforcement applies only to transitions into `publish` / `future`. A live product that
-later fails a rule is shown in its checklist and the list column, but it is never
-demoted. Otherwise, a settings change could take a whole catalogue offline.
+later fails a rule is shown in its checklist, the list column and the catalog screen, but
+it is never demoted. Otherwise, a settings change could take a whole catalogue offline.
+
+### Readiness store
+
+The products list filter and the catalog screen need to query readiness across the whole
+catalog, so each product's result is stored in three protected post meta keys:
+
+| Key | Holds |
+|---|---|
+| `_sit_wcpg_readiness` | `pass`, `warning`, `fail` or `skipped` |
+| `_sit_wcpg_readiness_sig` | the signature the status was computed under |
+| `_sit_wcpg_readiness_data` | `required_failures` (rule ids) and `checked_at` (a timestamp) |
+
+The keys are written with `update_post_meta()`, so saving a flag changes neither
+`post_modified` nor the checklist cache key. A duplicated product does not copy them.
+
+**When it is written.** `Readiness_Indexer` marks a product dirty when it is saved, or when
+one of its variations changes, and validates each marked product once, at `shutdown`, so
+the classic editor's double save costs one validation. A request from the storefront never
+validates: it queues the ids for Action Scheduler instead. That also covers a REST request
+from a user who cannot `edit_products`, such as the block checkout. A trashed, deleted or
+auto-draft product carries no flag. Indexing fails open, so an error is logged under
+`WP_DEBUG` and the save goes ahead. Nothing is written while the checklist is switched off.
+
+**Staleness.** The signature is
+`md5( Settings::get_hash() . '|' . Checklist_Service::CACHE_VERSION . '|' . SIT_WCPG_VERSION )`.
+A settings change, a newly registered rule or a plugin release therefore makes every stored
+flag stale.
+
+**The rebuild.** `Readiness_Rebuild` queues Action Scheduler jobs in the group `sit-wcpg`,
+50 products at a time, and records its progress in `sit_wcpg_readiness_index`. It runs after
+a settings change, on the first admin request of a new plugin version, and when the products
+list, catalog or settings screen finds a stale signature. A job whose signature is no longer
+current exits without working. Nothing recurs. While flags are stale, a filtered products
+list and the catalog screen show a banner with the progress. Without Action Scheduler nothing
+is queued, the banner says so, and `wp sit-wcpg reindex` does the same work in one process.
+
+**The column stays live.** The readiness column validates each row when the list is shown
+and never reads the store, so a stale flag cannot mislabel a row. Only the filter and the
+catalog screen read stored flags.
 
 ### Documented limitations
 
@@ -165,8 +205,10 @@ demoted. Otherwise, a settings change could take a whole catalogue offline.
   product together with its draft children can refuse the parent when `child_products`
   is required, because WordPress may save the parent before the children are published.
   Publishing the parent again succeeds.
-* **Sorting and filtering.** Readiness is computed on demand and never stored, so the
-  products list cannot be sorted or filtered by it.
+* **Sorting.** The products list can be filtered by stored readiness, but not sorted by
+  it.
+* **Concurrent overrides.** The override log is an option that is read and rewritten
+  without a lock, so two overrides at the same instant can lose one entry.
 * **The client-side prompt is advisory.** The editor warns and asks for confirmation
   before a publish that will be refused, but it never disables the Publish button. The
   server decides and always reports the outcome.
@@ -301,9 +343,8 @@ public function check( Product_Context $context, Settings $settings ): Rule_Resu
 }
 ```
 
-The rule interface, `Product_Context` and `Variation_Data` keep working across 1.x, but
-their formal stability contract (what may change, and with how much notice) arrives in
-v1.3.
+The rule interface and `Product_Context` are covered by the stability contract above.
+`Variation_Data` is not tagged `@api`, but it keeps working across 1.x.
 
 ### `sit_wcpg_product_type_family` (filter)
 
@@ -463,8 +504,13 @@ Build on it rather than on `validate_post()` if you need readiness outside the e
 `POST /wp-json/sit-wcpg/v1/products/{id}/validate`: returns the checklist for a product,
 optionally with an unsaved `draft` object overriding stored values. Requires a
 logged-in user who can `edit_post` the product, plus the usual REST cookie nonce. The
-endpoint performs no writes. It exists for the editor panel and is not a stable public
+endpoint performs no writes. Its response includes `preflight`, the decision behind the
+editor's one-sentence statement. It exists for the editor panel and is not a stable public
 API in 1.x.
+
+`POST /wp-json/sit-wcpg/v1/review-notice`: records the answer to the review request, with
+`choice` set to `review`, `later` or `never`. Requires `manage_woocommerce` and the REST
+cookie nonce. It exists for the notice's script and is not a public API.
 
 ## WP-CLI
 
@@ -531,7 +577,7 @@ No custom tables, post types, taxonomies, capabilities or role edits.
 composer install     # dev only: PHPCS, WPCS, PHPUnit. No runtime dependencies.
 npm install          # wp-scripts, wp-env, Playwright
 
-npm run build        # build/editor.js, build/editor.css, build/admin.css
+npm run build        # build/editor.js, build/editor.css, build/admin.css, build/review-notice.js
 npm run start        # watch mode
 
 composer lint        # PHPCS (WordPress ruleset, security sniffs at error severity) + prefix guard
@@ -563,7 +609,7 @@ placeholder carries a `translators:` comment.
 ### Release
 
 ```bash
-php bin/check-version.php 1.1.0   # every version string agrees, and equals 1.1.0
+php bin/check-version.php 1.2.0   # every version string agrees, and equals 1.2.0
 npm run package      # version check + build + makepot + version check + dist/sapphireit-publish-guard.zip
 ```
 
@@ -674,14 +720,17 @@ and `playwright-report/`, which are neither committed nor shipped.
 
 ```
 sapphireit-publish-guard.php  Plugin header, constants, sit_wcpg_bootstrap()
-uninstall.php                 Removes sit_wcpg_settings and the notice transients
+uninstall.php                 Removes everything listed under "Stored data"
 src/                          PHP only, PSR-4 under ProductPublishGuard\
   Autoloader.php              src/Some/Class_Name.php -> ProductPublishGuard\Some\Class_Name
   Plugin.php                  Lazy service locator + hook wiring
   Compat/                     Requirements gate, WooCommerce feature declarations
   Engine/  Rules/             The rule engine and the 12 built-in rules
-  Settings/  Admin/  Rest/  Publishing/  Support/  Cli/
+  Settings/  Admin/  Rest/  Publishing/  Support/
+  Cli/                        The wp sit-wcpg commands (registered only under WP-CLI)
 assets/                       React and SCSS sources of build/ (shipped)
+  js/editor/                  The checklist panel and the pre-flight statement
+  js/review-notice/           The review request's buttons
 build/                        Generated by wp-scripts (shipped)
 languages/                    sapphireit-publish-guard.pot (shipped)
 bin/                          Dev scripts: prefix guard, version check, release zip, test environments, E2E site (not shipped)
@@ -695,8 +744,8 @@ tests/                        PHPUnit, Jest and Playwright (not shipped)
   `SIT_WCPG_` for constants; `sit-wcpg-` for script handles, admin slugs, HTML ids and
   CSS classes; `sit-wcpg/v1` for the REST namespace; `sitWcpg…` for JS globals.
   `composer lint:prefix` fails on any leftover of the retired prefix.
-* One option row (`sit_wcpg_settings`). No custom tables, post types, taxonomies or
-  capabilities, and no role edits.
+* Options and post meta only, all listed under "Stored data". No custom tables, post
+  types, taxonomies or capabilities, and no role edits.
 * Rules exist only in PHP. The browser sends a draft snapshot and PHP validates it, so
   the live checklist and the publish guard can never disagree.
 

@@ -8,12 +8,24 @@ const { RequestUtils } = require( '@wordpress/e2e-test-utils-playwright' );
 
 const { createFixtures, deleteFixtures } = require( './fixtures' );
 const { BASELINE, saveSettings } = require( './settings' );
+const { assertManualQueue, runRebuildQueue, wp } = require( './wp-cli' );
 
 /**
  * @param {import('@playwright/test').FullConfig} config Playwright config.
  * @return {Promise<void>}
  */
 module.exports = async function globalSetup( config ) {
+	assertManualQueue();
+
+	// What the 1.2.0 specs read must start empty, whatever the last run left.
+	wp( [
+		'option',
+		'delete',
+		'sit_wcpg_override_log',
+		'sit_wcpg_review_notice',
+		'sit_wcpg_readiness_index',
+	] );
+
 	const { storageState, baseURL } = config.projects[ 0 ].use;
 	const requestContext = await request.newContext( { baseURL } );
 	const requestUtils = new RequestUtils( requestContext, {
@@ -35,4 +47,7 @@ module.exports = async function globalSetup( config ) {
 
 	await saveSettings( page, BASELINE );
 	await browser.close();
+
+	// The settings screen queued a rebuild for the emptied index: every flag starts current.
+	runRebuildQueue();
 };

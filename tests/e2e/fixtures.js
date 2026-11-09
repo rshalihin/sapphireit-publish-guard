@@ -106,6 +106,53 @@ function simple( shared, sku, name, price ) {
 }
 
 /**
+ * A product with no SKU, which passes until SKU is raised to required.
+ *
+ * @param {Object} definition A fixture definition.
+ * @param {Object} [fields]   Further WC REST product fields.
+ * @return {Object} The definition, without its SKU.
+ */
+function withoutSku( definition, fields = {} ) {
+	return {
+		...definition,
+		product: { ...definition.product, sku: '', ...fields },
+	};
+}
+
+/**
+ * E2E-11's catalog: enough passing products to push the failing one to page 2.
+ *
+ * @param {Object}                   shared Shared ids.
+ * @param {function(string): string} sku    Builds a unique SKU from a key.
+ * @return {Object<string, Object>} Definitions.
+ */
+function readinessCatalog( shared, sku ) {
+	const catalog = {
+		e2e11Fail: ( ( definition ) => ( {
+			...definition,
+			// The list is newest first, so the oldest product is on the last page.
+			product: {
+				...definition.product,
+				date_created: '2024-01-01T00:00:00',
+			},
+		} ) )( simple( shared, sku( 'e2e11f' ), 'E2E-11 Alpaca shawl', null ) ),
+	};
+
+	for ( let i = 1; i <= 25; i++ ) {
+		const number = String( i ).padStart( 2, '0' );
+
+		catalog[ `e2e11Pass${ number }` ] = simple(
+			shared,
+			sku( `e2e11p${ number }` ),
+			`E2E-11 Alpaca scarf ${ number }`,
+			'32.00'
+		);
+	}
+
+	return catalog;
+}
+
+/**
  * Every fixture, keyed by the name the specs use.
  *
  * @param {Object} shared Shared ids.
@@ -168,6 +215,28 @@ function definitions( shared, run ) {
 			null,
 		] ),
 		e2e9: simple( shared, sku( 'e2e9' ), 'E2E-9 Linen napkins', null ),
+		e2e10: simple( shared, sku( 'e2e10' ), 'E2E-10 Wool blanket', null ),
+		e2e10Live: simple(
+			shared,
+			sku( 'e2e10l' ),
+			'E2E-10 Wool throw',
+			'89.00'
+		),
+		...readinessCatalog( shared, sku ),
+		e2e12: withoutSku(
+			simple( shared, sku( 'e2e12' ), 'E2E-12 Hemp tote', '28.00' )
+		),
+		e2e13: withoutSku(
+			simple( shared, sku( 'e2e13' ), 'E2E-13 Hemp market bag', '34.00' )
+		),
+		e2e14: simple( shared, sku( 'e2e14' ), 'E2E-14 Linen apron', null ),
+		e2e16Fail: simple( shared, sku( 'e2e16f' ), 'E2E-16 Cotton rug', null ),
+		e2e16Pass: simple(
+			shared,
+			sku( 'e2e16p' ),
+			'E2E-16 Cotton mat',
+			'45.00'
+		),
 		screenshot: variable( shared, sku( 'shot' ), 'Merino crew sweater', [
 			'59.00',
 			'59.00',
@@ -205,6 +274,26 @@ function definitions( shared, run ) {
 			shared,
 			sku( 'shot4c' ),
 			'Waxed canvas tote bag',
+			null
+		),
+		// Screenshot 6: live products that fail once SKU is required.
+		shotCatalog1: withoutSku(
+			simple( shared, sku( 'shot6a' ), 'Stoneware mug', '16.00' ),
+			{ status: 'publish' }
+		),
+		shotCatalog2: withoutSku(
+			simple( shared, sku( 'shot6b' ), 'Stoneware bowl', '22.00' ),
+			{ status: 'publish' }
+		),
+		shotCatalog3: withoutSku(
+			simple( shared, sku( 'shot6c' ), 'Stoneware plate', '26.00' ),
+			{ status: 'publish' }
+		),
+		// Screenshot 7: exactly one required failure in the pre-flight statement.
+		shotPreflight: simple(
+			shared,
+			sku( 'shot7' ),
+			'Linen table runner',
 			null
 		),
 	};
