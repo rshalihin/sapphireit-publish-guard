@@ -25,7 +25,7 @@ defined( 'ABSPATH' ) || exit;
  * `get_severity_for()` runs inside the validator's isolation, like `check()`: a rule that
  * throws there leaves no row and breaks nothing else.
  *
- * @since 1.3.0
+ * @since 1.2.0
  * @api
  */
 interface Managed_Rule_Interface extends Rule_Interface {
@@ -33,7 +33,7 @@ interface Managed_Rule_Interface extends Rule_Interface {
 	/**
 	 * The severity of this rule for one product.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @api
 	 *
 	 * @param Product_Context $context The product being validated.

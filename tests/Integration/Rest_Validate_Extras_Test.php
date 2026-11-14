@@ -23,14 +23,14 @@ use WP_UnitTestCase;
  * The browser may send `draft.extras`, but a rule only ever sees what an add-on's
  * `sit_wcpg_draft_extras` filter made of them.
  *
- * @since 1.3.0
+ * @since 1.2.0
  */
 final class Rest_Validate_Extras_Test extends WP_UnitTestCase {
 
 	/**
 	 * The REST server the requests are dispatched through.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var Spy_REST_Server
 	 */
 	private Spy_REST_Server $server;
@@ -38,7 +38,7 @@ final class Rest_Validate_Extras_Test extends WP_UnitTestCase {
 	/**
 	 * The arguments of each `sit_wcpg_draft_extras` call.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var array[]
 	 */
 	private array $calls = array();
@@ -46,7 +46,7 @@ final class Rest_Validate_Extras_Test extends WP_UnitTestCase {
 	/**
 	 * A clean cache, an administrator, a REST server and the probe rule.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -75,7 +75,7 @@ final class Rest_Validate_Extras_Test extends WP_UnitTestCase {
 	/**
 	 * Leave nothing behind.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -96,7 +96,7 @@ final class Rest_Validate_Extras_Test extends WP_UnitTestCase {
 	/**
 	 * A saved product.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return int
 	 */
@@ -113,7 +113,7 @@ final class Rest_Validate_Extras_Test extends WP_UnitTestCase {
 	/**
 	 * Dispatch a validate request.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param int        $product_id Product id.
 	 * @param array|null $draft      The draft, or null for a request with no draft at all.
@@ -130,7 +130,7 @@ final class Rest_Validate_Extras_Test extends WP_UnitTestCase {
 	/**
 	 * The probe rule's status in a response.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param \WP_REST_Response $response The response.
 	 * @return string
@@ -150,7 +150,7 @@ final class Rest_Validate_Extras_Test extends WP_UnitTestCase {
 	/**
 	 * Pass the probe code through the draft filter, as an add-on does after sanitizing it.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -174,7 +174,7 @@ final class Rest_Validate_Extras_Test extends WP_UnitTestCase {
 	/**
 	 * A 400 with the draft error code.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param \WP_REST_Response $response The response.
 	 * @return void
@@ -187,7 +187,7 @@ final class Rest_Validate_Extras_Test extends WP_UnitTestCase {
 	/**
 	 * What the browser sends is not trusted: only the filter's result is seeded.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -205,7 +205,7 @@ final class Rest_Validate_Extras_Test extends WP_UnitTestCase {
 	/**
 	 * The filter gets the raw extras and the stored product.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -231,7 +231,7 @@ final class Rest_Validate_Extras_Test extends WP_UnitTestCase {
 	/**
 	 * Fifty keys are accepted, fifty-one are not.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -253,7 +253,7 @@ final class Rest_Validate_Extras_Test extends WP_UnitTestCase {
 	/**
 	 * The encoded extras are capped at 20 000 bytes.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -267,7 +267,7 @@ final class Rest_Validate_Extras_Test extends WP_UnitTestCase {
 	/**
 	 * Anything but an object is refused.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -281,7 +281,7 @@ final class Rest_Validate_Extras_Test extends WP_UnitTestCase {
 	/**
 	 * A result that depends on extras is never served from the cache.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -298,7 +298,7 @@ final class Rest_Validate_Extras_Test extends WP_UnitTestCase {
 	/**
 	 * A plain read is still memoized and cached.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -328,7 +328,7 @@ final class Rest_Validate_Extras_Test extends WP_UnitTestCase {
 	/**
 	 * The checklist service's object-cache key for a product.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param int $id Product id.
 	 * @return string

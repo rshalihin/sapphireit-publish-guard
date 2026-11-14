@@ -236,7 +236,7 @@ final class Assets {
 	/**
 	 * The editor script's dependencies: its own, then any registered handle an add-on adds.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param string[] $core The dependencies the build recorded.
 	 * @return string[]
@@ -250,7 +250,7 @@ final class Assets {
 		 * handle that is not registered is dropped. The panel's own dependencies stay
 		 * whatever is returned.
 		 *
-		 * @since 1.3.0
+		 * @since 1.2.0
 		 *
 		 * @param string[] $deps Script handles.
 		 */

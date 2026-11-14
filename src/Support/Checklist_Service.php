@@ -170,7 +170,7 @@ final class Checklist_Service {
 	 * Validate a stored product by post id.
 	 *
 	 * @since 1.0.0
-	 * @since 1.3.0 The `$extras` parameter.
+	 * @since 1.2.0 The `$extras` parameter.
 	 *
 	 * @param int   $post_id   Product post identifier.
 	 * @param array $overrides Unsaved field values in `Product_Context` override shape. A
@@ -229,7 +229,7 @@ final class Checklist_Service {
 	 * this class cannot reason about how fresh it is.
 	 *
 	 * @since 1.0.0
-	 * @since 1.3.0 The `$extras` parameter.
+	 * @since 1.2.0 The `$extras` parameter.
 	 *
 	 * @param WC_Product $product   The product to validate.
 	 * @param array      $overrides Unsaved field values in `Product_Context` override shape.

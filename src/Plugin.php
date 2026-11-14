@@ -264,7 +264,7 @@ final class Plugin {
 		 * the plugin's requirements passed, and it hands over the instance to read
 		 * `settings()` and `registry()` from.
 		 *
-		 * @since 1.3.0
+		 * @since 1.2.0
 		 *
 		 * @param Plugin $plugin The booted plugin.
 		 */

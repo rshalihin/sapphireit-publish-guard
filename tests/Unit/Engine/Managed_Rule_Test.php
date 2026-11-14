@@ -22,14 +22,14 @@ use Yoast\PHPUnitPolyfills\TestCases\TestCase;
  * A managed rule runs whenever it supports the product, carries its own severity, and never
  * reaches the settings. A rule whose `supports()` throws is skipped, managed or not.
  *
- * @since 1.3.0
+ * @since 1.2.0
  */
 final class Managed_Rule_Test extends TestCase {
 
 	/**
 	 * Start from a site that has never saved the settings.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -42,7 +42,7 @@ final class Managed_Rule_Test extends TestCase {
 	/**
 	 * A registry over the given rules.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param array $rules Rule objects.
 	 * @return Rule_Registry
@@ -60,7 +60,7 @@ final class Managed_Rule_Test extends TestCase {
 	/**
 	 * A simple product's context.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return Product_Context
 	 */
@@ -76,7 +76,7 @@ final class Managed_Rule_Test extends TestCase {
 	/**
 	 * The ids of the rules that would run.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param Rule_Registry $registry The rules.
 	 * @return string[]
@@ -94,7 +94,7 @@ final class Managed_Rule_Test extends TestCase {
 	/**
 	 * Validate over the given rules and key the results by rule id.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param array $rules Rule objects.
 	 * @return array<string, Rule_Result>
@@ -114,7 +114,7 @@ final class Managed_Rule_Test extends TestCase {
 	/**
 	 * A managed rule runs although the settings have no entry that enables it.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -129,7 +129,7 @@ final class Managed_Rule_Test extends TestCase {
 	/**
 	 * The rule itself still decides whether it applies.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -140,7 +140,7 @@ final class Managed_Rule_Test extends TestCase {
 	/**
 	 * The stamped severity is the rule's answer for this product, not its default.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -154,7 +154,7 @@ final class Managed_Rule_Test extends TestCase {
 	/**
 	 * A severity that is not one falls back to the rule's default.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -171,7 +171,7 @@ final class Managed_Rule_Test extends TestCase {
 	/**
 	 * A rule whose severity lookup throws leaves no row, and takes nothing else with it.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -189,7 +189,7 @@ final class Managed_Rule_Test extends TestCase {
 	/**
 	 * A throwing `supports()` skips that rule, managed or ordinary, and nothing escapes.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -257,7 +257,7 @@ final class Managed_Rule_Test extends TestCase {
 	/**
 	 * The settings never learn about a managed rule.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -272,7 +272,7 @@ final class Managed_Rule_Test extends TestCase {
 	/**
 	 * Registering a managed rule does not invalidate a stored signature or cache key.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -286,7 +286,7 @@ final class Managed_Rule_Test extends TestCase {
 	/**
 	 * An ordinary rule still obeys the merchant's switch.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */

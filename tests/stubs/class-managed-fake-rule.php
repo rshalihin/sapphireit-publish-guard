@@ -20,14 +20,14 @@ use RuntimeException;
  *
  * It always fails its check, so the severity the validator stamps decides the status.
  *
- * @since 1.3.0
+ * @since 1.2.0
  */
 final class Managed_Fake_Rule extends Abstract_Rule implements Managed_Rule_Interface {
 
 	/**
 	 * The value that makes `supports()` or `get_severity_for()` throw.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var string
 	 */
 	public const THROWS = 'throws';
@@ -35,7 +35,7 @@ final class Managed_Fake_Rule extends Abstract_Rule implements Managed_Rule_Inte
 	/**
 	 * Rule identifier.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var string
 	 */
 	private string $id;
@@ -43,7 +43,7 @@ final class Managed_Fake_Rule extends Abstract_Rule implements Managed_Rule_Inte
 	/**
 	 * What `supports()` returns, or self::THROWS.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var bool|string
 	 */
 	private $supported;
@@ -51,7 +51,7 @@ final class Managed_Fake_Rule extends Abstract_Rule implements Managed_Rule_Inte
 	/**
 	 * What `get_severity_for()` returns, or self::THROWS.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var string
 	 */
 	private string $severity;
@@ -59,7 +59,7 @@ final class Managed_Fake_Rule extends Abstract_Rule implements Managed_Rule_Inte
 	/**
 	 * Severity the rule ships with.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var string
 	 */
 	private string $default_severity;
@@ -67,7 +67,7 @@ final class Managed_Fake_Rule extends Abstract_Rule implements Managed_Rule_Inte
 	/**
 	 * Rule label.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var string
 	 */
 	private string $label;
@@ -75,7 +75,7 @@ final class Managed_Fake_Rule extends Abstract_Rule implements Managed_Rule_Inte
 	/**
 	 * Construct the double.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param string      $id               Rule identifier.
 	 * @param bool|string $supported        What `supports()` returns, or self::THROWS.
@@ -94,7 +94,7 @@ final class Managed_Fake_Rule extends Abstract_Rule implements Managed_Rule_Inte
 	/**
 	 * Rule identifier.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return string
 	 */
@@ -105,7 +105,7 @@ final class Managed_Fake_Rule extends Abstract_Rule implements Managed_Rule_Inte
 	/**
 	 * Rule label.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return string
 	 */
@@ -116,7 +116,7 @@ final class Managed_Fake_Rule extends Abstract_Rule implements Managed_Rule_Inte
 	/**
 	 * Severity the rule ships with.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return string
 	 */
@@ -127,7 +127,7 @@ final class Managed_Fake_Rule extends Abstract_Rule implements Managed_Rule_Inte
 	/**
 	 * Whether the rule applies.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param Product_Context $context The product being validated.
 	 * @return bool
@@ -146,7 +146,7 @@ final class Managed_Fake_Rule extends Abstract_Rule implements Managed_Rule_Inte
 	/**
 	 * The severity for this product.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param Product_Context $context The product being validated.
 	 * @return string
@@ -165,7 +165,7 @@ final class Managed_Fake_Rule extends Abstract_Rule implements Managed_Rule_Inte
 	/**
 	 * Always fail.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param Product_Context $context  The product being validated.
 	 * @param Settings        $settings The merchant's configuration.

@@ -56,7 +56,7 @@ final class Settings_Page {
 	 * Later than WooCommerce's last submenu (Extensions, priority 70), so the page sits at
 	 * the end of the WooCommerce menu and a page added after it sits next to it.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var int
 	 */
 	public const MENU_PRIORITY = 100;

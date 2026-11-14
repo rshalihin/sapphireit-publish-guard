@@ -704,7 +704,7 @@ final class Settings_Test extends WP_UnitTestCase {
 	 * The page is added after WooCommerce's last submenu (Extensions, priority 70), so it
 	 * sits at the end of the WooCommerce menu.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */

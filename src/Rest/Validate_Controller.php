@@ -105,7 +105,7 @@ final class Validate_Controller {
 	 * The draft key that carries add-on extras. Not an override: it never reaches
 	 * `Product_Context` except through `sit_wcpg_draft_extras`.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var string
 	 */
 	private const EXTRAS_FIELD = 'extras';
@@ -113,7 +113,7 @@ final class Validate_Controller {
 	/**
 	 * The most keys the draft's extras may have.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var int
 	 */
 	private const EXTRAS_MAX_KEYS = 50;
@@ -121,7 +121,7 @@ final class Validate_Controller {
 	/**
 	 * The most bytes the draft's extras may take, JSON-encoded.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var int
 	 */
 	private const EXTRAS_MAX_BYTES = 20000;
@@ -377,7 +377,7 @@ final class Validate_Controller {
 	/**
 	 * The extras to seed for this request: whatever add-ons make of the draft's.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param array $raw        The draft's `extras`, as the browser sent them.
 	 * @param int   $product_id Product post identifier.
@@ -401,7 +401,7 @@ final class Validate_Controller {
 		 * of `$raw`, sanitizes them and returns them. `$raw` is untrusted request data,
 		 * limited only to 50 keys and 20 000 encoded bytes.
 		 *
-		 * @since 1.3.0
+		 * @since 1.2.0
 		 *
 		 * @param array      $extras  The extras to seed. Empty by default.
 		 * @param array      $raw     The draft's `extras`, unsanitized.
@@ -415,7 +415,7 @@ final class Validate_Controller {
 	/**
 	 * Check the draft's extras: an object, small enough to be worth reading.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param mixed $value The raw `extras` value.
 	 * @return true|WP_Error

@@ -193,7 +193,7 @@ final class Rule_Api_Contract_Test extends TestCase {
 	/**
 	 * The minor version counts additions, and the major version has not moved.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */

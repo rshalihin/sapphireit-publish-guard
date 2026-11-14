@@ -21,14 +21,14 @@ use WP_UnitTestCase;
  * A managed rule is configured by the add-on that registered it, so the merchant is never
  * offered a switch for it and nothing about it is stored.
  *
- * @since 1.3.0
+ * @since 1.2.0
  */
 final class Settings_Managed_Rules_Test extends WP_UnitTestCase {
 
 	/**
 	 * Start from a site that has never saved the form.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -42,7 +42,7 @@ final class Settings_Managed_Rules_Test extends WP_UnitTestCase {
 	/**
 	 * The shipped rules plus one managed rule.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return Rule_Registry
 	 */
@@ -58,7 +58,7 @@ final class Settings_Managed_Rules_Test extends WP_UnitTestCase {
 	/**
 	 * The rules table lists the shipped checks and not the managed one.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -79,7 +79,7 @@ final class Settings_Managed_Rules_Test extends WP_UnitTestCase {
 	/**
 	 * A submitted key for a managed rule is dropped by the sanitizer.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */

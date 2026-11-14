@@ -23,14 +23,14 @@ defined( 'ABSPATH' ) || exit;
 /**
  * The probe add-on.
  *
- * @since 1.3.0
+ * @since 1.2.0
  */
 final class Sit_Wcpg_Probe {
 
 	/**
 	 * The context extra the rule reads.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var string
 	 */
 	public const EXTRA = 'probe_code';
@@ -38,7 +38,7 @@ final class Sit_Wcpg_Probe {
 	/**
 	 * The post meta, and the classic editor's field name, the value lives in.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var string
 	 */
 	public const META = '_probe_code';
@@ -46,7 +46,7 @@ final class Sit_Wcpg_Probe {
 	/**
 	 * The option that stands for the add-on's own configuration.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var string
 	 */
 	public const SALT_OPTION = 'probe_salt';
@@ -54,7 +54,7 @@ final class Sit_Wcpg_Probe {
 	/**
 	 * The checklist group the rule is listed under.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var string
 	 */
 	public const GROUP = 'probe';
@@ -62,7 +62,7 @@ final class Sit_Wcpg_Probe {
 	/**
 	 * The slug of the product category the rule does not apply to.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var string
 	 */
 	public const EXEMPT_CATEGORY = 'probe-exempt';
@@ -74,7 +74,7 @@ final class Sit_Wcpg_Probe {
 	 * process and a registry cannot forget a rule, so the probe stays loaded for the rest
 	 * of the run and must be inert outside its own test.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var bool
 	 */
 	public static bool $enabled = true;
@@ -82,7 +82,7 @@ final class Sit_Wcpg_Probe {
 	/**
 	 * Whether `boot()` has run.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var bool
 	 */
 	private static bool $booted = false;
@@ -90,7 +90,7 @@ final class Sit_Wcpg_Probe {
 	/**
 	 * Boot after the plugin: on `sit_wcpg_loaded`, or at once when it has already fired.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -107,7 +107,7 @@ final class Sit_Wcpg_Probe {
 	/**
 	 * Wire the add-on to the extension points (S1, S2).
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param Plugin $plugin The booted plugin.
 	 * @return void
@@ -137,7 +137,7 @@ final class Sit_Wcpg_Probe {
 	/**
 	 * Register the managed rule (S3).
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param Rule_Registry $registry The registry.
 	 * @return void
@@ -151,7 +151,7 @@ final class Sit_Wcpg_Probe {
 	/**
 	 * Name the add-on's checklist group (S11).
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param mixed $labels Group labels by key.
 	 * @return mixed
@@ -167,7 +167,7 @@ final class Sit_Wcpg_Probe {
 	/**
 	 * Read the stored value, for every path that seeds nothing (S7).
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param mixed  $value   The value so far.
 	 * @param string $key     The extra key.
@@ -189,7 +189,7 @@ final class Sit_Wcpg_Probe {
 	 *
 	 * A request that does not carry the field seeds nothing, and the stored value is used.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param mixed  $extras  The extras so far.
 	 * @param array  $postarr The slashed request data.
@@ -211,7 +211,7 @@ final class Sit_Wcpg_Probe {
 	/**
 	 * Accept the value the live editor sends (S9). Nothing else in `$raw` is passed on.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param mixed $extras The extras so far.
 	 * @param mixed $raw    The draft's extras, unsanitized.
@@ -232,7 +232,7 @@ final class Sit_Wcpg_Probe {
 	/**
 	 * Add the add-on's configuration to the settings hash (S5).
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param mixed $salt The salt so far.
 	 * @return mixed

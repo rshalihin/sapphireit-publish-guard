@@ -43,7 +43,7 @@ final class Rule_Registry {
 	 * checks both: the version it was written for, and a minor at least as high as the one
 	 * that brought the addition.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @api
 	 * @var int
 	 */
@@ -167,7 +167,7 @@ final class Rule_Registry {
 	 * down with it.
 	 *
 	 * @since 1.0.0
-	 * @since 1.3.0 Managed rules skip the settings switch; a throwing `supports()` is skipped.
+	 * @since 1.2.0 Managed rules skip the settings switch; a throwing `supports()` is skipped.
 	 *
 	 * @param Settings        $settings The merchant's configuration.
 	 * @param Product_Context $context  The product being validated.
@@ -202,7 +202,7 @@ final class Rule_Registry {
 	/**
 	 * Record a rule whose `supports()` threw, so the bug is findable.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param string    $rule_id Identifier of the rule that threw.
 	 * @param Throwable $error   The throwable.

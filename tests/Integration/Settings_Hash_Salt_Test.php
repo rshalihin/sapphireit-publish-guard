@@ -16,14 +16,14 @@ use WP_UnitTestCase;
  * The hash is in every cache key and in the readiness signature, so a salt changes them all,
  * and no salt leaves them exactly as they were before the filter existed.
  *
- * @since 1.3.0
+ * @since 1.2.0
  */
 final class Settings_Hash_Salt_Test extends WP_UnitTestCase {
 
 	/**
 	 * Start from a site that has never saved the form.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -36,7 +36,7 @@ final class Settings_Hash_Salt_Test extends WP_UnitTestCase {
 	/**
 	 * Settings over one known rule.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return Settings
 	 */
@@ -50,7 +50,7 @@ final class Settings_Hash_Salt_Test extends WP_UnitTestCase {
 	/**
 	 * The hash's input before any salt.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param Settings $settings The settings.
 	 * @return string
@@ -62,7 +62,7 @@ final class Settings_Hash_Salt_Test extends WP_UnitTestCase {
 	/**
 	 * Make the filter return a value.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param mixed $salt What the filter returns.
 	 * @return void
@@ -79,7 +79,7 @@ final class Settings_Hash_Salt_Test extends WP_UnitTestCase {
 	/**
 	 * With nothing on the filter the hash is the one stored signatures were written with.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -92,7 +92,7 @@ final class Settings_Hash_Salt_Test extends WP_UnitTestCase {
 	/**
 	 * A salt is appended to the hashed text after a separator.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -109,7 +109,7 @@ final class Settings_Hash_Salt_Test extends WP_UnitTestCase {
 	/**
 	 * Two add-on configurations never share a hash.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -128,7 +128,7 @@ final class Settings_Hash_Salt_Test extends WP_UnitTestCase {
 	/**
 	 * A filter that returns something other than a string changes nothing.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -143,7 +143,7 @@ final class Settings_Hash_Salt_Test extends WP_UnitTestCase {
 	/**
 	 * A long salt is reduced to its own hash before it is used.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */

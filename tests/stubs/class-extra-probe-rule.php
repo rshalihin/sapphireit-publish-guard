@@ -21,14 +21,14 @@ use ProductPublishGuard\Settings\Settings;
  * The plugin's registry cannot forget a rule, so this one lives in it for the rest of the
  * run and applies only while a test has switched it on.
  *
- * @since 1.3.0
+ * @since 1.2.0
  */
 final class Extra_Probe_Rule extends Abstract_Rule implements Managed_Rule_Interface {
 
 	/**
 	 * The rule's identifier.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var string
 	 */
 	public const ID = 'extra_probe';
@@ -36,7 +36,7 @@ final class Extra_Probe_Rule extends Abstract_Rule implements Managed_Rule_Inter
 	/**
 	 * The extra it reads.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var string
 	 */
 	public const EXTRA = 'probe_code';
@@ -44,7 +44,7 @@ final class Extra_Probe_Rule extends Abstract_Rule implements Managed_Rule_Inter
 	/**
 	 * Whether the rule applies to anything at the moment.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var bool
 	 */
 	private static bool $active = false;
@@ -52,7 +52,7 @@ final class Extra_Probe_Rule extends Abstract_Rule implements Managed_Rule_Inter
 	/**
 	 * Register the rule with the plugin, once, and switch it on.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -69,7 +69,7 @@ final class Extra_Probe_Rule extends Abstract_Rule implements Managed_Rule_Inter
 	/**
 	 * Switch the rule off again.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -80,7 +80,7 @@ final class Extra_Probe_Rule extends Abstract_Rule implements Managed_Rule_Inter
 	/**
 	 * Rule identifier.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return string
 	 */
@@ -91,7 +91,7 @@ final class Extra_Probe_Rule extends Abstract_Rule implements Managed_Rule_Inter
 	/**
 	 * Rule label.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return string
 	 */
@@ -102,7 +102,7 @@ final class Extra_Probe_Rule extends Abstract_Rule implements Managed_Rule_Inter
 	/**
 	 * After every shipped rule.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return int
 	 */
@@ -113,7 +113,7 @@ final class Extra_Probe_Rule extends Abstract_Rule implements Managed_Rule_Inter
 	/**
 	 * Only while a test has switched the rule on.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param Product_Context $context The product being validated.
 	 * @return bool
@@ -127,7 +127,7 @@ final class Extra_Probe_Rule extends Abstract_Rule implements Managed_Rule_Inter
 	/**
 	 * Always required.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param Product_Context $context The product being validated.
 	 * @return string
@@ -141,7 +141,7 @@ final class Extra_Probe_Rule extends Abstract_Rule implements Managed_Rule_Inter
 	/**
 	 * Pass when the extra has a value.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param Product_Context $context  The product being validated.
 	 * @param Settings        $settings The merchant's configuration.

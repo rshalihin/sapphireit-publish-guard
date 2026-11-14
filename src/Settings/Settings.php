@@ -64,7 +64,7 @@ class Settings {
 	/**
 	 * The longest hash salt used as it is. A longer one is replaced by its `md5`.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var int
 	 */
 	private const MAX_SALT_LENGTH = 200;
@@ -374,7 +374,7 @@ class Settings {
 	 * stored by an earlier version stay valid.
 	 *
 	 * @since 1.0.0
-	 * @since 1.3.0 Salted by `sit_wcpg_settings_hash_salt`.
+	 * @since 1.2.0 Salted by `sit_wcpg_settings_hash_salt`.
 	 *
 	 * @return string
 	 */
@@ -389,7 +389,7 @@ class Settings {
 		 * Anything but a non-empty string is ignored, and a salt longer than 200 characters
 		 * is replaced by its `md5`.
 		 *
-		 * @since 1.3.0
+		 * @since 1.2.0
 		 *
 		 * @param string $salt The salt. Empty by default.
 		 */

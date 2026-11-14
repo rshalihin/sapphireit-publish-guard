@@ -493,7 +493,7 @@ final class Publish_Guard {
 			 * Edit only. `$postarr` is slashed, exactly as `wp_insert_post_data` received
 			 * it, so unslash and sanitize what you read.
 			 *
-			 * @since 1.3.0
+			 * @since 1.2.0
 			 *
 			 * @param array  $extras  The extras to seed. Empty by default.
 			 * @param array  $postarr The slashed request data.

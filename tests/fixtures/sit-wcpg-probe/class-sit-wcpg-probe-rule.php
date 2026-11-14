@@ -20,14 +20,14 @@ defined( 'ABSPATH' ) || exit;
 /**
  * "Probe code": a managed rule, so the add-on decides where it applies and how strictly.
  *
- * @since 1.3.0
+ * @since 1.2.0
  */
 final class Sit_Wcpg_Probe_Rule extends Abstract_Rule implements Managed_Rule_Interface {
 
 	/**
 	 * The rule's identifier.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var string
 	 */
 	public const ID = 'probe_code';
@@ -35,7 +35,7 @@ final class Sit_Wcpg_Probe_Rule extends Abstract_Rule implements Managed_Rule_In
 	/**
 	 * Rule identifier.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return string
 	 */
@@ -46,7 +46,7 @@ final class Sit_Wcpg_Probe_Rule extends Abstract_Rule implements Managed_Rule_In
 	/**
 	 * Rule label.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return string
 	 */
@@ -57,7 +57,7 @@ final class Sit_Wcpg_Probe_Rule extends Abstract_Rule implements Managed_Rule_In
 	/**
 	 * The add-on's own group.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return string
 	 */
@@ -68,7 +68,7 @@ final class Sit_Wcpg_Probe_Rule extends Abstract_Rule implements Managed_Rule_In
 	/**
 	 * After every shipped rule.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return int
 	 */
@@ -79,7 +79,7 @@ final class Sit_Wcpg_Probe_Rule extends Abstract_Rule implements Managed_Rule_In
 	/**
 	 * Every product, except those in the exempt category.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param Product_Context $context The product being validated.
 	 * @return bool
@@ -97,7 +97,7 @@ final class Sit_Wcpg_Probe_Rule extends Abstract_Rule implements Managed_Rule_In
 	/**
 	 * A warning for external products, required for everything else.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param Product_Context $context The product being validated.
 	 * @return string
@@ -109,7 +109,7 @@ final class Sit_Wcpg_Probe_Rule extends Abstract_Rule implements Managed_Rule_In
 	/**
 	 * Pass when the product has a probe code.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param Product_Context $context  The product being validated.
 	 * @param Settings        $settings The merchant's configuration.

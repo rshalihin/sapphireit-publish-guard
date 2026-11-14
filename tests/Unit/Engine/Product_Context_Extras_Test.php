@@ -17,14 +17,14 @@ use Yoast\PHPUnitPolyfills\TestCases\TestCase;
  * Extras carry product data the plugin does not model. A seeded value wins, anything else is
  * asked of `sit_wcpg_context_extra` once, and nothing unsafe is ever stored.
  *
- * @since 1.3.0
+ * @since 1.2.0
  */
 final class Product_Context_Extras_Test extends TestCase {
 
 	/**
 	 * How many times the resolver filter ran, by key.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var array<string, int>
 	 */
 	private array $calls = array();
@@ -32,7 +32,7 @@ final class Product_Context_Extras_Test extends TestCase {
 	/**
 	 * Start with nothing on the filter.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -47,7 +47,7 @@ final class Product_Context_Extras_Test extends TestCase {
 	/**
 	 * Leave nothing on the filter.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -60,7 +60,7 @@ final class Product_Context_Extras_Test extends TestCase {
 	/**
 	 * Resolve extras from a map, counting each call.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param array $map Values by key.
 	 * @return void
@@ -81,7 +81,7 @@ final class Product_Context_Extras_Test extends TestCase {
 	/**
 	 * `from_array()` takes extras under their own key.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -94,7 +94,7 @@ final class Product_Context_Extras_Test extends TestCase {
 	/**
 	 * A seeded value is never replaced by what storage says.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -110,7 +110,7 @@ final class Product_Context_Extras_Test extends TestCase {
 	/**
 	 * The filter is asked once for a key, however often it is read.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -127,7 +127,7 @@ final class Product_Context_Extras_Test extends TestCase {
 	/**
 	 * Nothing resolved means the caller's default, and the miss is remembered too.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -144,7 +144,7 @@ final class Product_Context_Extras_Test extends TestCase {
 	/**
 	 * A key outside the pattern is never looked up.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -165,7 +165,7 @@ final class Product_Context_Extras_Test extends TestCase {
 	/**
 	 * Seeding makes a new context and leaves the old one alone.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -198,7 +198,7 @@ final class Product_Context_Extras_Test extends TestCase {
 	/**
 	 * Only scalars, null and shallow arrays of those are kept.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -230,7 +230,7 @@ final class Product_Context_Extras_Test extends TestCase {
 	/**
 	 * What the resolver returns goes through the same rules.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -243,7 +243,7 @@ final class Product_Context_Extras_Test extends TestCase {
 	/**
 	 * Extras are a property: no override array can set them.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */

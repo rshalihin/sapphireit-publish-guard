@@ -16,14 +16,14 @@ use ProductPublishGuard\Support\Readiness_Store;
  * `sit_wcpg_rules_changed` does what a settings change does: it re-reads the settings, drops
  * what was memoized and queues a rebuild of the stored flags.
  *
- * @since 1.3.0
+ * @since 1.2.0
  */
 final class Rules_Changed_Test extends Publish_Guard_Test_Case {
 
 	/**
 	 * Start with no index and an empty queue.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -37,7 +37,7 @@ final class Rules_Changed_Test extends Publish_Guard_Test_Case {
 	/**
 	 * Change the add-on's part of the settings hash, as a saved add-on configuration does.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param string $salt The salt.
 	 * @return void
@@ -54,7 +54,7 @@ final class Rules_Changed_Test extends Publish_Guard_Test_Case {
 	/**
 	 * The stored flags are rebuilt for the signature the add-on's change produced.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -93,7 +93,7 @@ final class Rules_Changed_Test extends Publish_Guard_Test_Case {
 	/**
 	 * A result validated before the change is not served after it.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -116,7 +116,7 @@ final class Rules_Changed_Test extends Publish_Guard_Test_Case {
 	/**
 	 * Settings written behind the facade's back are read again.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */

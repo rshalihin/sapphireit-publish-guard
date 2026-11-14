@@ -119,7 +119,7 @@ final class Validator {
 	 * An ordinary rule takes the merchant's setting. A managed rule answers for itself; an
 	 * answer that is not a severity falls back to its default, and then to `required`.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param Rule_Interface  $rule    The rule that ran.
 	 * @param Product_Context $context The product being validated.

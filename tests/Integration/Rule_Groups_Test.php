@@ -25,14 +25,14 @@ use WP_UnitTestCase;
 /**
  * The five core groups are fixed. An add-on can only append groups of its own.
  *
- * @since 1.3.0
+ * @since 1.2.0
  */
 final class Rule_Groups_Test extends WP_UnitTestCase {
 
 	/**
 	 * The core groups, in order.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var array<string, string>
 	 */
 	private const CORE = array(
@@ -46,7 +46,7 @@ final class Rule_Groups_Test extends WP_UnitTestCase {
 	/**
 	 * A clean slate.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -64,7 +64,7 @@ final class Rule_Groups_Test extends WP_UnitTestCase {
 	/**
 	 * Leave no screen, post or script registry behind.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -82,7 +82,7 @@ final class Rule_Groups_Test extends WP_UnitTestCase {
 	/**
 	 * Run the group map through a callback.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param callable $callback Receives and returns the map.
 	 * @return void
@@ -94,7 +94,7 @@ final class Rule_Groups_Test extends WP_UnitTestCase {
 	/**
 	 * With no filter the map is the five core groups.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -117,7 +117,7 @@ final class Rule_Groups_Test extends WP_UnitTestCase {
 	/**
 	 * A filter that returns nonsense changes nothing.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -130,7 +130,7 @@ final class Rule_Groups_Test extends WP_UnitTestCase {
 	/**
 	 * Added groups follow the core ones, in the order they were added.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -162,7 +162,7 @@ final class Rule_Groups_Test extends WP_UnitTestCase {
 	/**
 	 * A key outside the pattern, and a label that is not a non-empty string, are dropped.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -187,7 +187,7 @@ final class Rule_Groups_Test extends WP_UnitTestCase {
 	/**
 	 * Ten added groups at most.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -212,7 +212,7 @@ final class Rule_Groups_Test extends WP_UnitTestCase {
 	/**
 	 * The editor payload and the settings screen both use the filtered map.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */

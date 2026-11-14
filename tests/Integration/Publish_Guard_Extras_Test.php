@@ -15,14 +15,14 @@ use ProductPublishGuard\Tests\Stubs\Extra_Probe_Rule;
  * An admin save seeds extras from the request, through `sit_wcpg_save_request_extras`. Every
  * other path reads them from storage, through `sit_wcpg_context_extra`.
  *
- * @since 1.3.0
+ * @since 1.2.0
  */
 final class Publish_Guard_Extras_Test extends Publish_Guard_Test_Case {
 
 	/**
 	 * The arguments of each `sit_wcpg_save_request_extras` call.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var array[]
 	 */
 	private array $calls = array();
@@ -30,7 +30,7 @@ final class Publish_Guard_Extras_Test extends Publish_Guard_Test_Case {
 	/**
 	 * Switch the probe rule on.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -45,7 +45,7 @@ final class Publish_Guard_Extras_Test extends Publish_Guard_Test_Case {
 	/**
 	 * Switch the probe rule off, so no other test meets it.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -58,7 +58,7 @@ final class Publish_Guard_Extras_Test extends Publish_Guard_Test_Case {
 	/**
 	 * Answer the save-request filter with a fixed value, recording each call.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param mixed $result What the filter returns.
 	 * @return void
@@ -79,7 +79,7 @@ final class Publish_Guard_Extras_Test extends Publish_Guard_Test_Case {
 	/**
 	 * Resolve the probe extra from the product's meta, as an add-on reads storage.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -101,7 +101,7 @@ final class Publish_Guard_Extras_Test extends Publish_Guard_Test_Case {
 	/**
 	 * Without a value the probe rule refuses the publish; with a seeded one it goes through.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -124,7 +124,7 @@ final class Publish_Guard_Extras_Test extends Publish_Guard_Test_Case {
 	/**
 	 * The filter gets the request as WordPress received it, the route and the product id.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -152,7 +152,7 @@ final class Publish_Guard_Extras_Test extends Publish_Guard_Test_Case {
 	/**
 	 * A save that is not an admin request has no request fields to seed from.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -170,7 +170,7 @@ final class Publish_Guard_Extras_Test extends Publish_Guard_Test_Case {
 	/**
 	 * A filter that returns something other than an array seeds nothing.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -199,7 +199,7 @@ final class Publish_Guard_Extras_Test extends Publish_Guard_Test_Case {
 	/**
 	 * A CRUD save seeds nothing: the resolver reads the object being saved.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */

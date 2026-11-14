@@ -61,7 +61,7 @@ final class Product_Context {
 	 * A property, like the save path: no override array sets it, only `from_array()` and
 	 * `with_extras()`.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var array
 	 */
 	private array $extras = array();
@@ -70,7 +70,7 @@ final class Product_Context {
 	 * Extras resolved through `sit_wcpg_context_extra`, keyed by extra key. A miss is kept
 	 * as null, so the filter runs once per key.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var array
 	 */
 	private array $resolved_extras = array();
@@ -78,7 +78,7 @@ final class Product_Context {
 	/**
 	 * The shape of an extra key.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var string
 	 */
 	private const EXTRA_KEY_PATTERN = '/^[a-z][a-z0-9_]{0,39}$/';
@@ -86,7 +86,7 @@ final class Product_Context {
 	/**
 	 * How deep an extra's arrays may nest.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var int
 	 */
 	private const EXTRA_MAX_DEPTH = 3;
@@ -259,7 +259,7 @@ final class Product_Context {
 	 * 40 characters. A value is a scalar, null, or an array of those nested at most three
 	 * deep. Anything else is dropped whole.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param array $raw Raw extras.
 	 * @return array
@@ -279,7 +279,7 @@ final class Product_Context {
 	/**
 	 * Whether a value can be an extra key.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param mixed $key The key.
 	 * @return bool
@@ -291,7 +291,7 @@ final class Product_Context {
 	/**
 	 * Whether a value can be stored as an extra.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param mixed $value The value.
 	 * @param int   $depth How many arrays already enclose it.
@@ -603,7 +603,7 @@ final class Product_Context {
 	 * seed wins over an earlier one. Keys and values that are not safe are dropped: see
 	 * `get_extra()`.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @api
 	 *
 	 * @param array $extras Values keyed by extra key.
@@ -626,7 +626,7 @@ final class Product_Context {
 	 * at most three deep. An unknown key, a null value and an unsafe value all give
 	 * `$default`.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @api
 	 *
 	 * @param string $key     Extra key.
@@ -650,7 +650,7 @@ final class Product_Context {
 			 * `$context->get_product()`. Runs once per key for each context. Return null
 			 * for a key that is not yours or has no value.
 			 *
-			 * @since 1.3.0
+			 * @since 1.2.0
 			 *
 			 * @param mixed           $value   The value. Null by default.
 			 * @param string          $key     The extra key.

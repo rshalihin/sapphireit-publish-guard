@@ -225,7 +225,7 @@ is the rule API version, so check `$api_version >= 2` before relying on anything
 * Members tagged `@api` change only with an `API_VERSION` bump. That covers removing a
   member and changing a signature.
 * Additions are not breaking, so a new method or constant does not bump the version.
-  They bump `Rule_Registry::API_MINOR` instead (`1` since 1.3.0), so an add-on that needs
+  They bump `Rule_Registry::API_MINOR` instead (`1` since 1.2.0), so an add-on that needs
   one checks `API_VERSION === 2 && API_MINOR >= 1`.
 * The internal Action Scheduler hooks are not part of the API.
 
@@ -542,7 +542,7 @@ do_action( 'sit_wcpg_rules_changed' );
 
 ### Extending Publish Guard (rule API 2.1)
 
-Version 1.3.0 adds the extension points an add-on needs to ship rules of its own that read
+Version 1.2.0 adds the extension points an add-on needs to ship rules of its own that read
 data this plugin does not model. `Rule_Registry::API_VERSION` is still `2`, and
 `Rule_Registry::API_MINOR` is `1`. Additions bump `API_MINOR`; a removal or a signature
 change bumps `API_VERSION`.

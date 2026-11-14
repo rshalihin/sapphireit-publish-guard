@@ -149,7 +149,7 @@ class Readiness_Rebuild {
 		 * fires. An add-on fires it, with no arguments, after changing anything that alters
 		 * validation results: its own configuration, a licence state, the rules it registers.
 		 * It should change its `sit_wcpg_settings_hash_salt` at the same time, so the rebuild
-		 * is queued for a new signature. Since 1.3.0.
+		 * is queued for a new signature. Since 1.2.0.
 		 */
 		add_action( 'sit_wcpg_rules_changed', array( $this, 'on_rules_changed' ), 10, 0 );
 		add_action( self::HOOK, array( $this, 'run_batch' ), 10, 2 );
@@ -261,7 +261,7 @@ class Readiness_Rebuild {
 	 * The settings are read again and the per-request memo is dropped first, so nothing
 	 * validated before the change is served after it.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */

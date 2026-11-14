@@ -19,14 +19,14 @@ use WP_UnitTestCase;
  * An add-on's script adds its JS filters before the panel's script runs, so it has to be a
  * dependency of it. The filter can add registered handles and nothing else.
  *
- * @since 1.3.0
+ * @since 1.2.0
  */
 final class Editor_Script_Dependencies_Test extends WP_UnitTestCase {
 
 	/**
 	 * A clean script registry and an administrator.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -49,7 +49,7 @@ final class Editor_Script_Dependencies_Test extends WP_UnitTestCase {
 	/**
 	 * Leave no screen, post or script registry behind.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -65,7 +65,7 @@ final class Editor_Script_Dependencies_Test extends WP_UnitTestCase {
 	/**
 	 * Throw away the script and style registries.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -77,7 +77,7 @@ final class Editor_Script_Dependencies_Test extends WP_UnitTestCase {
 	/**
 	 * Enqueue the editor panel for a product and return its script's dependencies.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return string[]
 	 */
@@ -97,7 +97,7 @@ final class Editor_Script_Dependencies_Test extends WP_UnitTestCase {
 	/**
 	 * The panel's own dependencies, as the build wrote them.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return string[]
 	 */
@@ -110,7 +110,7 @@ final class Editor_Script_Dependencies_Test extends WP_UnitTestCase {
 	/**
 	 * A handle an add-on registered becomes a dependency.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -135,7 +135,7 @@ final class Editor_Script_Dependencies_Test extends WP_UnitTestCase {
 	/**
 	 * A handle nobody registered, and a value that is not a handle, are dropped.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -157,7 +157,7 @@ final class Editor_Script_Dependencies_Test extends WP_UnitTestCase {
 	/**
 	 * Whatever the filter returns, the panel keeps what it needs to run.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */

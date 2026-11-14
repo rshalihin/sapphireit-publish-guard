@@ -55,7 +55,7 @@ final class Editor_Meta_Box {
 	/**
 	 * The shape of a group key an add-on may add.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var string
 	 */
 	private const GROUP_KEY_PATTERN = '/^[a-z][a-z0-9_]{0,29}$/';
@@ -63,7 +63,7 @@ final class Editor_Meta_Box {
 	/**
 	 * How many groups add-ons may add in all.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var int
 	 */
 	private const MAX_ADDED_GROUPS = 10;
@@ -195,7 +195,7 @@ final class Editor_Meta_Box {
 	 * groups through `sit_wcpg_rule_groups`, and can do nothing else to the map.
 	 *
 	 * @since 1.0.0
-	 * @since 1.3.0 Extended by `sit_wcpg_rule_groups`.
+	 * @since 1.2.0 Extended by `sit_wcpg_rule_groups`.
 	 *
 	 * @return array<string, string>
 	 */
@@ -216,7 +216,7 @@ final class Editor_Meta_Box {
 		 * translated label. Added groups follow the core ones in the order given, ten at
 		 * most. The core groups keep their labels and positions whatever is returned.
 		 *
-		 * @since 1.3.0
+		 * @since 1.2.0
 		 *
 		 * @param array<string, string> $labels Group labels by group key, in display order.
 		 */

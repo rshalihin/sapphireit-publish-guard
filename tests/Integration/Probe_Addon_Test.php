@@ -30,14 +30,14 @@ use WP_REST_Request;
  * loads an add-on. Every behaviour an add-on needs is asserted here through it, so a
  * missing extension point shows up as a failing test, not as an edit inside `src/`.
  *
- * @since 1.3.0
+ * @since 1.2.0
  */
 final class Probe_Addon_Test extends Publish_Guard_Test_Case {
 
 	/**
 	 * `$_SERVER['REQUEST_URI']` as it was.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 * @var string
 	 */
 	private string $request_uri = '';
@@ -45,7 +45,7 @@ final class Probe_Addon_Test extends Publish_Guard_Test_Case {
 	/**
 	 * Switch the add-on on, with no index and an empty queue.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -63,7 +63,7 @@ final class Probe_Addon_Test extends Publish_Guard_Test_Case {
 	/**
 	 * Switch the add-on off, so no other test meets it.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -85,7 +85,7 @@ final class Probe_Addon_Test extends Publish_Guard_Test_Case {
 	/**
 	 * Store a probe code on a product, past the guard.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param int    $id   Product id.
 	 * @param string $code The code.
@@ -102,7 +102,7 @@ final class Probe_Addon_Test extends Publish_Guard_Test_Case {
 	/**
 	 * The probe rule's row in a product's checklist, or null when it is not listed.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @param int $id Product id.
 	 * @return Rule_Result|null
@@ -122,7 +122,7 @@ final class Probe_Addon_Test extends Publish_Guard_Test_Case {
 	/**
 	 * The current readiness signature.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return string
 	 */
@@ -133,7 +133,7 @@ final class Probe_Addon_Test extends Publish_Guard_Test_Case {
 	/**
 	 * S3: the rule runs with no entry in the settings.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -153,7 +153,7 @@ final class Probe_Addon_Test extends Publish_Guard_Test_Case {
 	/**
 	 * S3: out of the add-on's scope means not listed at all.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -173,7 +173,7 @@ final class Probe_Addon_Test extends Publish_Guard_Test_Case {
 	/**
 	 * S3: the add-on sets the severity product by product.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -190,7 +190,7 @@ final class Probe_Addon_Test extends Publish_Guard_Test_Case {
 	/**
 	 * S8: a value typed in the classic editor is judged before it is stored.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -208,7 +208,7 @@ final class Probe_Addon_Test extends Publish_Guard_Test_Case {
 	/**
 	 * S8: a field the merchant has just emptied is not rescued by the stored value.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -227,7 +227,7 @@ final class Probe_Addon_Test extends Publish_Guard_Test_Case {
 	/**
 	 * S7: Quick Edit posts no probe field, so the stored value decides, either way.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -248,7 +248,7 @@ final class Probe_Addon_Test extends Publish_Guard_Test_Case {
 	/**
 	 * S7: the scheduled-publish cron reads the stored value.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -269,7 +269,7 @@ final class Probe_Addon_Test extends Publish_Guard_Test_Case {
 	/**
 	 * S9: the live checklist judges what the add-on's editor script sent.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -304,7 +304,7 @@ final class Probe_Addon_Test extends Publish_Guard_Test_Case {
 	/**
 	 * S11: the add-on's group reaches the editor panel with its label.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -329,7 +329,7 @@ final class Probe_Addon_Test extends Publish_Guard_Test_Case {
 	/**
 	 * S5: a change to the add-on's configuration makes every stored flag stale.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -351,7 +351,7 @@ final class Probe_Addon_Test extends Publish_Guard_Test_Case {
 	/**
 	 * S6: the add-on asks for the flags to be rebuilt.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -371,7 +371,7 @@ final class Probe_Addon_Test extends Publish_Guard_Test_Case {
 	/**
 	 * A live product that fails the add-on's rule is in the catalog view, under its label.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
@@ -402,7 +402,7 @@ final class Probe_Addon_Test extends Publish_Guard_Test_Case {
 	/**
 	 * S3: the merchant is never offered a switch for the add-on's rule.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
