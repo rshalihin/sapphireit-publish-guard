@@ -214,7 +214,7 @@ final class Assets {
 		wp_enqueue_script(
 			self::EDITOR_HANDLE,
 			SIT_WCPG_URL . 'build/editor.js',
-			$asset['dependencies'],
+			self::editor_dependencies( $asset['dependencies'] ),
 			$asset['version'],
 			true
 		);
@@ -231,6 +231,44 @@ final class Assets {
 			'window.' . self::PAYLOAD_GLOBAL . ' = ' . wp_json_encode( $this->payload( $product_id ) ) . ';',
 			'before'
 		);
+	}
+
+	/**
+	 * The editor script's dependencies: its own, then any registered handle an add-on adds.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param string[] $core The dependencies the build recorded.
+	 * @return string[]
+	 */
+	private static function editor_dependencies( array $core ): array {
+		/**
+		 * Filters the script handles the editor panel's script depends on.
+		 *
+		 * An add-on adds the handle of a script that must run before the panel's, usually
+		 * because it adds `sitWcpg.*` JavaScript filters. Register the script first: a
+		 * handle that is not registered is dropped. The panel's own dependencies stay
+		 * whatever is returned.
+		 *
+		 * @since 1.3.0
+		 *
+		 * @param string[] $deps Script handles.
+		 */
+		$filtered = apply_filters( 'sit_wcpg_editor_script_dependencies', $core );
+
+		if ( ! is_array( $filtered ) ) {
+			return $core;
+		}
+
+		$deps = $core;
+
+		foreach ( $filtered as $handle ) {
+			if ( is_string( $handle ) && '' !== $handle && ! in_array( $handle, $deps, true ) && wp_script_is( $handle, 'registered' ) ) {
+				$deps[] = $handle;
+			}
+		}
+
+		return $deps;
 	}
 
 	/**

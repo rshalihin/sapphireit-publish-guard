@@ -53,12 +53,20 @@ final class Editor_Meta_Box {
 	public const MOUNT_ID = 'sit-wcpg-checklist-root';
 
 	/**
-	 * Group display order. Groups a third-party rule invents are rendered after these.
+	 * The shape of a group key an add-on may add.
 	 *
-	 * @since 1.0.0
-	 * @var string[]
+	 * @since 1.3.0
+	 * @var string
 	 */
-	private const GROUP_ORDER = array( 'content', 'media', 'pricing', 'organization', 'inventory' );
+	private const GROUP_KEY_PATTERN = '/^[a-z][a-z0-9_]{0,29}$/';
+
+	/**
+	 * How many groups add-ons may add in all.
+	 *
+	 * @since 1.3.0
+	 * @var int
+	 */
+	private const MAX_ADDED_GROUPS = 10;
 
 	/**
 	 * Per-status glyph for the no-JS list.
@@ -183,18 +191,63 @@ final class Editor_Meta_Box {
 	 * Shared with `Assets`, which ships the same map to the React panel so both renderings
 	 * of the checklist label and order their groups identically.
 	 *
+	 * The five core groups always come first, with their own labels. An add-on can append
+	 * groups through `sit_wcpg_rule_groups`, and can do nothing else to the map.
+	 *
 	 * @since 1.0.0
+	 * @since 1.3.0 Extended by `sit_wcpg_rule_groups`.
 	 *
 	 * @return array<string, string>
 	 */
 	public static function group_labels(): array {
-		return array(
+		$core = array(
 			'content'      => __( 'Content', 'sapphireit-publish-guard' ),
 			'media'        => __( 'Media', 'sapphireit-publish-guard' ),
 			'pricing'      => __( 'Pricing', 'sapphireit-publish-guard' ),
 			'organization' => __( 'Organization', 'sapphireit-publish-guard' ),
 			'inventory'    => __( 'Inventory', 'sapphireit-publish-guard' ),
 		);
+
+		/**
+		 * Filters the checklist's group headings.
+		 *
+		 * Add a group for rules of your own: a key of lowercase letters, digits and
+		 * underscores, starting with a letter, at most 30 characters, mapped to a
+		 * translated label. Added groups follow the core ones in the order given, ten at
+		 * most. The core groups keep their labels and positions whatever is returned.
+		 *
+		 * @since 1.3.0
+		 *
+		 * @param array<string, string> $labels Group labels by group key, in display order.
+		 */
+		$filtered = apply_filters( 'sit_wcpg_rule_groups', $core );
+
+		if ( ! is_array( $filtered ) ) {
+			return $core;
+		}
+
+		$labels = $core;
+		$added  = 0;
+
+		foreach ( $filtered as $key => $label ) {
+			if ( self::MAX_ADDED_GROUPS === $added ) {
+				break;
+			}
+
+			if ( ! is_string( $key ) || isset( $core[ $key ] ) || 1 !== preg_match( self::GROUP_KEY_PATTERN, $key ) ) {
+				continue;
+			}
+
+			if ( ! is_string( $label ) || '' === $label ) {
+				continue;
+			}
+
+			$labels[ $key ] = $label;
+
+			++$added;
+		}
+
+		return $labels;
 	}
 
 	/**
@@ -370,7 +423,8 @@ final class Editor_Meta_Box {
 	private function order_groups( array $grouped ): array {
 		$ordered = array();
 
-		foreach ( self::GROUP_ORDER as $group ) {
+		// The labelled groups first, in their order; a group nobody labelled goes after them.
+		foreach ( array_keys( self::group_labels() ) as $group ) {
 			if ( isset( $grouped[ $group ] ) ) {
 				$ordered[ $group ] = $grouped[ $group ];
 			}

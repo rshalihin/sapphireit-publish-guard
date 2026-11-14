@@ -98,7 +98,8 @@ final class Validator {
 	 */
 	private function run_rule( Rule_Interface $rule, Product_Context $context ): ?Rule_Result {
 		try {
-			$result = $rule->check( $context, $this->settings );
+			$result   = $rule->check( $context, $this->settings );
+			$severity = $this->severity_for( $rule, $context );
 		} catch ( Throwable $error ) {
 			$this->log_failure( $rule->get_id(), $error );
 
@@ -109,7 +110,35 @@ final class Validator {
 			return null;
 		}
 
-		return $result->with_severity( $this->settings->rule_severity( $rule->get_id() ) );
+		return $result->with_severity( $severity );
+	}
+
+	/**
+	 * The severity to stamp on a rule's outcome.
+	 *
+	 * An ordinary rule takes the merchant's setting. A managed rule answers for itself; an
+	 * answer that is not a severity falls back to its default, and then to `required`.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param Rule_Interface  $rule    The rule that ran.
+	 * @param Product_Context $context The product being validated.
+	 * @return string One of the Severity constants.
+	 */
+	private function severity_for( Rule_Interface $rule, Product_Context $context ): string {
+		if ( ! $rule instanceof Managed_Rule_Interface ) {
+			return $this->settings->rule_severity( $rule->get_id() );
+		}
+
+		$severity = $rule->get_severity_for( $context );
+
+		if ( Severity::is_valid( $severity ) ) {
+			return $severity;
+		}
+
+		$default = $rule->get_default_severity();
+
+		return Severity::is_valid( $default ) ? $default : Severity::REQUIRED;
 	}
 
 	/**

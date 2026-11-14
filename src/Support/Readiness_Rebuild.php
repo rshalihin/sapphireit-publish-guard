@@ -143,6 +143,15 @@ class Readiness_Rebuild {
 		add_action( 'update_option_' . Settings::OPTION_NAME, array( $this, 'on_settings_changed' ), 10, 0 );
 		add_action( 'add_option_' . Settings::OPTION_NAME, array( $this, 'on_settings_changed' ), 10, 0 );
 		add_action( 'admin_init', array( $this, 'maybe_schedule_for_version' ), 10, 0 );
+
+		/*
+		 * `sit_wcpg_rules_changed` is a public action that this plugin listens for and never
+		 * fires. An add-on fires it, with no arguments, after changing anything that alters
+		 * validation results: its own configuration, a licence state, the rules it registers.
+		 * It should change its `sit_wcpg_settings_hash_salt` at the same time, so the rebuild
+		 * is queued for a new signature. Since 1.3.0.
+		 */
+		add_action( 'sit_wcpg_rules_changed', array( $this, 'on_rules_changed' ), 10, 0 );
 		add_action( self::HOOK, array( $this, 'run_batch' ), 10, 2 );
 		add_action( self::PRODUCTS_HOOK, array( $this, 'run_products' ), 10, 1 );
 	}
@@ -243,6 +252,22 @@ class Readiness_Rebuild {
 	 */
 	public function on_settings_changed(): void {
 		$this->settings->refresh();
+		$this->schedule();
+	}
+
+	/**
+	 * Queue a rebuild after an add-on changed what the rules report.
+	 *
+	 * The settings are read again and the per-request memo is dropped first, so nothing
+	 * validated before the change is served after it.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @return void
+	 */
+	public function on_rules_changed(): void {
+		$this->settings->refresh();
+		Checklist_Service::flush_memo();
 		$this->schedule();
 	}
 

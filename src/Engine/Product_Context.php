@@ -56,6 +56,42 @@ final class Product_Context {
 	private string $save_path = Save_Path::NONE;
 
 	/**
+	 * Seeded extras, keyed by extra key.
+	 *
+	 * A property, like the save path: no override array sets it, only `from_array()` and
+	 * `with_extras()`.
+	 *
+	 * @since 1.3.0
+	 * @var array
+	 */
+	private array $extras = array();
+
+	/**
+	 * Extras resolved through `sit_wcpg_context_extra`, keyed by extra key. A miss is kept
+	 * as null, so the filter runs once per key.
+	 *
+	 * @since 1.3.0
+	 * @var array
+	 */
+	private array $resolved_extras = array();
+
+	/**
+	 * The shape of an extra key.
+	 *
+	 * @since 1.3.0
+	 * @var string
+	 */
+	private const EXTRA_KEY_PATTERN = '/^[a-z][a-z0-9_]{0,39}$/';
+
+	/**
+	 * How deep an extra's arrays may nest.
+	 *
+	 * @since 1.3.0
+	 * @var int
+	 */
+	private const EXTRA_MAX_DEPTH = 3;
+
+	/**
 	 * The keys an override array may set, mapped to their normalizer.
 	 *
 	 * @since 1.0.0
@@ -207,7 +243,76 @@ final class Product_Context {
 			'published' => $values['published_child_count'],
 		);
 
-		return new self( null, $values );
+		$context = new self( null, $values );
+
+		if ( isset( $data['extras'] ) && is_array( $data['extras'] ) ) {
+			$context->extras = self::clean_extras( $data['extras'] );
+		}
+
+		return $context;
+	}
+
+	/**
+	 * Keep the extras that are safe to hand to a rule.
+	 *
+	 * A key is lowercase letters, digits and underscores, starting with a letter, at most
+	 * 40 characters. A value is a scalar, null, or an array of those nested at most three
+	 * deep. Anything else is dropped whole.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param array $raw Raw extras.
+	 * @return array
+	 */
+	private static function clean_extras( array $raw ): array {
+		$clean = array();
+
+		foreach ( $raw as $key => $value ) {
+			if ( self::is_extra_key( $key ) && self::is_extra_value( $value, 0 ) ) {
+				$clean[ $key ] = $value;
+			}
+		}
+
+		return $clean;
+	}
+
+	/**
+	 * Whether a value can be an extra key.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param mixed $key The key.
+	 * @return bool
+	 */
+	private static function is_extra_key( $key ): bool {
+		return is_string( $key ) && 1 === preg_match( self::EXTRA_KEY_PATTERN, $key );
+	}
+
+	/**
+	 * Whether a value can be stored as an extra.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param mixed $value The value.
+	 * @param int   $depth How many arrays already enclose it.
+	 * @return bool
+	 */
+	private static function is_extra_value( $value, int $depth ): bool {
+		if ( null === $value || is_scalar( $value ) ) {
+			return true;
+		}
+
+		if ( ! is_array( $value ) || $depth >= self::EXTRA_MAX_DEPTH ) {
+			return false;
+		}
+
+		foreach ( $value as $item ) {
+			if ( ! self::is_extra_value( $item, $depth + 1 ) ) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**
@@ -489,6 +594,74 @@ final class Product_Context {
 	 */
 	public function get_save_path(): string {
 		return $this->save_path;
+	}
+
+	/**
+	 * A copy of this context carrying extra values, such as fields typed but not yet saved.
+	 *
+	 * A seeded extra wins over what `sit_wcpg_context_extra` would resolve, and a later
+	 * seed wins over an earlier one. Keys and values that are not safe are dropped: see
+	 * `get_extra()`.
+	 *
+	 * @since 1.3.0
+	 * @api
+	 *
+	 * @param array $extras Values keyed by extra key.
+	 * @return Product_Context A new instance; this one is unchanged.
+	 */
+	public function with_extras( array $extras ): Product_Context {
+		$copy = clone $this;
+
+		$copy->extras = array_merge( $copy->extras, self::clean_extras( $extras ) );
+
+		return $copy;
+	}
+
+	/**
+	 * Product data the plugin does not model, supplied by an add-on.
+	 *
+	 * A seeded value wins. Otherwise `sit_wcpg_context_extra` is asked, once per key for
+	 * this context. A key is lowercase letters, digits and underscores, starting with a
+	 * letter, at most 40 characters; a value is a scalar, null, or an array of those nested
+	 * at most three deep. An unknown key, a null value and an unsafe value all give
+	 * `$default`.
+	 *
+	 * @since 1.3.0
+	 * @api
+	 *
+	 * @param string $key     Extra key.
+	 * @param mixed  $default Returned when there is no value.
+	 * @return mixed
+	 */
+	public function get_extra( string $key, $default = null ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.defaultFound -- The name is part of the documented API.
+		if ( ! self::is_extra_key( $key ) ) {
+			return $default;
+		}
+
+		if ( array_key_exists( $key, $this->extras ) ) {
+			return $this->extras[ $key ] ?? $default;
+		}
+
+		if ( ! array_key_exists( $key, $this->resolved_extras ) ) {
+			/**
+			 * Filters the value of a context extra that nothing seeded.
+			 *
+			 * An add-on reads the value from storage here, usually from
+			 * `$context->get_product()`. Runs once per key for each context. Return null
+			 * for a key that is not yours or has no value.
+			 *
+			 * @since 1.3.0
+			 *
+			 * @param mixed           $value   The value. Null by default.
+			 * @param string          $key     The extra key.
+			 * @param Product_Context $context The context being read.
+			 */
+			$value = apply_filters( 'sit_wcpg_context_extra', null, $key, $this );
+
+			$this->resolved_extras[ $key ] = self::is_extra_value( $value, 0 ) ? $value : null;
+		}
+
+		return $this->resolved_extras[ $key ] ?? $default;
 	}
 
 	/**

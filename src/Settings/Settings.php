@@ -7,6 +7,7 @@
 
 namespace ProductPublishGuard\Settings;
 
+use ProductPublishGuard\Engine\Managed_Rule_Interface;
 use ProductPublishGuard\Engine\Rule_Registry;
 use ProductPublishGuard\Engine\Severity;
 use ProductPublishGuard\Plugin;
@@ -59,6 +60,14 @@ class Settings {
 	 * @var string
 	 */
 	public const SCOPE_EDITOR = 'editor';
+
+	/**
+	 * The longest hash salt used as it is. A longer one is replaced by its `md5`.
+	 *
+	 * @since 1.3.0
+	 * @var int
+	 */
+	private const MAX_SALT_LENGTH = 200;
 
 	/**
 	 * Content thresholds before the merchant changes them.
@@ -202,6 +211,11 @@ class Settings {
 		$rules = array();
 
 		foreach ( $this->registry()->all() as $rule ) {
+			// A managed rule is configured by its owner, so it is never stored, sanitized or hashed.
+			if ( $rule instanceof Managed_Rule_Interface ) {
+				continue;
+			}
+
 			$severity = $rule->get_default_severity();
 
 			$rules[ $rule->get_id() ] = array(
@@ -354,12 +368,42 @@ class Settings {
 	 * Any change to any value changes the hash, which is what makes a cached checklist
 	 * expire the moment the merchant changes a threshold or a severity.
 	 *
+	 * An add-on whose own configuration changes what the rules report adds a salt, so the
+	 * same caches and the readiness signature expire when that configuration changes. With
+	 * no salt the hash is exactly what it was before the filter existed, so signatures
+	 * stored by an earlier version stay valid.
+	 *
 	 * @since 1.0.0
+	 * @since 1.3.0 Salted by `sit_wcpg_settings_hash_salt`.
 	 *
 	 * @return string
 	 */
 	public function get_hash(): string {
-		return md5( (string) wp_json_encode( $this->get_all() ) );
+		$json = (string) wp_json_encode( $this->get_all() );
+
+		/**
+		 * Filters a salt added to the settings hash.
+		 *
+		 * Return a short string that changes whenever the add-on's configuration does, such
+		 * as a hash of it. Append to the value received, so several add-ons can take part.
+		 * Anything but a non-empty string is ignored, and a salt longer than 200 characters
+		 * is replaced by its `md5`.
+		 *
+		 * @since 1.3.0
+		 *
+		 * @param string $salt The salt. Empty by default.
+		 */
+		$salt = apply_filters( 'sit_wcpg_settings_hash_salt', '' );
+
+		if ( ! is_string( $salt ) || '' === $salt ) {
+			return md5( $json );
+		}
+
+		if ( strlen( $salt ) > self::MAX_SALT_LENGTH ) {
+			$salt = md5( $salt );
+		}
+
+		return md5( $json . '|' . $salt );
 	}
 
 	/**

@@ -102,6 +102,31 @@ final class Validate_Controller {
 	);
 
 	/**
+	 * The draft key that carries add-on extras. Not an override: it never reaches
+	 * `Product_Context` except through `sit_wcpg_draft_extras`.
+	 *
+	 * @since 1.3.0
+	 * @var string
+	 */
+	private const EXTRAS_FIELD = 'extras';
+
+	/**
+	 * The most keys the draft's extras may have.
+	 *
+	 * @since 1.3.0
+	 * @var int
+	 */
+	private const EXTRAS_MAX_KEYS = 50;
+
+	/**
+	 * The most bytes the draft's extras may take, JSON-encoded.
+	 *
+	 * @since 1.3.0
+	 * @var int
+	 */
+	private const EXTRAS_MAX_BYTES = 20000;
+
+	/**
 	 * The JSON-schema type published for each coercion rule.
 	 *
 	 * @since 1.0.0
@@ -247,6 +272,11 @@ final class Validate_Controller {
 			$properties[ $field ] = $property;
 		}
 
+		$properties[ self::EXTRAS_FIELD ] = array(
+			'type'          => 'object',
+			'maxProperties' => self::EXTRAS_MAX_KEYS,
+		);
+
 		return $properties;
 	}
 
@@ -297,9 +327,23 @@ final class Validate_Controller {
 		$product_id = absint( $request['id'] );
 		$draft      = $request['draft'];
 		$draft      = is_array( $draft ) ? $draft : array();
+		$raw_extras = array();
+
+		if ( array_key_exists( self::EXTRAS_FIELD, $draft ) ) {
+			$checked = self::check_extras( $draft[ self::EXTRAS_FIELD ] );
+
+			if ( $checked instanceof WP_Error ) {
+				return $checked;
+			}
+
+			$raw_extras = $draft[ self::EXTRAS_FIELD ];
+
+			// Extras are not an override, and an empty draft must stay a cacheable read.
+			unset( $draft[ self::EXTRAS_FIELD ] );
+		}
 
 		try {
-			$result = $this->checklist()->validate_post( $product_id, $draft );
+			$result = $this->checklist()->validate_post( $product_id, $draft, $this->draft_extras( $raw_extras, $product_id ) );
 		} catch ( Throwable $e ) {
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
@@ -328,6 +372,68 @@ final class Validate_Controller {
 		);
 
 		return rest_ensure_response( $data );
+	}
+
+	/**
+	 * The extras to seed for this request: whatever add-ons make of the draft's.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param array $raw        The draft's `extras`, as the browser sent them.
+	 * @param int   $product_id Product post identifier.
+	 * @return array
+	 */
+	private function draft_extras( array $raw, int $product_id ): array {
+		if ( array() === $raw ) {
+			return array();
+		}
+
+		$product = $this->get_product( $product_id );
+
+		if ( ! $product instanceof WC_Product ) {
+			return array();
+		}
+
+		/**
+		 * Filters the context extras taken from the live editor's draft.
+		 *
+		 * Nothing the browser sends is seeded as it is: an add-on picks its own keys out
+		 * of `$raw`, sanitizes them and returns them. `$raw` is untrusted request data,
+		 * limited only to 50 keys and 20 000 encoded bytes.
+		 *
+		 * @since 1.3.0
+		 *
+		 * @param array      $extras  The extras to seed. Empty by default.
+		 * @param array      $raw     The draft's `extras`, unsanitized.
+		 * @param WC_Product $product The stored product.
+		 */
+		$extras = apply_filters( 'sit_wcpg_draft_extras', array(), $raw, $product );
+
+		return is_array( $extras ) ? $extras : array();
+	}
+
+	/**
+	 * Check the draft's extras: an object, small enough to be worth reading.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param mixed $value The raw `extras` value.
+	 * @return true|WP_Error
+	 */
+	private static function check_extras( $value ) {
+		$valid = is_array( $value )
+			&& count( $value ) <= self::EXTRAS_MAX_KEYS
+			&& strlen( (string) wp_json_encode( $value ) ) <= self::EXTRAS_MAX_BYTES;
+
+		if ( $valid ) {
+			return true;
+		}
+
+		return new WP_Error(
+			'sit_wcpg_invalid_draft',
+			__( 'The draft could not be read.', 'sapphireit-publish-guard' ),
+			array( 'status' => WP_Http::BAD_REQUEST )
+		);
 	}
 
 	/**
@@ -362,6 +468,7 @@ final class Validate_Controller {
 			}
 		}
 
+		// Extras are checked in `validate_item()`: core would rename an error returned here.
 		return true;
 	}
 
@@ -435,6 +542,11 @@ final class Validate_Controller {
 			}
 
 			$draft[ $field ] = self::coerce( $spec, $value[ $field ] );
+		}
+
+		// Carried as they are: `validate_item()` checks them, takes them out and hands them to the filter.
+		if ( array_key_exists( self::EXTRAS_FIELD, $value ) ) {
+			$draft[ self::EXTRAS_FIELD ] = $value[ self::EXTRAS_FIELD ];
 		}
 
 		return $draft;

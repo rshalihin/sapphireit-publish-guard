@@ -6,6 +6,7 @@
  */
 
 import $ from 'jquery';
+import { addFilter, removeAllFilters } from '@wordpress/hooks';
 
 import { DEBOUNCE_MS, watchFields } from '../../assets/js/editor/field-watcher';
 
@@ -143,5 +144,112 @@ describe( 'watchFields: variation events', () => {
 		settle();
 
 		expect( onExternalChange ).not.toHaveBeenCalled();
+	} );
+} );
+
+describe( 'watchFields: add-on filters', () => {
+	const PROBE_MARKUP = `
+		<form id="post">
+			<input id="title" value="Blue mug" />
+			<div id="woocommerce-product-data"></div>
+			<div id="probe-box"><input id="_probe_code" value="abc" /></div>
+			<div id="postimagediv"></div>
+		</form>
+	`;
+
+	let watcher;
+	let onSnapshot;
+
+	beforeEach( () => {
+		jest.useFakeTimers();
+		document.body.innerHTML = PROBE_MARKUP;
+		onSnapshot = jest.fn();
+
+		// The add-on's field reaches the draft, so a change to it is a new signature.
+		addFilter(
+			'sitWcpg.snapshot.extras',
+			'test/probe',
+			( extras, doc ) => ( {
+				...extras,
+				probe_code: doc.querySelector( '#_probe_code' ).value,
+			} )
+		);
+	} );
+
+	afterEach( () => {
+		if ( watcher ) {
+			watcher.stop();
+		}
+
+		removeAllFilters( 'sitWcpg.snapshot.extras' );
+		removeAllFilters( 'sitWcpg.watcher.fields' );
+		removeAllFilters( 'sitWcpg.watcher.containers' );
+		jest.useRealTimers();
+	} );
+
+	function type( selector, value ) {
+		document.querySelector( selector ).value = value;
+		$( selector ).trigger( 'input' );
+		jest.advanceTimersByTime( DEBOUNCE_MS );
+	}
+
+	it( 'ignores a field outside the watched ones until a filter adds it', () => {
+		watcher = watchFields( { onSnapshot, doc: document, win: window } );
+
+		type( '#_probe_code', 'abd' );
+
+		expect( onSnapshot ).not.toHaveBeenCalled();
+	} );
+
+	it( 'a selector added through the filter triggers a snapshot', () => {
+		addFilter( 'sitWcpg.watcher.fields', 'test/probe', ( fields ) => [
+			...fields,
+			'#probe-box input',
+			42,
+		] );
+
+		watcher = watchFields( { onSnapshot, doc: document, win: window } );
+
+		type( '#_probe_code', 'abd' );
+
+		expect( onSnapshot ).toHaveBeenCalledTimes( 1 );
+		expect( onSnapshot.mock.calls[ 0 ][ 0 ].extras ).toEqual( {
+			probe_code: 'abd',
+		} );
+	} );
+
+	it( 'core selectors survive a filter that returns an empty array', () => {
+		addFilter( 'sitWcpg.watcher.fields', 'test/probe', () => [] );
+		addFilter( 'sitWcpg.watcher.containers', 'test/probe', () => 'nope' );
+
+		watcher = watchFields( { onSnapshot, doc: document, win: window } );
+
+		type( '#title', 'Red mug' );
+
+		expect( onSnapshot ).toHaveBeenCalledTimes( 1 );
+		expect( onSnapshot.mock.calls[ 0 ][ 0 ].title ).toBe( 'Red mug' );
+	} );
+
+	it( 'an added container is observed', () => {
+		const observed = [];
+		const win = {
+			MutationObserver: class {
+				observe( node ) {
+					observed.push( node.id );
+				}
+
+				disconnect() {}
+			},
+		};
+
+		addFilter(
+			'sitWcpg.watcher.containers',
+			'test/probe',
+			( containers ) => [ ...containers, '#probe-box', null ]
+		);
+
+		watcher = watchFields( { onSnapshot, doc: document, win } );
+
+		expect( observed ).toEqual( [ 'postimagediv', 'probe-box' ] );
 	} );
 } );

@@ -33,7 +33,26 @@ if ( $sit_wcpg_wp_tests && file_exists( $sit_wcpg_wp_tests . '/includes/function
 		'muplugins_loaded',
 		static function () use ( $sit_wcpg_root ) {
 			require WP_PLUGIN_DIR . '/woocommerce/woocommerce.php';
+
+			// Added before the plugin loads, as an add-on's listener is: Plugin_Loaded_Test reads it.
+			add_action(
+				'sit_wcpg_loaded',
+				static function ( $plugin ) {
+					$GLOBALS['sit_wcpg_test_loaded_plugin'] = $plugin;
+				}
+			);
+
 			require $sit_wcpg_root . '/sapphireit-publish-guard.php';
+
+			/*
+			 * The probe add-on loads after the plugin, as an add-on does, so it boots on the
+			 * real `sit_wcpg_loaded`. Its hooks are then in the suite's hook backup, which is
+			 * taken once, before the first test. It stays switched off except while
+			 * Probe_Addon_Test runs.
+			 */
+			require $sit_wcpg_root . '/tests/fixtures/sit-wcpg-probe/sit-wcpg-probe.php';
+
+			Sit_Wcpg_Probe::$enabled = false;
 		}
 	);
 
@@ -66,6 +85,8 @@ if ( $sit_wcpg_wp_tests && file_exists( $sit_wcpg_wp_tests . '/includes/function
 	 * rules are known, rather than asserting against the twelve shipped ones.
 	 */
 	require_once __DIR__ . '/stubs/class-fake-rule.php';
+	require_once __DIR__ . '/stubs/class-managed-fake-rule.php';
+	require_once __DIR__ . '/stubs/class-extra-probe-rule.php';
 	require_once __DIR__ . '/stubs/class-no-scheduler-rebuild.php';
 	require_once __DIR__ . '/Integration/Publish_Guard_Test_Case.php';
 
@@ -93,5 +114,6 @@ require_once $sit_wcpg_root . '/src/Autoloader.php';
 ProductPublishGuard\Autoloader::register();
 
 require_once __DIR__ . '/stubs/class-fake-rule.php';
+require_once __DIR__ . '/stubs/class-managed-fake-rule.php';
 require_once __DIR__ . '/stubs/class-legacy-rule.php';
 require_once __DIR__ . '/stubs/class-path-aware-rule.php';

@@ -79,7 +79,7 @@ final class Settings_Security_Test extends WP_UnitTestCase {
 	public function tear_down() {
 		unregister_setting( Settings_Page::OPTION_GROUP, Settings::OPTION_NAME );
 		remove_filter( 'option_page_capability_' . Settings_Page::OPTION_GROUP, array( $this->page, 'filter_capability' ) );
-		remove_action( 'admin_menu', array( $this->page, 'add_menu' ) );
+		remove_action( 'admin_menu', array( $this->page, 'add_menu' ), Settings_Page::MENU_PRIORITY );
 		remove_action( 'admin_init', array( $this->page, 'register_settings' ) );
 		remove_role( self::PRODUCT_EDITOR_ROLE );
 

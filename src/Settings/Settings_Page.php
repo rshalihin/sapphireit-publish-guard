@@ -9,6 +9,7 @@ namespace ProductPublishGuard\Settings;
 
 use ProductPublishGuard\Admin\Editor_Meta_Box;
 use ProductPublishGuard\Admin\Screen;
+use ProductPublishGuard\Engine\Managed_Rule_Interface;
 use ProductPublishGuard\Engine\Rule_Interface;
 use ProductPublishGuard\Engine\Rule_Registry;
 use ProductPublishGuard\Engine\Severity;
@@ -48,6 +49,17 @@ final class Settings_Page {
 	 * @var string
 	 */
 	public const MENU_SLUG = 'sit-wcpg-settings';
+
+	/**
+	 * The `admin_menu` priority the page is added at.
+	 *
+	 * Later than WooCommerce's last submenu (Extensions, priority 70), so the page sits at
+	 * the end of the WooCommerce menu and a page added after it sits next to it.
+	 *
+	 * @since 1.3.0
+	 * @var int
+	 */
+	public const MENU_PRIORITY = 100;
 
 	/**
 	 * Capability required to view and save the settings.
@@ -111,7 +123,7 @@ final class Settings_Page {
 	 * @return void
 	 */
 	public function register(): void {
-		add_action( 'admin_menu', array( $this, 'add_menu' ) );
+		add_action( 'admin_menu', array( $this, 'add_menu' ), self::MENU_PRIORITY );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'load-' . Screen::SETTINGS_HOOK, array( $this, 'on_load' ), 10, 0 );
 		add_filter( 'option_page_capability_' . self::OPTION_GROUP, array( $this, 'filter_capability' ) );
@@ -262,7 +274,15 @@ final class Settings_Page {
 		echo esc_html__( 'Each check protects against a specific problem. A required check must pass before a product can be published; a warning is shown but never blocks publishing.', 'sapphireit-publish-guard' );
 		echo '</p>';
 
-		$rules = $this->registry()->all();
+		// A managed rule is switched on and off by the add-on that registered it, not here.
+		$rules = array_values(
+			array_filter(
+				$this->registry()->all(),
+				static function ( Rule_Interface $rule ): bool {
+					return ! $rule instanceof Managed_Rule_Interface;
+				}
+			)
+		);
 
 		if ( empty( $rules ) ) {
 			echo '<p>' . esc_html__( 'No checks are registered.', 'sapphireit-publish-guard' ) . '</p>';

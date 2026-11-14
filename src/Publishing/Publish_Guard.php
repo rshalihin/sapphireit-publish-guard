@@ -482,6 +482,31 @@ final class Publish_Guard {
 		$source  = Save_Request_Reader::detect_source( $postarr, $post_id );
 		$context = Product_Context::from_save_request( $stored, $overrides )->with_save_path( $source );
 
+		if ( in_array( $source, Save_Path::admin_paths(), true ) ) {
+			/**
+			 * Filters the context extras read from an admin save request.
+			 *
+			 * An add-on returns the fields of its own that this request posts, keyed by
+			 * extra key, so its rules judge what was typed rather than what is stored.
+			 * Leave out a field the request does not carry: it then falls back to
+			 * `sit_wcpg_context_extra`. Runs for the classic editor, Quick Edit and Bulk
+			 * Edit only. `$postarr` is slashed, exactly as `wp_insert_post_data` received
+			 * it, so unslash and sanitize what you read.
+			 *
+			 * @since 1.3.0
+			 *
+			 * @param array  $extras  The extras to seed. Empty by default.
+			 * @param array  $postarr The slashed request data.
+			 * @param string $source  One of the `Save_Path` constants.
+			 * @param int    $post_id The product being saved; 0 for a new product.
+			 */
+			$extras = apply_filters( 'sit_wcpg_save_request_extras', array(), $postarr, $source, $post_id );
+
+			if ( is_array( $extras ) && array() !== $extras ) {
+				$context = $context->with_extras( $extras );
+			}
+		}
+
 		if ( ! $this->should_enforce( $context, $source ) ) {
 			return $data;
 		}

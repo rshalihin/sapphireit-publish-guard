@@ -8,6 +8,7 @@
 namespace ProductPublishGuard\Engine;
 
 use ProductPublishGuard\Settings\Settings;
+use Throwable;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -33,6 +34,20 @@ final class Rule_Registry {
 	 * @var int
 	 */
 	public const API_VERSION = 2;
+
+	/**
+	 * The rule API's minor version.
+	 *
+	 * Bumped when a member tagged `@api` or a public hook is added. `API_VERSION` still
+	 * changes only for a removal or a signature change, so an add-on that needs an addition
+	 * checks both: the version it was written for, and a minor at least as high as the one
+	 * that brought the addition.
+	 *
+	 * @since 1.3.0
+	 * @api
+	 * @var int
+	 */
+	public const API_MINOR = 1;
 
 	/**
 	 * Registered rules, keyed by identifier.
@@ -146,9 +161,13 @@ final class Rule_Registry {
 	/**
 	 * The rules that should actually run for this product.
 	 *
-	 * A rule runs when the merchant has it enabled and it supports the product.
+	 * A rule runs when the merchant has it enabled and it supports the product. A managed
+	 * rule has no switch in the settings, so only its own `supports()` decides. A rule whose
+	 * `supports()` throws is skipped: a broken rule must not take the screen or the save
+	 * down with it.
 	 *
 	 * @since 1.0.0
+	 * @since 1.3.0 Managed rules skip the settings switch; a throwing `supports()` is skipped.
 	 *
 	 * @param Settings        $settings The merchant's configuration.
 	 * @param Product_Context $context  The product being validated.
@@ -158,11 +177,19 @@ final class Rule_Registry {
 		$active = array();
 
 		foreach ( $this->all() as $rule ) {
-			if ( ! $settings->rule_is_enabled( $rule->get_id() ) ) {
+			if ( ! $rule instanceof Managed_Rule_Interface && ! $settings->rule_is_enabled( $rule->get_id() ) ) {
 				continue;
 			}
 
-			if ( ! $rule->supports( $context ) ) {
+			try {
+				$supported = $rule->supports( $context );
+			} catch ( Throwable $error ) {
+				$this->log_failure( $rule->get_id(), $error );
+
+				continue;
+			}
+
+			if ( ! $supported ) {
 				continue;
 			}
 
@@ -170,6 +197,32 @@ final class Rule_Registry {
 		}
 
 		return $active;
+	}
+
+	/**
+	 * Record a rule whose `supports()` threw, so the bug is findable.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param string    $rule_id Identifier of the rule that threw.
+	 * @param Throwable $error   The throwable.
+	 * @return void
+	 */
+	private function log_failure( string $rule_id, Throwable $error ): void {
+		if ( ! defined( 'WP_DEBUG' ) || ! WP_DEBUG ) {
+			return;
+		}
+
+		// Developer-facing diagnostics only; the merchant sees a missing row, not this.
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		error_log(
+			sprintf(
+				'SapphireIT Publish Guard: rule "%1$s" threw %2$s in supports(): %3$s',
+				$rule_id,
+				get_class( $error ),
+				$error->getMessage()
+			)
+		);
 	}
 
 	/**

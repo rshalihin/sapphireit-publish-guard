@@ -170,20 +170,23 @@ final class Checklist_Service {
 	 * Validate a stored product by post id.
 	 *
 	 * @since 1.0.0
+	 * @since 1.3.0 The `$extras` parameter.
 	 *
 	 * @param int   $post_id   Product post identifier.
 	 * @param array $overrides Unsaved field values in `Product_Context` override shape. A
 	 *                         non-empty array disables both memoization layers.
+	 * @param array $extras    Context extras to seed. A non-empty array disables both
+	 *                         memoization layers too.
 	 * @return Validation_Result|null Null when the id does not resolve to a product.
 	 */
-	public function validate_post( int $post_id, array $overrides = array() ): ?Validation_Result {
+	public function validate_post( int $post_id, array $overrides = array(), array $extras = array() ): ?Validation_Result {
 		$post_id = absint( $post_id );
 
 		if ( 0 === $post_id ) {
 			return null;
 		}
 
-		$is_cacheable = array() === $overrides;
+		$is_cacheable = array() === $overrides && array() === $extras;
 		$memo_key     = '';
 
 		if ( $is_cacheable ) {
@@ -208,7 +211,7 @@ final class Checklist_Service {
 			return null;
 		}
 
-		$result = $this->validate_product( $product, $overrides );
+		$result = $this->validate_product( $product, $overrides, $extras );
 
 		if ( $is_cacheable ) {
 			self::$memo[ $memo_key ] = $result;
@@ -226,15 +229,21 @@ final class Checklist_Service {
 	 * this class cannot reason about how fresh it is.
 	 *
 	 * @since 1.0.0
+	 * @since 1.3.0 The `$extras` parameter.
 	 *
 	 * @param WC_Product $product   The product to validate.
 	 * @param array      $overrides Unsaved field values in `Product_Context` override shape.
+	 * @param array      $extras    Context extras to seed, as `Product_Context::with_extras()` takes them.
 	 * @return Validation_Result
 	 */
-	public function validate_product( WC_Product $product, array $overrides = array() ): Validation_Result {
+	public function validate_product( WC_Product $product, array $overrides = array(), array $extras = array() ): Validation_Result {
 		$context = array() === $overrides
 			? Product_Context::from_product( $product )
 			: Product_Context::from_product_with_overrides( $product, $overrides );
+
+		if ( array() !== $extras ) {
+			$context = $context->with_extras( $extras );
+		}
 
 		return $this->validator()->validate( $context );
 	}

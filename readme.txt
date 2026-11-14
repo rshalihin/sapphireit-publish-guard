@@ -161,6 +161,12 @@ The build uses `@wordpress/scripts` and writes the compiled files to `build/`.
 
 == Changelog ==
 
+= 1.3.0 =
+* New for developers: extension points for add-ons (rule API 2.1). An add-on can register rules it switches on and off itself, product by product, give them data of its own on every save path and in the live checklist, add a checklist group, and ask for stored readiness to be rebuilt.
+* New for developers: `Rule_Registry::API_MINOR` counts additions to the rule API, and the `sit_wcpg_loaded` action tells an add-on the plugin has booted.
+* Improved: a third-party rule that fails while deciding whether it applies to a product is skipped. It no longer breaks the checklist.
+* Nothing changes for merchants: no new settings, and no check behaves differently.
+
 = 1.2.0 =
 * New: a readiness filter on the products list finds products that are ready, have warnings, are not ready or have not been checked yet, across the whole catalog. Readiness is stored when a product is saved and rechecked in the background when the settings change.
 * New: overrides are recorded: who published past which required checks, and when. At most 200 entries, each kept for up to 90 days. Nothing is shown or sent anywhere.

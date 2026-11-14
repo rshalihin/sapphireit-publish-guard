@@ -84,8 +84,11 @@ final class Hook_Documentation_Test extends TestCase {
 			$this->assertContains( $hook, array_merge( $hooks['public'], $hooks['internal'] ), $hook . ' is not classified in rule-api-v2.json.' );
 		}
 
+		// A public action can be one that add-ons fire and the plugin only listens for.
+		preg_match_all( "/add_action\(\s*'(sit_wcpg_[a-z_]+)'/", self::sources(), $listened );
+
 		foreach ( $hooks['public'] as $hook ) {
-			$this->assertContains( $hook, $fired, $hook . ' is classified as public but is never fired.' );
+			$this->assertContains( $hook, array_merge( $fired, $listened[1] ), $hook . ' is classified as public but is never fired or listened for.' );
 		}
 
 		// Action Scheduler fires these from its own queue runner, so only the name is in src/.

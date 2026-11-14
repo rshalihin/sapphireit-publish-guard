@@ -9,6 +9,75 @@
  * statuses and normalizes prices and dates, so the client never decides what is valid.
  */
 
+import { applyFilters } from '@wordpress/hooks';
+
+/**
+ * Whether a value is a plain object: what an add-on's extras must be.
+ *
+ * @param {unknown} value Value.
+ * @return {boolean} True for `{ … }`, false for arrays, null and everything else.
+ */
+function isPlainObject( value ) {
+	return (
+		null !== value && 'object' === typeof value && ! Array.isArray( value )
+	);
+}
+
+/**
+ * Extras contributed by add-ons, or null when there are none.
+ *
+ * `sitWcpg.snapshot.extras` receives `{}`, the document and the window, and returns an
+ * object of values read from the add-on's own controls. A control that is not on the
+ * page must leave its key out, exactly as the core fields do. The server hands the
+ * object to the `sit_wcpg_draft_extras` PHP filter and seeds only what that returns.
+ *
+ * @param {Document} doc Document to read from.
+ * @param {Window}   win Window holding editor globals.
+ * @return {Object|null} A non-empty plain object, or null.
+ */
+function readExtras( doc, win ) {
+	let extras;
+
+	try {
+		extras = applyFilters( 'sitWcpg.snapshot.extras', {}, doc, win );
+	} catch {
+		// An add-on's bug must not stop the core fields from being checked.
+		return null;
+	}
+
+	return isPlainObject( extras ) && Object.keys( extras ).length > 0
+		? extras
+		: null;
+}
+
+/**
+ * A copy of a value with every object's keys sorted, at any depth.
+ *
+ * Lists keep their order: only an add-on knows whether the order of one means anything.
+ *
+ * @param {unknown} value Value.
+ * @return {unknown} The copy.
+ */
+function sortKeysDeep( value ) {
+	if ( Array.isArray( value ) ) {
+		return value.map( sortKeysDeep );
+	}
+
+	if ( ! isPlainObject( value ) ) {
+		return value;
+	}
+
+	const sorted = {};
+
+	Object.keys( value )
+		.sort()
+		.forEach( ( key ) => {
+			sorted[ key ] = sortKeysDeep( value[ key ] );
+		} );
+
+	return sorted;
+}
+
 /**
  * Value of a form control, or null when the control is not on the page.
  *
@@ -203,6 +272,7 @@ export function buildSnapshot( doc = document, win = window ) {
 	set( 'category_ids', readCategories( doc ) );
 	set( 'tag_ids', readTagPresence( doc, win ) );
 	set( 'child_ids', readGroupedChildren( doc ) );
+	set( 'extras', readExtras( doc, win ) );
 
 	return draft;
 }
@@ -256,7 +326,8 @@ const ID_LIST_FIELDS = [ 'gallery_image_ids', 'category_ids', 'child_ids' ];
  * A stable string that is equal for two drafts iff the server would answer them alike.
  *
  * Keys are sorted, category, gallery and grouped-child ids are compared as sets (their order means
- * nothing to any rule), and text is compared the way the server measures it.
+ * nothing to any rule), and text is compared the way the server measures it. An add-on's
+ * extras take part with their keys sorted at every depth.
  *
  * @param {Object} draft A draft from buildSnapshot().
  * @return {string} The signature.
@@ -269,7 +340,9 @@ export function signature( draft ) {
 		.forEach( ( key ) => {
 			let value = draft[ key ];
 
-			if ( TEXT_FIELDS.includes( key ) ) {
+			if ( 'extras' === key ) {
+				value = sortKeysDeep( value );
+			} else if ( TEXT_FIELDS.includes( key ) ) {
 				value = normalizeText( value );
 			} else if ( ID_LIST_FIELDS.includes( key ) ) {
 				value = [ ...value ].sort( ( a, b ) => a - b );

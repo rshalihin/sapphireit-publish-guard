@@ -162,6 +162,7 @@ final class Plugin {
 	 * Get the singleton instance.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return Plugin
 	 */
@@ -255,12 +256,26 @@ final class Plugin {
 		if ( defined( 'WP_CLI' ) && WP_CLI && class_exists( '\WP_CLI' ) ) {
 			\WP_CLI::add_command( Gate_Command::COMMAND, new Gate_Command( $this->gate_runner() ) );
 		}
+
+		/**
+		 * Fires once, when the plugin has registered all of its hooks.
+		 *
+		 * An add-on boots here rather than on `plugins_loaded`: the action only fires when
+		 * the plugin's requirements passed, and it hands over the instance to read
+		 * `settings()` and `registry()` from.
+		 *
+		 * @since 1.3.0
+		 *
+		 * @param Plugin $plugin The booted plugin.
+		 */
+		do_action( 'sit_wcpg_loaded', $this );
 	}
 
 	/**
 	 * Get the settings facade.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return Settings
 	 */
@@ -279,6 +294,7 @@ final class Plugin {
 	 * every caller of this method.
 	 *
 	 * @since 1.0.0
+	 * @api
 	 *
 	 * @return Rule_Registry
 	 */

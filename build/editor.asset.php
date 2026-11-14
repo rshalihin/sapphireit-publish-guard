@@ -6,7 +6,8 @@
 		'wp-date',
 		'wp-dom-ready',
 		'wp-element',
+		'wp-hooks',
 		'wp-i18n'
 	),
-	'version' => '3009b127b5e7fc5a321e'
+	'version' => 'a73337f6f65efbac1dc9'
 );

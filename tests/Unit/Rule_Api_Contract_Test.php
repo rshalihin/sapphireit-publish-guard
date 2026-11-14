@@ -8,6 +8,7 @@
 namespace ProductPublishGuard\Tests\Unit;
 
 use ProductPublishGuard\Engine\Abstract_Rule;
+use ProductPublishGuard\Engine\Managed_Rule_Interface;
 use ProductPublishGuard\Engine\Product_Context;
 use ProductPublishGuard\Engine\Rule_Interface;
 use ProductPublishGuard\Engine\Rule_Registry;
@@ -17,6 +18,7 @@ use ProductPublishGuard\Engine\Severity;
 use ProductPublishGuard\Engine\Status;
 use ProductPublishGuard\Engine\Type_Family;
 use ProductPublishGuard\Engine\Validation_Result;
+use ProductPublishGuard\Plugin;
 use ProductPublishGuard\Settings\Settings;
 use ReflectionClass;
 use ReflectionClassConstant;
@@ -43,6 +45,7 @@ final class Rule_Api_Contract_Test extends TestCase {
 	 */
 	private const TYPES = array(
 		Rule_Interface::class,
+		Managed_Rule_Interface::class,
 		Abstract_Rule::class,
 		Product_Context::class,
 		Rule_Result::class,
@@ -53,6 +56,7 @@ final class Rule_Api_Contract_Test extends TestCase {
 		Save_Path::class,
 		Type_Family::class,
 		Settings::class,
+		Plugin::class,
 	);
 
 	/**
@@ -184,6 +188,19 @@ final class Rule_Api_Contract_Test extends TestCase {
 	 */
 	public function test_api_version_matches_fixture(): void {
 		$this->assertSame( self::fixture()['api_version'], Rule_Registry::API_VERSION );
+	}
+
+	/**
+	 * The minor version counts additions, and the major version has not moved.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @return void
+	 */
+	public function test_api_minor_is_one(): void {
+		$this->assertSame( 1, Rule_Registry::API_MINOR );
+		$this->assertSame( 2, Rule_Registry::API_VERSION );
+		$this->assertSame( self::fixture()['api_minor'] ?? null, Rule_Registry::API_MINOR );
 	}
 
 	/**

@@ -1,5 +1,6 @@
 {
     "api_version": 2,
+    "api_minor": 1,
     "types": {
         "ProductPublishGuard\\Engine\\Rule_Interface": {
             "constants": [],
@@ -14,6 +15,12 @@
                 "supports": "(ProductPublishGuard\\Engine\\Product_Context $context): bool",
                 "get_fix_target": "(): array",
                 "check": "(ProductPublishGuard\\Engine\\Product_Context $context, ProductPublishGuard\\Settings\\Settings $settings): ProductPublishGuard\\Engine\\Rule_Result"
+            }
+        },
+        "ProductPublishGuard\\Engine\\Managed_Rule_Interface": {
+            "constants": [],
+            "methods": {
+                "get_severity_for": "(ProductPublishGuard\\Engine\\Product_Context $context): string"
             }
         },
         "ProductPublishGuard\\Engine\\Abstract_Rule": {
@@ -44,6 +51,8 @@
                 "get_product": "(): ?WC_Product",
                 "with_save_path": "(string $path): ProductPublishGuard\\Engine\\Product_Context",
                 "get_save_path": "(): string",
+                "with_extras": "(array $extras): ProductPublishGuard\\Engine\\Product_Context",
+                "get_extra": "(string $key, $default = null)",
                 "get_product_id": "(): int",
                 "get_product_type": "(): string",
                 "get_type_family": "(): string",
@@ -113,7 +122,8 @@
         },
         "ProductPublishGuard\\Engine\\Rule_Registry": {
             "constants": {
-                "API_VERSION": 2
+                "API_VERSION": 2,
+                "API_MINOR": 1
             },
             "methods": {
                 "register": "(ProductPublishGuard\\Engine\\Rule_Interface $rule): bool",
@@ -184,17 +194,33 @@
                 "rule_severity": "(string $rule_id): string",
                 "threshold": "(string $key): int"
             }
+        },
+        "ProductPublishGuard\\Plugin": {
+            "constants": [],
+            "methods": {
+                "instance": "(): ProductPublishGuard\\Plugin",
+                "settings": "(): ProductPublishGuard\\Settings\\Settings",
+                "registry": "(): ProductPublishGuard\\Engine\\Rule_Registry"
+            }
         }
     },
     "hooks": {
         "public": [
+            "sit_wcpg_loaded",
             "sit_wcpg_register_rules",
             "sit_wcpg_product_type_family",
             "sit_wcpg_validation_result",
             "sit_wcpg_should_enforce",
             "sit_wcpg_can_override_publish_guard",
             "sit_wcpg_publish_blocked",
-            "sit_wcpg_publish_overridden"
+            "sit_wcpg_publish_overridden",
+            "sit_wcpg_settings_hash_salt",
+            "sit_wcpg_context_extra",
+            "sit_wcpg_save_request_extras",
+            "sit_wcpg_draft_extras",
+            "sit_wcpg_rule_groups",
+            "sit_wcpg_editor_script_dependencies",
+            "sit_wcpg_rules_changed"
         ],
         "internal": [
             "sit_wcpg_rebuild_readiness",

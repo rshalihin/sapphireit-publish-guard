@@ -699,4 +699,27 @@ final class Settings_Test extends WP_UnitTestCase {
 			$this->render_screen( $this->built_in_registry() )
 		);
 	}
+
+	/**
+	 * The page is added after WooCommerce's last submenu (Extensions, priority 70), so it
+	 * sits at the end of the WooCommerce menu.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @return void
+	 */
+	public function test_menu_is_added_after_woocommerce_own_items(): void {
+		$page = new Settings_Page( new Settings( $this->registry() ) );
+		$page->register();
+
+		$priority = has_action( 'admin_menu', array( $page, 'add_menu' ) );
+
+		remove_action( 'admin_menu', array( $page, 'add_menu' ), Settings_Page::MENU_PRIORITY );
+		remove_action( 'admin_init', array( $page, 'register_settings' ) );
+		remove_action( 'load-' . Screen::SETTINGS_HOOK, array( $page, 'on_load' ) );
+		remove_filter( 'option_page_capability_' . Settings_Page::OPTION_GROUP, array( $page, 'filter_capability' ) );
+
+		$this->assertSame( Settings_Page::MENU_PRIORITY, $priority );
+		$this->assertGreaterThan( 70, Settings_Page::MENU_PRIORITY );
+	}
 }

@@ -225,6 +225,8 @@ is the rule API version, so check `$api_version >= 2` before relying on anything
 * Members tagged `@api` change only with an `API_VERSION` bump. That covers removing a
   member and changing a signature.
 * Additions are not breaking, so a new method or constant does not bump the version.
+  They bump `Rule_Registry::API_MINOR` instead (`1` since 1.3.0), so an add-on that needs
+  one checks `API_VERSION === 2 && API_MINOR >= 1`.
 * The internal Action Scheduler hooks are not part of the API.
 
 `Product_Context::get_save_path()` says how the product is being saved. It returns one of
@@ -240,6 +242,24 @@ public function check( Product_Context $context, Settings $settings ): Rule_Resu
 	}
 	return '' === $context->get_sku() ? $this->fail( __( 'Add a SKU.', 'acme' ) ) : $this->pass();
 }
+```
+
+### `sit_wcpg_loaded` (action)
+
+```php
+do_action( 'sit_wcpg_loaded', \ProductPublishGuard\Plugin $plugin );
+```
+
+Fires once, as the last step of the plugin's boot, and only when its requirements passed.
+An add-on boots here. `Plugin::instance()`, `settings()` and `registry()` are `@api`.
+
+```php
+add_action( 'sit_wcpg_loaded', static function ( \ProductPublishGuard\Plugin $plugin ): void {
+	if ( 2 !== \ProductPublishGuard\Engine\Rule_Registry::API_VERSION ) {
+		return;
+	}
+	acme_boot( $plugin->settings() );
+} );
 ```
 
 ### `sit_wcpg_register_rules` (action)
@@ -485,6 +505,261 @@ Fires once when a user publishes past failing required checks, with the same arg
 add_action( 'sit_wcpg_publish_overridden', static function ( int $product_id, int $user_id, array $rule_ids, string $save_path ): void {
 	acme_notify_reviewer( $product_id, $user_id, $rule_ids );
 }, 10, 4 );
+```
+
+### `sit_wcpg_settings_hash_salt` (filter)
+
+```php
+apply_filters( 'sit_wcpg_settings_hash_salt', string $salt );
+```
+
+Adds an add-on's own configuration to the settings hash, which is part of every checklist
+cache key and of the readiness signature. Return a short string that changes whenever your
+configuration does, and append to the value you receive. Anything but a non-empty string
+is ignored, and a salt longer than 200 characters is replaced by its `md5`. With no salt
+the hash is unchanged.
+
+```php
+add_filter( 'sit_wcpg_settings_hash_salt', static function ( $salt ) {
+	return ( is_string( $salt ) ? $salt : '' ) . '|acme:' . md5( (string) wp_json_encode( get_option( 'acme_rules', array() ) ) );
+} );
+```
+
+### `sit_wcpg_rules_changed` (action)
+
+```php
+do_action( 'sit_wcpg_rules_changed' );
+```
+
+The plugin never fires this action; add-ons do, after changing anything that alters
+validation results. The plugin then reads its settings again, drops what it memoized and
+queues a rebuild of the stored readiness flags, exactly as it does after a settings save.
+
+```php
+update_option( 'acme_rules', $rules );
+do_action( 'sit_wcpg_rules_changed' );
+```
+
+### Extending Publish Guard (rule API 2.1)
+
+Version 1.3.0 adds the extension points an add-on needs to ship rules of its own that read
+data this plugin does not model. `Rule_Registry::API_VERSION` is still `2`, and
+`Rule_Registry::API_MINOR` is `1`. Additions bump `API_MINOR`; a removal or a signature
+change bumps `API_VERSION`.
+
+| # | Extension point | Use it to |
+|---|---|---|
+| S1 | `Rule_Registry::API_MINOR` | detect that the points below exist |
+| S2 | `sit_wcpg_loaded` | boot after the plugin |
+| S3 | `Managed_Rule_Interface` | decide per product whether a rule runs, and how strictly |
+| S4 | fail-open `supports()` | nothing: a rule whose `supports()` throws is skipped |
+| S5 | `sit_wcpg_settings_hash_salt` | expire caches and stored readiness when your configuration changes |
+| S6 | `sit_wcpg_rules_changed` | ask for stored readiness to be rebuilt |
+| S7 | `Product_Context::get_extra()`, `sit_wcpg_context_extra` | give rules data of your own, read from storage |
+| S8 | `sit_wcpg_save_request_extras` | judge a field typed in an admin save before it is stored |
+| S9 | `draft.extras`, `sit_wcpg_draft_extras` | judge the same field in the live checklist |
+| S10 | `sitWcpg.*` JavaScript filters, `sit_wcpg_editor_script_dependencies` | send that field from the editor and watch it for changes |
+| S11 | `sit_wcpg_rule_groups` | name a checklist group of your own |
+
+`tests/fixtures/sit-wcpg-probe/` is a complete add-on built on these and nothing else. It
+adds one check, "Probe code", which needs a value in the post meta `_probe_code`, and
+`tests/Integration/Probe_Addon_Test.php` asserts each behaviour through it. Read it as the
+worked example.
+
+#### Managed rules
+
+```php
+interface Managed_Rule_Interface extends Rule_Interface {
+	public function get_severity_for( Product_Context $context ): string;
+}
+```
+
+An ordinary rule is switched on and given a severity on the settings screen. A managed rule
+answers for itself:
+
+* it runs whenever `supports()` returns true, and `Settings::rule_is_enabled()` is not asked;
+* its result carries `get_severity_for()` when that is a valid `Severity`, otherwise
+  `get_default_severity()`, otherwise `required`;
+* it is never stored, sanitized, hashed or listed on the settings screen.
+
+A rule whose `supports()`, `get_severity_for()` or `check()` throws leaves no row and
+breaks nothing else. Return false from `supports()` for a product outside your scope: the
+rule is then not listed at all, so it cannot block.
+
+```php
+final class Probe_Rule extends Abstract_Rule implements Managed_Rule_Interface {
+	public function get_id(): string { return 'probe_code'; }
+	public function get_label(): string { return __( 'Probe code', 'acme' ); }
+	public function get_group(): string { return 'probe'; }
+
+	public function get_severity_for( Product_Context $context ): string {
+		return Type_Family::EXTERNAL === $context->get_type_family() ? Severity::WARNING : Severity::REQUIRED;
+	}
+
+	public function check( Product_Context $context, Settings $settings ): Rule_Result {
+		return '' !== (string) $context->get_extra( 'probe_code', '' )
+			? $this->pass()
+			: $this->fail( __( 'This product has no probe code.', 'acme' ) );
+	}
+}
+```
+
+#### Context extras
+
+```php
+$context->get_extra( string $key, $default = null );
+$context->with_extras( array $extras ): Product_Context;
+Product_Context::from_array( array( 'extras' => array( 'probe_code' => 'abc' ) ) );
+```
+
+Rules read only the context, so data of your own travels as an extra. A key is lowercase
+letters, digits and underscores, starts with a letter and is at most 40 characters. A value
+is a scalar, null, or an array of those nested at most three deep; anything else is
+dropped. A seeded value wins; anything else is resolved by `sit_wcpg_context_extra`, once
+per key for each context; null gives `$default`. Extras are a property of the context, like
+the save path: no override array can set them. `with_extras()` returns a copy, and a later
+seed wins over an earlier one.
+
+Where each path gets its extras:
+
+| Path | Source |
+|---|---|
+| Classic editor, Quick Edit, Bulk Edit | `sit_wcpg_save_request_extras`, then `sit_wcpg_context_extra` for what it left out |
+| CRUD save, REST, scheduled publish, WP-CLI, stored readiness | `sit_wcpg_context_extra` |
+| Live checklist in the editor | `sit_wcpg_draft_extras`, then `sit_wcpg_context_extra` for what it left out |
+
+Leave out a field the request does not carry. An absent field must fall back to the stored
+value; if you seed it as empty, a Quick Edit will refuse a product that is complete.
+
+### `sit_wcpg_context_extra` (filter)
+
+```php
+apply_filters( 'sit_wcpg_context_extra', mixed $value, string $key, Product_Context $context );
+```
+
+Resolves an extra nothing seeded. `$value` starts as null. Return null for a key that is
+not yours.
+
+```php
+add_filter( 'sit_wcpg_context_extra', static function ( $value, string $key, Product_Context $context ) {
+	if ( 'probe_code' !== $key || null === $context->get_product() ) {
+		return $value;
+	}
+	return (string) $context->get_product()->get_meta( '_probe_code' );
+}, 10, 3 );
+```
+
+### `sit_wcpg_save_request_extras` (filter)
+
+```php
+apply_filters( 'sit_wcpg_save_request_extras', array $extras, array $postarr, string $source, int $post_id );
+```
+
+Runs in the publish guard when `$source` is one of `Save_Path::admin_paths()`. `$postarr`
+is slashed, exactly as `wp_insert_post_data` received it, so unslash and sanitize what you
+read. `$post_id` is 0 for a new product. A result that is not an array is ignored.
+
+```php
+add_filter( 'sit_wcpg_save_request_extras', static function ( $extras, array $postarr, string $source ) {
+	if ( is_array( $extras ) && Save_Path::CLASSIC === $source && isset( $postarr['_probe_code'] ) ) {
+		$extras['probe_code'] = sanitize_text_field( wp_unslash( $postarr['_probe_code'] ) );
+	}
+	return $extras;
+}, 10, 3 );
+```
+
+### `sit_wcpg_draft_extras` (filter)
+
+```php
+apply_filters( 'sit_wcpg_draft_extras', array $extras, array $raw, WC_Product $product );
+```
+
+The validate route accepts `draft.extras`: an object of at most 50 keys and 20 000 bytes
+encoded, otherwise the request is refused with 400 `sit_wcpg_invalid_draft`. Nothing in it
+is seeded as sent. `$raw` is that object, unsanitized; return the keys you accept, cleaned.
+A request that carries extras is never cached.
+
+`Checklist_Service::validate_post()` and `validate_product()` take the extras to seed as a
+third parameter, `array $extras = array()`.
+
+```php
+add_filter( 'sit_wcpg_draft_extras', static function ( $extras, $raw ) {
+	if ( is_array( $extras ) && is_array( $raw ) && isset( $raw['probe_code'] ) && is_string( $raw['probe_code'] ) ) {
+		$extras['probe_code'] = sanitize_text_field( $raw['probe_code'] );
+	}
+	return $extras;
+}, 10, 2 );
+```
+
+#### Editor JavaScript filters
+
+The editor panel applies three `@wordpress/hooks` filters:
+
+```js
+applyFilters( 'sitWcpg.snapshot.extras', {}, document, window ); // → object
+applyFilters( 'sitWcpg.watcher.fields', string[] );              // → string[]
+applyFilters( 'sitWcpg.watcher.containers', string[] );          // → string[]
+```
+
+* `sitWcpg.snapshot.extras` returns the values of your own controls. A non-empty plain
+  object is sent as `draft.extras` and takes part in the draft's signature, so a change to
+  it triggers a new check. Leave a key out when its control is not on the page.
+* `sitWcpg.watcher.fields` adds selectors, inside the post form, whose `input` and `change`
+  events mean the draft changed. Fields inside `#woocommerce-product-data` are watched
+  already.
+* `sitWcpg.watcher.containers` adds containers whose children are replaced without an
+  event; they are observed for mutations.
+
+The core selectors cannot be removed, and anything that is not a string is dropped. The
+filters are read when the panel starts, so your script has to run first:
+
+```js
+import { addFilter } from '@wordpress/hooks';
+
+addFilter( 'sitWcpg.snapshot.extras', 'acme/probe', ( extras, doc ) => {
+	const field = doc.querySelector( '#_probe_code' );
+	return field ? { ...extras, probe_code: field.value } : extras;
+} );
+```
+
+### `sit_wcpg_editor_script_dependencies` (filter)
+
+```php
+apply_filters( 'sit_wcpg_editor_script_dependencies', string[] $deps );
+```
+
+Adds script handles the editor panel's script (`sit-wcpg-editor`) depends on, so they load
+before it. Register your script first: a handle that is not registered is dropped. The
+panel's own dependencies cannot be removed.
+
+```php
+add_action( 'admin_enqueue_scripts', static function (): void {
+	wp_register_script( 'acme-probe-editor', plugins_url( 'build/editor.js', __FILE__ ), array( 'wp-hooks' ), '1.0.0', true );
+}, 5 );
+
+add_filter( 'sit_wcpg_editor_script_dependencies', static function ( $deps ) {
+	$deps[] = 'acme-probe-editor';
+	return $deps;
+} );
+```
+
+### `sit_wcpg_rule_groups` (filter)
+
+```php
+apply_filters( 'sit_wcpg_rule_groups', array<string, string> $labels );
+```
+
+Adds checklist groups. A key is lowercase letters, digits and underscores, starts with a
+letter and is at most 30 characters; the value is its translated label. Added groups follow
+the five core ones in the order given, ten at most. The core groups keep their labels and
+positions whatever is returned. The result is used by the editor panel, its no-JavaScript
+fallback and the settings screen.
+
+```php
+add_filter( 'sit_wcpg_rule_groups', static function ( $labels ) {
+	$labels['probe'] = __( 'Probe', 'acme' );
+	return $labels;
+} );
 ```
 
 ### Reading readiness from your own code

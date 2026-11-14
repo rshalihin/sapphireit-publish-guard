@@ -13,6 +13,7 @@
  */
 
 import $ from 'jquery';
+import { applyFilters } from '@wordpress/hooks';
 
 import { EDITOR_IDS, buildSnapshot, signature } from './snapshot';
 
@@ -30,7 +31,42 @@ const DELEGATED_FIELDS = [
 	'#excerpt',
 	'#product_catdiv input',
 	'#woocommerce-product-data :input',
-].join( ', ' );
+];
+
+/**
+ * A core selector list after an add-on's filter: the core entries first, always, then
+ * whatever strings the filter added.
+ *
+ * `sitWcpg.watcher.fields` adds controls inside the post form whose `input` and `change`
+ * events mean the draft changed. `sitWcpg.watcher.containers` adds containers whose
+ * children are replaced without an event. Both receive and return an array of selectors.
+ *
+ * @param {string}   hook Filter name.
+ * @param {string[]} core The core selectors.
+ * @return {string[]} The selectors to use.
+ */
+function withAddedSelectors( hook, core ) {
+	let filtered;
+
+	try {
+		filtered = applyFilters( hook, [ ...core ] );
+	} catch {
+		return core;
+	}
+
+	if ( ! Array.isArray( filtered ) ) {
+		return core;
+	}
+
+	const added = filtered.filter(
+		( selector ) =>
+			'string' === typeof selector &&
+			'' !== selector.trim() &&
+			! core.includes( selector )
+	);
+
+	return [ ...core, ...added ];
+}
 
 /**
  * Containers whose children are replaced wholesale by AJAX: the featured-image box
@@ -81,6 +117,16 @@ export function watchFields( {
 	const $productData = $( '#woocommerce-product-data', doc );
 	const observers = [];
 	const boundEditors = new WeakSet();
+
+	// Read once, when watching starts: an add-on's script has run by then (it is a dependency).
+	const delegatedFields = withAddedSelectors(
+		'sitWcpg.watcher.fields',
+		DELEGATED_FIELDS
+	).join( ', ' );
+	const observedContainers = withAddedSelectors(
+		'sitWcpg.watcher.containers',
+		OBSERVED_CONTAINERS
+	);
 
 	let timer = null;
 	let stopped = false;
@@ -164,7 +210,7 @@ export function watchFields( {
 
 	$form.on(
 		`input${ namespace } change${ namespace }`,
-		DELEGATED_FIELDS,
+		delegatedFields,
 		schedule
 	);
 
@@ -192,8 +238,14 @@ export function watchFields( {
 	}
 
 	if ( win.MutationObserver ) {
-		OBSERVED_CONTAINERS.forEach( ( selector ) => {
-			const node = doc.querySelector( selector );
+		observedContainers.forEach( ( selector ) => {
+			let node = null;
+
+			try {
+				node = doc.querySelector( selector );
+			} catch {
+				// A malformed selector from an add-on must not stop the others.
+			}
 
 			if ( node ) {
 				const observer = new win.MutationObserver( schedule );
