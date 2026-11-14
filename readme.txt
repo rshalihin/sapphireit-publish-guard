@@ -161,12 +161,6 @@ The build uses `@wordpress/scripts` and writes the compiled files to `build/`.
 
 == Changelog ==
 
-= 1.3.0 =
-* New for developers: extension points for add-ons (rule API 2.1). An add-on can register rules it switches on and off itself, product by product, give them data of its own on every save path and in the live checklist, add a checklist group, and ask for stored readiness to be rebuilt.
-* New for developers: `Rule_Registry::API_MINOR` counts additions to the rule API, and the `sit_wcpg_loaded` action tells an add-on the plugin has booted.
-* Improved: a third-party rule that fails while deciding whether it applies to a product is skipped. It no longer breaks the checklist.
-* Nothing changes for merchants: no new settings, and no check behaves differently.
-
 = 1.2.0 =
 * New: a readiness filter on the products list finds products that are ready, have warnings, are not ready or have not been checked yet, across the whole catalog. Readiness is stored when a product is saved and rechecked in the background when the settings change.
 * New: overrides are recorded: who published past which required checks, and when. At most 200 entries, each kept for up to 90 days. Nothing is shown or sent anywhere.
@@ -175,6 +169,9 @@ The build uses `@wordpress/scripts` and writes the compiled files to `build/`.
 * Changed: Requires PHP 8.1.
 * New for developers: rules can read how a product is being saved through `Product_Context::get_save_path()`.
 * New for developers: the rule API is versioned and documented. `sit_wcpg_register_rules` now passes the API version, and `sit_wcpg_publish_blocked` and `sit_wcpg_publish_overridden` report each outcome.
+* New for developers: extension points for add-ons (rule API 2.1). An add-on can register rules it switches on and off itself, product by product, give them data of its own on every save path and in the live checklist, add a checklist group, and ask for stored readiness to be rebuilt.
+* New for developers: `Rule_Registry::API_MINOR` counts additions to the rule API, and the `sit_wcpg_loaded` action tells an add-on the plugin has booted.
+* Improved: a third-party rule that fails while deciding whether it applies to a product is skipped. It no longer breaks the checklist.
 * New: Products, then Publish Guard, lists the live products that would fail your rules, and why.
 * New: WP-CLI commands `wp sit-wcpg check` and `wp sit-wcpg reindex`.
 * New: after 30 days, and only once the checklist has stopped an incomplete product, it asks once for a review. You can dismiss it for good.
