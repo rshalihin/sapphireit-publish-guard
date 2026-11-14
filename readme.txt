@@ -61,7 +61,7 @@ Each check can be turned off, or set to **required** (it must pass before the pr
 * Five options (the settings, a temporary flag removed once the welcome notice has been shown, the capped override record, the progress of the background recheck and the state of the review request) and three hidden post meta keys on each product holding its stored readiness. No custom tables, roles or capabilities. All of it is removed when you delete the plugin.
 * Background rechecks run through WooCommerce's own Action Scheduler, only after something has changed, such as your settings or the plugin version. Nothing runs on a recurring schedule.
 * Assets load only on the product editor, the products list, the catalog screen and the settings screen, once on the Plugins screen for the welcome notice, and, when the review request is due, a small script for it on those list, catalog and settings screens.
-* No outbound network requests, tracking or upsell notices. After 30 days, and only once the checklist has stopped an incomplete product, it asks once for a review; you can dismiss it for good.
+* No outbound network requests or tracking. Publish Guard's own screens mention the Pro add-on; nothing else in your admin does. After 30 days, and only once the checklist has stopped an incomplete product, it asks once for a review; you can dismiss it for good.
 
 SapphireIT Publish Guard for WooCommerce is an independent plugin. It is not affiliated with or endorsed by WooCommerce or Automattic.
 
