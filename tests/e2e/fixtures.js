@@ -237,6 +237,13 @@ function definitions( shared, run ) {
 			'E2E-16 Cotton mat',
 			'45.00'
 		),
+		// UI-04: no SKU, so it fails once SKU is required. The spec publishes it, so
+		// screenshot 6 still lists only its own three products.
+		uiLive: withoutSku(
+			simple( shared, sku( 'ui4' ), 'UI-04 Stoneware jug', '30.00' )
+		),
+		// UI-05: one required failure (Regular price); every other check passes.
+		uiEditor: simple( shared, sku( 'ui5' ), 'UI-05 Linen cushion', null ),
 		screenshot: variable( shared, sku( 'shot' ), 'Merino crew sweater', [
 			'59.00',
 			'59.00',

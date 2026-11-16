@@ -295,7 +295,7 @@ final class Product_List_Column_Test extends WP_UnitTestCase {
 		$output     = $this->cell( $this->column( $this->registry( 'fail', 'fail', 'warn', 'pass' ) ), $product_id );
 
 		$this->assertStringContainsString( 'sit-wcpg-readiness--fail', $output );
-		$this->assertStringContainsString( '✗', $output );
+		$this->assertStringContainsString( 'sit-wcpg-ui-pill--required', $output );
 		$this->assertStringContainsString( '2 errors', $output );
 		$this->assertStringContainsString( '#' . Editor_Meta_Box::ID, $output );
 		$this->assertStringContainsString( 'post=' . $product_id, $output );
@@ -327,8 +327,58 @@ final class Product_List_Column_Test extends WP_UnitTestCase {
 		$output = $this->cell( $this->column( $this->registry( 'pass', 'skip' ) ), $this->product() );
 
 		$this->assertStringContainsString( 'sit-wcpg-readiness--pass', $output );
-		$this->assertStringContainsString( '✓', $output );
+		$this->assertStringContainsString( 'sit-wcpg-ui-pill--success', $output );
 		$this->assertStringContainsString( 'Ready', $output );
+	}
+
+	/**
+	 * Each state is a kit pill (UI decision U5) carrying an icon and a word, so the state
+	 * never rests on colour alone; the icon is hidden from assistive technology.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_readiness_column_uses_pills_with_text_not_colour_only(): void {
+		$cases = array(
+			'required' => array( array( 'fail', 'pass' ), '1 error' ),
+			'warning'  => array( array( 'warn', 'pass' ), '1 warning' ),
+			'success'  => array( array( 'pass' ), 'Ready' ),
+		);
+
+		foreach ( $cases as $tone => $case ) {
+			$output = $this->cell( $this->column( $this->registry( ...$case[0] ) ), $this->product() );
+
+			$this->assertMatchesRegularExpression( '#<span class="sit-wcpg-ui sit-wcpg-readiness sit-wcpg-readiness--[a-z]+">#', $output, $tone );
+			$this->assertMatchesRegularExpression(
+				'#<a class="sit-wcpg-ui-pill sit-wcpg-ui-pill--' . $tone . ' sit-wcpg-readiness__pill" href="[^"]+">'
+				. '<svg class="sit-wcpg-ui-icon"[^>]*aria-hidden="true"[^>]*>.*</svg>'
+				. '<span class="sit-wcpg-readiness__label">' . preg_quote( $case[1], '#' ) . '</span></a>#s',
+				$output,
+				$tone
+			);
+			$this->assertSame( $case[1], trim( wp_strip_all_tags( $output ) ), $tone );
+		}
+	}
+
+	/**
+	 * Without `edit_post` the pill is plain text, not a link.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_readiness_pill_is_not_a_link_without_edit_post(): void {
+		$product_id = $this->product();
+		$user       = self::factory()->user->create_and_get( array( 'role' => 'subscriber' ) );
+
+		$user->add_cap( 'edit_products' );
+		wp_set_current_user( $user->ID );
+
+		$output = $this->cell( $this->column( $this->registry( 'fail' ) ), $product_id );
+
+		$this->assertStringContainsString( '<span class="sit-wcpg-ui-pill sit-wcpg-ui-pill--required sit-wcpg-readiness__pill">', $output );
+		$this->assertStringNotContainsString( '<a ', $output );
 	}
 
 	/**

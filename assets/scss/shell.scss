@@ -1,0 +1,54 @@
+/**
+ * The admin shell stylesheet, `sit-wcpg-shell` (UI phase U02).
+ *
+ * Tokens, the font, the type scale and every component of UI decision U5, each scoped
+ * under `.sit-wcpg-ui`. Registered on every admin request and enqueued only by the
+ * screens that render the shell, so nothing outside `.sit-wcpg-ui` changes. WordPress's
+ * own `.button`, `.notice` and list-table markup keep working inside it.
+ */
+
+@use "tokens" as *;
+@use "components/icon";
+@use "components/card";
+@use "components/button";
+@use "components/pill";
+@use "components/switch";
+@use "components/segmented";
+@use "components/nav";
+@use "components/stat";
+@use "components/bar";
+@use "components/banner";
+@use "components/table";
+@use "components/empty";
+@use "components/savebar";
+@use "components/header";
+@use "pages/dashboard";
+@use "pages/settings";
+@use "pages/catalog";
+@use "pages/products-list";
+
+.sit-wcpg-ui {
+	box-sizing: border-box;
+	color: token("ink");
+	font-family: token("font");
+	font-size: 14px;
+	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+
+	*,
+	*::before,
+	*::after {
+		box-sizing: inherit;
+	}
+
+	a {
+		color: token("info-700");
+	}
+
+	a:focus-visible,
+	button:focus-visible {
+
+		@include focus-ring;
+	}
+}

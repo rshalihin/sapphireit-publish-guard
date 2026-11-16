@@ -1,11 +1,11 @@
 import { createElement } from '@wordpress/element';
-import { Button } from '@wordpress/components';
 
+import { Icon } from '../../shared/icons';
 import { focusField } from '../utils/focusField';
 import { StatusIcon } from './StatusIcon';
 
 /**
- * One checklist row.
+ * One checklist row: status dot, label, message and fix link.
  *
  * The message and the fix action appear only when the row did not pass. Every string
  * rendered here comes from the server as plain text and is rendered as a text child, so
@@ -23,20 +23,30 @@ export function ChecklistItem( { item } ) {
 		<li
 			className={ `sit-wcpg-checklist__item sit-wcpg-checklist__item--${ status }` }
 		>
-			<StatusIcon status={ status } />{ ' ' }
-			<span className="sit-wcpg-checklist__label">{ label }</span>
-			{ showDetail && message && (
-				<span className="sit-wcpg-checklist__message">{ message }</span>
-			) }
-			{ hasFix && (
-				<Button
-					variant="link"
-					className="sit-wcpg-checklist__fix"
-					onClick={ () => focusField( fix ) }
-				>
-					{ fix.label || label }
-				</Button>
-			) }
+			<StatusIcon status={ status } />
+			<span className="sit-wcpg-checklist__content">
+				<span className="sit-wcpg-checklist__label">{ label }</span>
+				{ showDetail && message && (
+					<span className="sit-wcpg-checklist__message">
+						{ message }
+					</span>
+				) }
+				{ hasFix && (
+					<button
+						type="button"
+						className="sit-wcpg-checklist__fix"
+						onClick={ () => focusField( fix ) }
+					>
+						{ fix.label || label }
+						<span
+							className="sit-wcpg-checklist__fix-arrow"
+							aria-hidden="true"
+						>
+							<Icon name="chevron-right" size={ 12 } />
+						</span>
+					</button>
+				) }
+			</span>
 		</li>
 	);
 }

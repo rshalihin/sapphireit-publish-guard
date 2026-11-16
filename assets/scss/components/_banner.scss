@@ -1,0 +1,91 @@
+/**
+ * Banner (U5): `--success`, `--info`, `--warning`. An in-page message, not a core notice.
+ */
+
+@use "../tokens" as *;
+
+.sit-wcpg-ui {
+
+	.sit-wcpg-ui-banner {
+		display: flex;
+		gap: token("space-3");
+		align-items: flex-start;
+		margin: 0 0 token("space-6");
+		padding: token("space-4") token("space-5");
+		color: token("ink");
+		background: token("surface");
+		border: 1px solid token("line");
+		border-radius: token("radius-card");
+
+		> .sit-wcpg-ui-icon {
+			margin-top: 1px;
+		}
+	}
+
+	.sit-wcpg-ui-banner__body {
+		flex: 1 1 auto;
+		min-width: 0;
+
+		> :first-child {
+			margin-top: 0;
+		}
+
+		> :last-child {
+			margin-bottom: 0;
+		}
+	}
+
+	.sit-wcpg-ui-banner__title {
+		margin: 0 0 token("space-1");
+		font-size: 15px;
+		font-weight: 600;
+	}
+
+	.sit-wcpg-ui-banner__actions {
+		display: flex;
+		flex: none;
+		gap: token("space-2");
+		align-items: center;
+	}
+
+	.sit-wcpg-ui-banner--success {
+		background: token("shield-50");
+		border-color: transparent;
+
+		> .sit-wcpg-ui-icon {
+			color: token("shield-700");
+		}
+	}
+
+	.sit-wcpg-ui-banner--info {
+		background: token("info-50");
+		border-color: transparent;
+
+		> .sit-wcpg-ui-icon {
+			color: token("info-700");
+		}
+	}
+
+	.sit-wcpg-ui-banner--warning {
+		background: token("warning-50");
+		border-color: transparent;
+
+		> .sit-wcpg-ui-icon {
+			color: token("warning-700");
+		}
+	}
+}
+
+@media screen and (max-width: 782px) {
+
+	.sit-wcpg-ui .sit-wcpg-ui-banner {
+		flex-wrap: wrap;
+	}
+}
+
+@media (forced-colors: active) {
+
+	.sit-wcpg-ui .sit-wcpg-ui-banner {
+		border-color: CanvasText;
+	}
+}

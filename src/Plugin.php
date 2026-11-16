@@ -11,6 +11,7 @@ use ProductPublishGuard\Admin\Activation_Notice;
 use ProductPublishGuard\Admin\Assets;
 use ProductPublishGuard\Admin\Block_Editor_Notice;
 use ProductPublishGuard\Admin\Catalog_Page;
+use ProductPublishGuard\Admin\Dashboard_Page;
 use ProductPublishGuard\Admin\Editor_Meta_Box;
 use ProductPublishGuard\Admin\Notices;
 use ProductPublishGuard\Admin\Plugin_Action_Links;
@@ -32,6 +33,7 @@ use ProductPublishGuard\Support\Checklist_Service;
 use ProductPublishGuard\Support\Override_Log;
 use ProductPublishGuard\Support\Readiness_Indexer;
 use ProductPublishGuard\Support\Readiness_Rebuild;
+use ProductPublishGuard\Support\Readiness_Stats;
 use ProductPublishGuard\Support\Readiness_Store;
 
 defined( 'ABSPATH' ) || exit;
@@ -135,6 +137,14 @@ final class Plugin {
 	private ?Readiness_Rebuild $readiness_rebuild = null;
 
 	/**
+	 * Lazily constructed readiness statistics.
+	 *
+	 * @since 1.2.0
+	 * @var Readiness_Stats|null
+	 */
+	private ?Readiness_Stats $readiness_stats = null;
+
+	/**
 	 * Lazily constructed WP-CLI gate runner.
 	 *
 	 * @since 1.2.0
@@ -228,6 +238,13 @@ final class Plugin {
 		$this->readiness_rebuild()->register();
 
 		/*
+		 * Every request as well: settings are saved over REST and WP-CLI too, and a rebuild
+		 * finishes in cron. Registering adds hooks; the registry is built only when the
+		 * numbers are computed.
+		 */
+		$this->readiness_stats()->register();
+
+		/*
 		 * Every request as well: a publish can be refused over REST. Registering adds one
 		 * hook outside the admin, and nothing is read until a refusal fires it.
 		 */
@@ -240,6 +257,7 @@ final class Plugin {
 			 * inside the callbacks, which fire on three screens and nowhere else. An
 			 * ordinary admin request therefore never builds the rule list.
 			 */
+			( new Dashboard_Page( $this->settings() ) )->register();
 			( new Settings_Page( $this->settings() ) )->register();
 			( new Settings_Footer() )->register();
 			( new Plugin_Action_Links() )->register();
@@ -411,6 +429,21 @@ final class Plugin {
 		}
 
 		return $this->readiness_rebuild;
+	}
+
+	/**
+	 * Get the readiness statistics.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return Readiness_Stats
+	 */
+	public function readiness_stats(): Readiness_Stats {
+		if ( null === $this->readiness_stats ) {
+			$this->readiness_stats = new Readiness_Stats( $this->settings(), null, $this->readiness_store() );
+		}
+
+		return $this->readiness_stats;
 	}
 
 	/**

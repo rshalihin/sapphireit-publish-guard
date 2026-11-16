@@ -56,6 +56,14 @@ final class Screen {
 	public const CATALOG_HOOK = 'product_page_' . Catalog_Page::MENU_SLUG;
 
 	/**
+	 * Hook suffix of the Dashboard, as produced by `add_submenu_page( 'woocommerce', … )`.
+	 *
+	 * @since 1.2.0
+	 * @var string
+	 */
+	public const DASHBOARD_HOOK = 'woocommerce_page_' . Dashboard_Page::MENU_SLUG;
+
+	/**
 	 * Hook suffixes that render a single post.
 	 *
 	 * @since 1.0.0
@@ -133,6 +141,24 @@ final class Screen {
 		$screen = self::screen();
 
 		return null !== $screen && self::CATALOG_HOOK === $screen->id;
+	}
+
+	/**
+	 * Whether this request is the Dashboard.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param string $hook_suffix Hook suffix from `admin_enqueue_scripts`, or '' to ask the screen.
+	 * @return bool
+	 */
+	public static function is_dashboard_screen( string $hook_suffix = '' ): bool {
+		if ( '' !== $hook_suffix ) {
+			return self::DASHBOARD_HOOK === $hook_suffix;
+		}
+
+		$screen = self::screen();
+
+		return null !== $screen && self::DASHBOARD_HOOK === $screen->id;
 	}
 
 	/**

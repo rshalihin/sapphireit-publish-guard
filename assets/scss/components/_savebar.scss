@@ -1,0 +1,130 @@
+/**
+ * Save bar (U5, U15): `--top`, `--bottom` and `--inline` (the page bar's copy, without
+ * the box), all holding the same save actions: status, spinner, Discard, Save.
+ *
+ * The settings script sets the state modifier: `--clean` ("All changes saved"), `--dirty`
+ * (amber dot, "Unsaved changes") or `--saving` (core's spinner). Without the script the
+ * status and Discard keep their `hidden` attribute and only Save shows.
+ */
+
+@use "../tokens" as *;
+
+.sit-wcpg-ui {
+
+	.sit-wcpg-ui-savebar {
+		display: flex;
+		flex-wrap: wrap;
+		gap: token("space-3");
+		align-items: center;
+		justify-content: flex-end;
+		padding: token("space-3") token("space-5");
+		background: token("surface");
+		border: 1px solid token("line");
+		border-radius: token("radius-card");
+	}
+
+	// Specific enough to beat `.wp-core-ui .button { display: inline-block }`.
+	.sit-wcpg-ui-savebar [hidden] {
+		display: none;
+	}
+
+	.sit-wcpg-ui-savebar__state {
+		display: inline-flex;
+		gap: token("space-2");
+		align-items: center;
+		margin-inline-end: auto;
+	}
+
+	.sit-wcpg-ui-savebar__status {
+		color: token("muted");
+		font-size: 13px;
+	}
+
+	.sit-wcpg-ui-savebar__dot {
+		display: none;
+		flex: none;
+		width: 8px;
+		height: 8px;
+		background: token("warning-700");
+		border-radius: 50%;
+	}
+
+	.sit-wcpg-ui-savebar--dirty .sit-wcpg-ui-savebar__dot {
+		display: inline-block;
+	}
+
+	.sit-wcpg-ui-savebar--dirty .sit-wcpg-ui-savebar__status {
+		color: token("warning-700");
+		font-weight: 600;
+	}
+
+	// Core's spinner floats; inside the bar it is a flex item, shown only while saving.
+	.sit-wcpg-ui-savebar__spinner {
+		display: none;
+		float: none;
+		margin: 0;
+	}
+
+	/* stylelint-disable-next-line selector-class-pattern -- core's spinner state class */
+	.sit-wcpg-ui-savebar__spinner.is-active {
+		display: inline-block;
+	}
+
+	.sit-wcpg-ui-savebar--top {
+		margin: 0 0 token("space-6");
+	}
+
+	.sit-wcpg-ui-savebar--bottom {
+		margin: token("space-6") 0 0;
+	}
+
+	.sit-wcpg-ui-savebar--inline {
+		padding: 0;
+		background: none;
+		border: 0;
+		border-radius: 0;
+	}
+
+	.sit-wcpg-ui-savebar--inline .sit-wcpg-ui-savebar__state {
+		margin-inline-end: 0;
+	}
+}
+
+// Phones: one row (V-U15). The buttons keep their size and the status text wraps in the
+// space left, instead of Save dropping onto a second row.
+@media screen and (max-width: 600px) {
+
+	.sit-wcpg-ui .sit-wcpg-ui-savebar {
+		flex-wrap: nowrap;
+		gap: token("space-2");
+	}
+
+	.sit-wcpg-ui .sit-wcpg-ui-savebar:not(.sit-wcpg-ui-savebar--inline) {
+		padding: token("space-3") token("space-4");
+	}
+
+	.sit-wcpg-ui .sit-wcpg-ui-savebar__state {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	/* stylelint-disable-next-line selector-class-pattern -- core's button class */
+	.sit-wcpg-ui .sit-wcpg-ui-savebar .button {
+		flex: none;
+	}
+}
+
+@media (forced-colors: active) {
+
+	.sit-wcpg-ui .sit-wcpg-ui-savebar {
+		border-color: CanvasText;
+	}
+
+	.sit-wcpg-ui .sit-wcpg-ui-savebar--inline {
+		border: 0;
+	}
+
+	.sit-wcpg-ui .sit-wcpg-ui-savebar__dot {
+		background: CanvasText;
+	}
+}

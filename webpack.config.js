@@ -1,14 +1,19 @@
 /**
  * Build configuration.
  *
- * Extends the `@wordpress/scripts` default config with three explicit entries:
+ * Extends the `@wordpress/scripts` default config with five explicit entries:
  *
  * - `editor` — the React checklist panel. Its SCSS is imported from index.js, so
  *   wp-scripts emits build/editor.js, build/editor.css and build/editor.asset.php.
  * - `admin`  — style only (the products list column and the settings page are plain
  *   server-rendered HTML). wp-scripts' RemoveEmptyScripts plugin drops the empty
  *   companion JS file, leaving only build/admin.css.
+ * - `shell`  — style only: the design tokens, the Inter font and the components of the
+ *   admin UI (UI decisions U2–U5), registered as `sit-wcpg-shell`. The font is copied
+ *   to build/fonts/ and the built CSS points at that copy.
  * - `review-notice` — the small script that records an answer to the review request.
+ * - `settings` — the Product Checklist screen's section nav and save state (UI decision
+ *   U8), handle `sit-wcpg-settings`. Vanilla JS, no React.
  *
  * An entry whose source does not exist is left out rather than failing the build, and
  * `Admin\Assets` skips any stylesheet that was not built.
@@ -24,10 +29,12 @@ const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
 const entries = {
 	editor: path.resolve( __dirname, 'assets/js/editor/index.js' ),
 	admin: path.resolve( __dirname, 'assets/scss/admin.scss' ),
+	shell: path.resolve( __dirname, 'assets/scss/shell.scss' ),
 	'review-notice': path.resolve(
 		__dirname,
 		'assets/js/review-notice/index.js'
 	),
+	settings: path.resolve( __dirname, 'assets/js/settings/index.js' ),
 };
 
 module.exports = {

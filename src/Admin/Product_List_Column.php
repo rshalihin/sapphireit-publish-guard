@@ -264,7 +264,8 @@ final class Product_List_Column {
 		switch ( $status ) {
 			case Status::FAIL:
 				$failed = (int) $counts['failed'];
-				$glyph  = '✗';
+				$tone   = 'required';
+				$icon   = 'cross';
 				$label  = sprintf(
 					/* translators: %d: number of failed required checks. */
 					_n( '%d error', '%d errors', $failed, 'sapphireit-publish-guard' ),
@@ -274,7 +275,8 @@ final class Product_List_Column {
 
 			case Status::WARNING:
 				$warnings = (int) $counts['warnings'];
-				$glyph    = '!';
+				$tone     = 'warning';
+				$icon     = 'alert';
 				$label    = sprintf(
 					/* translators: %d: number of checks with a warning. */
 					_n( '%d warning', '%d warnings', $warnings, 'sapphireit-publish-guard' ),
@@ -283,30 +285,30 @@ final class Product_List_Column {
 				break;
 
 			default:
-				$glyph = '✓';
+				$tone  = 'success';
+				$icon  = 'check';
 				$label = __( 'Ready', 'sapphireit-publish-guard' );
 				break;
 		}
 
 		$link   = current_user_can( 'edit_post', $post_id ) ? get_edit_post_link( $post_id, 'raw' ) : '';
 		$linked = is_string( $link ) && '' !== $link;
+		$tag    = $linked ? 'a' : 'span';
 
-		// Escaped where it is printed, never pre-built into a string: section 9.4 allows
-		// no EscapeOutput exclusion anywhere.
-		echo '<span class="sit-wcpg-readiness sit-wcpg-readiness--' . esc_attr( $status ) . '">';
+		// A pill of the admin UI kit (UI decision U5): an icon and a word, never colour alone.
+		// Escaped where it is printed, never pre-built into a string: section 9.4 allows no
+		// EscapeOutput exclusion anywhere.
+		echo '<span class="sit-wcpg-ui sit-wcpg-readiness sit-wcpg-readiness--' . esc_attr( $status ) . '">';
+		echo '<' . tag_escape( $tag ) . ' class="' . esc_attr( 'sit-wcpg-ui-pill sit-wcpg-ui-pill--' . $tone . ' sit-wcpg-readiness__pill' ) . '"';
 
 		if ( $linked ) {
-			echo '<a href="' . esc_url( $link . '#' . Editor_Meta_Box::ID ) . '">';
+			echo ' href="' . esc_url( $link . '#' . Editor_Meta_Box::ID ) . '"';
 		}
 
-		echo '<span class="sit-wcpg-readiness__icon" aria-hidden="true">' . esc_html( $glyph ) . '</span> ';
+		echo '>';
+		echo wp_kses( Icons::svg( $icon, 14 ), Icons::allowed_html() );
 		echo '<span class="sit-wcpg-readiness__label">' . esc_html( $label ) . '</span>';
-
-		if ( $linked ) {
-			echo '</a>';
-		}
-
-		echo '</span>';
+		echo '</' . tag_escape( $tag ) . '></span>';
 	}
 
 	/**
@@ -378,7 +380,7 @@ final class Product_List_Column {
 	 * @return void
 	 */
 	private function render_empty(): void {
-		echo '<span class="sit-wcpg-readiness sit-wcpg-readiness--none" aria-hidden="true">—</span>'
+		echo '<span class="sit-wcpg-ui sit-wcpg-readiness sit-wcpg-readiness--none" aria-hidden="true">—</span>'
 			. '<span class="screen-reader-text">' . esc_html__( 'No readiness state', 'sapphireit-publish-guard' ) . '</span>';
 	}
 

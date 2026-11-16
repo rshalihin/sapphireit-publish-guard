@@ -1,0 +1,245 @@
+/**
+ * Shell header (U6): the logo tile, the plugin name and version, the tabs, the Docs link,
+ * header items and the upgrade button; then the page bar (U15) inside `.wrap`.
+ * Markup: `Admin\Admin_Shell`. The header element carries `.sit-wcpg-ui` itself.
+ */
+
+@use "../tokens" as *;
+
+.sit-wcpg-ui {
+
+	&.sit-wcpg-ui-header {
+		// Bleed over #wpcontent's 20 px gutter so the bar spans the content area.
+		margin: 0 0 token("space-6");
+		margin-inline-start: -20px;
+		background: token("surface");
+		border-bottom: 1px solid token("line");
+	}
+
+	.sit-wcpg-ui-header__bar {
+		display: flex;
+		flex-wrap: wrap;
+		gap: token("space-3") token("space-6");
+		align-items: center;
+		min-height: 64px;
+		padding: 0 token("space-6");
+	}
+
+	.sit-wcpg-ui-header__brand {
+		display: flex;
+		flex: none;
+		gap: token("space-3");
+		align-items: center;
+		margin: 0;
+		padding: token("space-3") 0;
+		color: token("ink");
+		font-size: 18px;
+		font-weight: 700;
+		line-height: 1.3;
+	}
+
+	.sit-wcpg-ui-header__logo {
+		display: inline-flex;
+		flex: none;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
+		color: #fff;
+		background: token("navy-900");
+		border-radius: token("radius-control");
+	}
+
+	.sit-wcpg-ui-header__version {
+		font-size: 12px;
+	}
+
+	.sit-wcpg-ui-header__nav {
+		flex: 1 1 auto;
+		align-self: stretch;
+		min-width: 0;
+	}
+
+	.sit-wcpg-ui-header__tabs {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0 token("space-1");
+		height: 100%;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+
+		> li {
+			display: flex;
+			margin: 0;
+		}
+	}
+
+	.sit-wcpg-ui-header__tab {
+		display: inline-flex;
+		gap: token("space-2");
+		align-items: center;
+		margin: 0;
+		padding: token("space-3");
+		color: token("muted");
+		font-weight: 600;
+		text-decoration: none;
+		white-space: nowrap;
+		border-bottom: 3px solid transparent;
+
+		&:hover {
+			color: token("ink");
+		}
+
+		// Core's `a:focus` draws a box-shadow ring on click; drop it. Keyboard focus
+		// keeps the shell's ring through `:focus-visible` below.
+		&:focus {
+			outline: none;
+			box-shadow: none;
+		}
+
+		&:focus-visible {
+
+			@include focus-ring;
+		}
+	}
+
+	.sit-wcpg-ui-header__tab--current {
+		color: token("navy-700");
+		border-bottom-color: token("navy-700");
+	}
+
+	// U7: the upgrade tab's PRO label is a small navy chip, not a full pill.
+	.sit-wcpg-ui-header__tab .sit-wcpg-ui-pill--pro {
+		padding: 2px 5px;
+		color: token("gold-300");
+		font-size: 10px;
+		font-weight: 700;
+		line-height: 1.4;
+		letter-spacing: 0.02em;
+		background: token("navy-900");
+		border-radius: 5px;
+	}
+
+	// U6: the upgrade button is the navy primary button at the header's 36 px, with a
+	// gold crown.
+	.sit-wcpg-ui-header__upgrade {
+		min-height: 36px;
+		text-decoration: none;
+
+		.sit-wcpg-ui-icon {
+			color: token("gold-300");
+		}
+	}
+
+	.sit-wcpg-ui-header__items {
+		display: flex;
+		flex-wrap: wrap;
+		gap: token("space-2") token("space-3");
+		align-items: center;
+		margin: 0;
+		margin-inline-start: auto;
+		padding: token("space-3") 0;
+		list-style: none;
+
+		> li {
+			margin: 0;
+		}
+
+		a.sit-wcpg-ui-pill {
+			text-decoration: none;
+		}
+	}
+
+	.sit-wcpg-ui-header__link {
+		display: inline-flex;
+		gap: token("space-1");
+		align-items: center;
+		color: token("muted");
+		font-weight: 600;
+		text-decoration: none;
+
+		&:hover {
+			color: token("ink");
+		}
+	}
+
+	// U15: the page bar under the shell. U07 adds the save actions.
+	.sit-wcpg-ui-pagebar {
+		display: flex;
+		flex-wrap: wrap;
+		gap: token("space-3");
+		align-items: center;
+		margin: 0 0 token("space-6");
+	}
+
+	.sit-wcpg-ui-pagebar__text {
+		flex: 1 1 320px;
+		min-width: 0;
+	}
+
+	.sit-wcpg-ui-pagebar__title {
+		margin: 0;
+		padding: 0;
+		color: token("ink");
+		font-size: 26px;
+		font-weight: 700;
+		line-height: 1.3;
+	}
+
+	.sit-wcpg-ui-pagebar__description {
+		max-width: 72ch;
+		margin: token("space-1") 0 0;
+		color: token("muted");
+		font-size: 14px;
+	}
+
+	.sit-wcpg-ui-pagebar__actions {
+		display: flex;
+		flex: none;
+		flex-wrap: wrap;
+		gap: token("space-2");
+		align-items: center;
+	}
+}
+
+// WordPress's mobile breakpoint: #wpcontent's gutter is 10 px, and the tabs become one
+// horizontally scrollable row so the header never widens the page.
+@media screen and (max-width: 782px) {
+
+	.sit-wcpg-ui.sit-wcpg-ui-header {
+		margin-inline-start: -10px;
+	}
+
+	.sit-wcpg-ui .sit-wcpg-ui-header__bar {
+		padding: 0 token("space-4");
+	}
+
+	.sit-wcpg-ui .sit-wcpg-ui-header__nav {
+		flex-basis: 100%;
+		order: 3;
+		margin: 0 calc(-1 * #{token("space-4")});
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.sit-wcpg-ui .sit-wcpg-ui-header__tabs {
+		flex-wrap: nowrap;
+		padding: 0 token("space-4");
+	}
+
+	.sit-wcpg-ui .sit-wcpg-ui-header__items {
+		padding: 0 0 token("space-3");
+	}
+
+	.sit-wcpg-ui .sit-wcpg-ui-pagebar__title {
+		font-size: 22px;
+	}
+}
+
+@media (forced-colors: active) {
+
+	.sit-wcpg-ui .sit-wcpg-ui-header__tab--current {
+		border-bottom-color: Highlight;
+	}
+}

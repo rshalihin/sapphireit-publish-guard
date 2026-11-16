@@ -69,20 +69,32 @@ final class Editor_Meta_Box {
 	private const MAX_ADDED_GROUPS = 10;
 
 	/**
-	 * Per-status glyph for the no-JS list.
+	 * Per-status icon name (an `Icons` name) for the no-JS list.
 	 *
-	 * Decorative only: every row also carries a visually hidden text label, because
-	 * status must never be conveyed by a symbol or a colour alone.
+	 * The React panel draws the same names (`STATUS_ICONS` in `StatusIcon.js`), so the box
+	 * does not change shape when it takes over. Decorative only: every row also carries a
+	 * visually hidden text label, because status must never be conveyed by a symbol or a
+	 * colour alone.
 	 *
 	 * @since 1.0.0
+	 * @since 1.2.0 Icon names instead of text glyphs (UI phase U09).
 	 * @var array<string, string>
 	 */
-	private const ICONS = array(
-		Status::PASS    => "\u{2713}",
-		Status::WARNING => '!',
-		Status::FAIL    => "\u{2717}",
-		Status::SKIPPED => "\u{2013}",
+	private const STATUS_ICONS = array(
+		Status::PASS    => 'check',
+		Status::WARNING => 'alert',
+		Status::FAIL    => 'cross',
+		Status::SKIPPED => 'ban',
 	);
+
+	/**
+	 * Radius of the score ring, in its 64 × 64 viewBox (`RING_RADIUS` in
+	 * `ChecklistSummary.js`).
+	 *
+	 * @since 1.2.0
+	 * @var int
+	 */
+	private const RING_RADIUS = 27;
 
 	/**
 	 * The merchant's configuration.
@@ -172,7 +184,8 @@ final class Editor_Meta_Box {
 
 		$result = $this->checklist()->validate_post( (int) $post->ID );
 
-		echo '<div id="' . esc_attr( self::MOUNT_ID ) . '" class="sit-wcpg-checklist">';
+		// `sit-wcpg-ui` scopes the admin UI kit's tokens and font to the panel (UI decision U2).
+		echo '<div id="' . esc_attr( self::MOUNT_ID ) . '" class="sit-wcpg-ui sit-wcpg-checklist">';
 
 		if ( $result instanceof Validation_Result ) {
 			$this->render_fallback( $result );
@@ -251,9 +264,14 @@ final class Editor_Meta_Box {
 	}
 
 	/**
-	 * Render the server-side checklist.
+	 * Render the server-side checklist, in the panel's order (UI phase U09).
+	 *
+	 * The summary and the pre-flight statement; the failing view (each group's failing
+	 * and warning rows, failures first); the passed rows in one closed `<details>`; the
+	 * rows that do not apply in another. The React panel renders the same order.
 	 *
 	 * @since 1.0.0
+	 * @since 1.2.0 Failing first; passed and not applicable collapsed.
 	 *
 	 * @param Validation_Result $result The result to render.
 	 * @return void
@@ -263,63 +281,98 @@ final class Editor_Meta_Box {
 
 		$this->render_summary( $result );
 
-		$grouped = array();
+		$issues  = array();
+		$passed  = array();
 		$skipped = array();
 
 		foreach ( $result->get_results() as $row ) {
-			if ( Status::SKIPPED === $row->get_status() ) {
-				$skipped[] = $row;
+			$status = $row->get_status();
 
-				continue;
+			if ( Status::SKIPPED === $status ) {
+				$skipped[] = $row;
+			} elseif ( Status::PASS === $status ) {
+				$passed[ $row->get_group() ][] = $row;
+			} else {
+				$issues[ $row->get_group() ][] = $row;
+			}
+		}
+
+		echo '<div class="sit-wcpg-checklist__body">';
+
+		if ( array() === $issues && array() === $passed && array() === $skipped ) {
+			echo '<p class="sit-wcpg-checklist__empty">' . esc_html__( 'No checks are enabled.', 'sapphireit-publish-guard' ) . '</p>';
+		}
+
+		if ( array() !== $issues ) {
+			echo '<div class="sit-wcpg-checklist__failing">';
+
+			foreach ( $this->order_groups( $issues ) as $group => $rows ) {
+				$this->render_group( (string) $group, self::failures_first( $rows ), true );
 			}
 
-			$grouped[ $row->get_group() ][] = $row;
+			echo '</div>';
 		}
 
-		foreach ( $this->order_groups( $grouped ) as $group => $rows ) {
-			$this->render_group( (string) $group, $rows );
-		}
-
+		$this->render_passed( $passed, array() !== $issues );
 		$this->render_skipped( $skipped );
 
+		echo '</div>';
 		echo '</div>';
 	}
 
 	/**
-	 * Render the readiness summary.
+	 * Render the score ring, the readiness state line and the counts, then the pre-flight
+	 * statement.
 	 *
 	 * @since 1.0.0
+	 * @since 1.2.0 The score ring and the "3 required · 2 warnings" counts line.
 	 *
 	 * @param Validation_Result $result The result to summarize.
 	 * @return void
 	 */
 	private function render_summary( Validation_Result $result ): void {
-		$counts   = $result->get_counts();
-		$is_ready = $result->is_ready();
-		$state    = $is_ready ? Status::PASS : Status::FAIL;
+		$counts     = $result->get_counts();
+		$is_ready   = $result->is_ready();
+		$state      = $is_ready ? Status::PASS : Status::FAIL;
+		$failed     = (int) $counts['failed'];
+		$warnings   = (int) $counts['warnings'];
+		$passed     = (int) $counts['passed'];
+		$applicable = (int) $counts['evaluated'];
+
+		if ( $failed > 0 ) {
+			$tone = Status::FAIL;
+		} elseif ( $warnings > 0 ) {
+			$tone = Status::WARNING;
+		} else {
+			$tone = Status::PASS;
+		}
 
 		$headline = $is_ready
 			? __( 'Ready to publish', 'sapphireit-publish-guard' )
 			: __( 'Not ready to publish', 'sapphireit-publish-guard' );
 
-		echo '<p class="sit-wcpg-checklist__summary sit-wcpg-checklist__summary--' . esc_attr( $state ) . '" aria-live="polite">';
-		echo '<span class="sit-wcpg-checklist__icon" aria-hidden="true">' . esc_html( self::ICONS[ $state ] ) . '</span> ';
-		echo '<strong class="sit-wcpg-checklist__state">' . esc_html( $headline ) . '</strong>';
-		echo '<span class="sit-wcpg-checklist__counts">' . esc_html( $result->get_summary_label() ) . '</span>';
+		$circumference = 2 * M_PI * self::RING_RADIUS;
+		$dash          = $applicable > 0 ? min( 1, $passed / $applicable ) * $circumference : 0;
 
-		$issues = (int) $counts['failed'] + (int) $counts['warnings'];
+		echo '<div class="sit-wcpg-checklist__summary sit-wcpg-checklist__summary--' . esc_attr( $state ) . '" aria-live="polite">';
+		echo '<span class="sit-wcpg-checklist__ring sit-wcpg-checklist__ring--' . esc_attr( $tone ) . '">';
+		echo '<svg width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="' . esc_attr( $result->get_summary_label() ) . '" focusable="false">';
+		echo '<circle class="sit-wcpg-checklist__ring-track" cx="32" cy="32" r="' . (int) self::RING_RADIUS . '"></circle>';
 
-		if ( $issues > 0 ) {
-			echo '<span class="sit-wcpg-checklist__issues">' . esc_html(
-				sprintf(
-					/* translators: %d: number of checks that did not pass. */
-					_n( '%d issue', '%d issues', $issues, 'sapphireit-publish-guard' ),
-					$issues
-				)
-			) . '</span>';
+		if ( $passed > 0 ) {
+			echo '<circle class="sit-wcpg-checklist__ring-bar" cx="32" cy="32" r="' . (int) self::RING_RADIUS . '" stroke-dasharray="'
+				. esc_attr( number_format( $dash, 2, '.', '' ) . ' ' . number_format( $circumference, 2, '.', '' ) )
+				. '" transform="rotate(-90 32 32)"></circle>';
 		}
 
-		echo '</p>';
+		echo '</svg>';
+		echo '<span class="sit-wcpg-checklist__ring-value" aria-hidden="true">' . esc_html( $passed . '/' . $applicable ) . '</span>';
+		echo '</span>';
+		echo '<span class="sit-wcpg-checklist__headline">';
+		echo '<strong class="sit-wcpg-checklist__state">' . esc_html( $headline ) . '</strong>';
+		echo '<span class="sit-wcpg-checklist__counts">' . esc_html( self::counts_line( $failed, $warnings, $applicable ) ) . '</span>';
+		echo '</span>';
+		echo '</div>';
 
 		$preflight = Preflight::for_result(
 			$result,
@@ -332,18 +385,65 @@ final class Editor_Meta_Box {
 	}
 
 	/**
+	 * "3 required · 2 warnings", or "All checks passed" (`countsLine()` in
+	 * `ChecklistSummary.js`).
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param int $failed     Required checks that fail.
+	 * @param int $warnings   Checks with a warning.
+	 * @param int $applicable Checks that apply.
+	 * @return string
+	 */
+	private static function counts_line( int $failed, int $warnings, int $applicable ): string {
+		$parts = array();
+
+		if ( $failed > 0 ) {
+			/* translators: %d: number of required checks that fail. */
+			$parts[] = sprintf( _n( '%d required', '%d required', $failed, 'sapphireit-publish-guard' ), $failed );
+		}
+
+		if ( $warnings > 0 ) {
+			/* translators: %d: number of checks with a warning. */
+			$parts[] = sprintf( _n( '%d warning', '%d warnings', $warnings, 'sapphireit-publish-guard' ), $warnings );
+		}
+
+		if ( array() === $parts ) {
+			return $applicable > 0
+				? __( 'All checks passed', 'sapphireit-publish-guard' )
+				: __( 'No checks apply', 'sapphireit-publish-guard' );
+		}
+
+		if ( 1 === count( $parts ) ) {
+			return $parts[0];
+		}
+
+		/* translators: 1: e.g. "3 required", 2: e.g. "2 warnings". */
+		return sprintf( __( '%1$s · %2$s', 'sapphireit-publish-guard' ), $parts[0], $parts[1] );
+	}
+
+	/**
 	 * Render one group of rows.
 	 *
 	 * @since 1.0.0
+	 * @since 1.2.0 The `$show_count` heading count ("1 failing").
 	 *
-	 * @param string $group Group identifier.
-	 * @param array  $rows  Rule_Result objects in that group.
+	 * @param string $group      Group identifier.
+	 * @param array  $rows       Rule_Result objects in that group.
+	 * @param bool   $show_count Whether the heading shows how many rows fail.
 	 * @return void
 	 */
-	private function render_group( string $group, array $rows ): void {
+	private function render_group( string $group, array $rows, bool $show_count = false ): void {
 		$labels = self::group_labels();
 
-		echo '<h4 class="sit-wcpg-checklist__group">' . esc_html( $labels[ $group ] ?? $group ) . '</h4>';
+		echo '<div class="sit-wcpg-checklist__section">';
+		echo '<h4 class="sit-wcpg-checklist__group"><span class="sit-wcpg-checklist__group-label">' . esc_html( $labels[ $group ] ?? $group ) . '</span>';
+
+		if ( $show_count ) {
+			self::render_group_count( $rows );
+		}
+
+		echo '</h4>';
 		echo '<ul class="sit-wcpg-checklist__items">';
 
 		foreach ( $rows as $row ) {
@@ -351,12 +451,86 @@ final class Editor_Meta_Box {
 		}
 
 		echo '</ul>';
+		echo '</div>';
 	}
 
 	/**
-	 * Render the rules that did not apply to this product.
+	 * The "1 failing" or "2 warnings" count beside a failing group's heading
+	 * (`groupCount()` in `ChecklistGroup.js`).
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param array $rows Rule_Result objects in the group.
+	 * @return void
+	 */
+	private static function render_group_count( array $rows ): void {
+		$failed   = 0;
+		$warnings = 0;
+
+		foreach ( $rows as $row ) {
+			if ( Status::FAIL === $row->get_status() ) {
+				++$failed;
+			} elseif ( Status::WARNING === $row->get_status() ) {
+				++$warnings;
+			}
+		}
+
+		if ( $failed > 0 ) {
+			$tone = Status::FAIL;
+			/* translators: %d: number of required checks failing in this group. */
+			$text = sprintf( _n( '%d failing', '%d failing', $failed, 'sapphireit-publish-guard' ), $failed );
+		} elseif ( $warnings > 0 ) {
+			$tone = Status::WARNING;
+			/* translators: %d: number of warnings in this group. */
+			$text = sprintf( _n( '%d warning', '%d warnings', $warnings, 'sapphireit-publish-guard' ), $warnings );
+		} else {
+			return;
+		}
+
+		echo '<span class="sit-wcpg-checklist__group-count sit-wcpg-checklist__group-count--' . esc_attr( $tone ) . '">' . esc_html( $text ) . '</span>';
+	}
+
+	/**
+	 * Render the passed rows, by group, in one closed `<details>`.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param array $grouped    Passed Rule_Result objects keyed by group.
+	 * @param bool  $has_issues Whether the failing view is shown above.
+	 * @return void
+	 */
+	private function render_passed( array $grouped, bool $has_issues ): void {
+		if ( array() === $grouped ) {
+			return;
+		}
+
+		$count = (int) array_sum( array_map( 'count', $grouped ) );
+
+		if ( $has_issues ) {
+			/* translators: %d: number of checks that passed, listed below the failing ones. */
+			$label = sprintf( _n( '%d more passed', '%d more passed', $count, 'sapphireit-publish-guard' ), $count );
+		} else {
+			/* translators: %d: number of checks that passed. */
+			$label = sprintf( _n( '%d passed', '%d passed', $count, 'sapphireit-publish-guard' ), $count );
+		}
+
+		echo '<details class="sit-wcpg-checklist__passed">';
+		echo '<summary class="sit-wcpg-checklist__disclosure sit-wcpg-checklist__disclosure--passed">';
+		self::render_chevron();
+		echo esc_html( $label ) . '</summary>';
+
+		foreach ( $this->order_groups( $grouped ) as $group => $rows ) {
+			$this->render_group( (string) $group, $rows );
+		}
+
+		echo '</details>';
+	}
+
+	/**
+	 * Render the rules that did not apply to this product, last, in one closed `<details>`.
 	 *
 	 * @since 1.0.0
+	 * @since 1.2.0 Collapsed, as in the React panel.
 	 *
 	 * @param array $rows Skipped Rule_Result objects.
 	 * @return void
@@ -366,13 +540,16 @@ final class Editor_Meta_Box {
 			return;
 		}
 
-		echo '<h4 class="sit-wcpg-checklist__group sit-wcpg-checklist__group--skipped">' . esc_html(
+		echo '<details class="sit-wcpg-checklist__skipped">';
+		echo '<summary class="sit-wcpg-checklist__disclosure sit-wcpg-checklist__disclosure--skipped">';
+		self::render_chevron();
+		echo esc_html(
 			sprintf(
 				/* translators: %d: number of checks that do not apply to this product. */
 				_n( 'Not applicable (%d)', 'Not applicable (%d)', count( $rows ), 'sapphireit-publish-guard' ),
 				count( $rows )
 			)
-		) . '</h4>';
+		) . '</summary>';
 
 		echo '<ul class="sit-wcpg-checklist__items sit-wcpg-checklist__items--skipped">';
 
@@ -381,26 +558,43 @@ final class Editor_Meta_Box {
 		}
 
 		echo '</ul>';
+		echo '</details>';
 	}
 
 	/**
-	 * Render one checklist row.
+	 * The disclosure chevron: one icon per state; the stylesheet shows the right one.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	private static function render_chevron(): void {
+		echo '<span class="sit-wcpg-checklist__chevron sit-wcpg-checklist__chevron--closed" aria-hidden="true">' . wp_kses( Icons::svg( 'chevron-right', 14 ), Icons::allowed_html() ) . '</span>';
+		echo '<span class="sit-wcpg-checklist__chevron sit-wcpg-checklist__chevron--open" aria-hidden="true">' . wp_kses( Icons::svg( 'chevron-down', 14 ), Icons::allowed_html() ) . '</span>';
+	}
+
+	/**
+	 * Render one checklist row: status dot, label and, when it did not pass, the message.
 	 *
 	 * The message is printed only when the row did not pass: a wall of green explanations
-	 * is noise, and the merchant is looking for what is missing.
+	 * is noise, and the merchant is looking for what is missing. The fix link needs
+	 * JavaScript to focus a field, so only the React panel shows it.
 	 *
 	 * @since 1.0.0
+	 * @since 1.2.0 The status dot is a kit icon.
 	 *
 	 * @param Rule_Result $row The row to render.
 	 * @return void
 	 */
 	private function render_item( Rule_Result $row ): void {
 		$status = $row->get_status();
-		$icon   = self::ICONS[ $status ] ?? self::ICONS[ Status::SKIPPED ];
+		$known  = isset( self::STATUS_ICONS[ $status ] ) ? $status : Status::SKIPPED;
 
 		echo '<li class="sit-wcpg-checklist__item sit-wcpg-checklist__item--' . esc_attr( $status ) . '">';
-		echo '<span class="sit-wcpg-checklist__icon" aria-hidden="true">' . esc_html( $icon ) . '</span>';
-		echo '<span class="screen-reader-text">' . esc_html( self::status_label( $status ) ) . '</span> ';
+		echo '<span class="sit-wcpg-checklist__icon sit-wcpg-checklist__icon--' . esc_attr( $known ) . '" aria-hidden="true">'
+			. wp_kses( Icons::svg( self::STATUS_ICONS[ $known ], 12 ), Icons::allowed_html() ) . '</span>';
+		echo '<span class="screen-reader-text">' . esc_html( self::status_label( $status ) ) . '</span>';
+		echo '<span class="sit-wcpg-checklist__content">';
 		echo '<span class="sit-wcpg-checklist__label">' . esc_html( $row->get_label() ) . '</span>';
 
 		$message = $row->get_message();
@@ -409,7 +603,31 @@ final class Editor_Meta_Box {
 			echo '<span class="sit-wcpg-checklist__message">' . esc_html( $message ) . '</span>';
 		}
 
+		echo '</span>';
 		echo '</li>';
+	}
+
+	/**
+	 * A failing group's rows with the required failures first, otherwise in their order.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param array $rows Rule_Result objects.
+	 * @return array
+	 */
+	private static function failures_first( array $rows ): array {
+		$failures = array();
+		$others   = array();
+
+		foreach ( $rows as $row ) {
+			if ( Status::FAIL === $row->get_status() ) {
+				$failures[] = $row;
+			} else {
+				$others[] = $row;
+			}
+		}
+
+		return array_merge( $failures, $others );
 	}
 
 	/**

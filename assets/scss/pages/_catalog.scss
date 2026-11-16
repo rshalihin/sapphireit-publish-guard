@@ -1,0 +1,169 @@
+/**
+ * The Live products screen (UI phase U08, decisions U7 and U14): the page bar with the
+ * products-list link, the reassurance and recheck banners, the table card with product
+ * cells and required pills, and the empty state.
+ *
+ * The table card scrolls sideways on its own below 782 px, so the page never does.
+ * Layout uses flex-wrap only (no container queries, no `:has()`).
+ */
+
+@use "../tokens" as *;
+
+.sit-wcpg-ui.sit-wcpg-catalog {
+	max-width: 1240px;
+	margin-top: token("space-6");
+}
+
+.sit-wcpg-ui {
+
+	// The recheck banner: message, then a bar with the same numbers.
+
+	.sit-wcpg-catalog__progress {
+		flex-wrap: wrap;
+		align-items: center;
+
+		.sit-wcpg-ui-banner__body {
+			flex: 1 1 420px;
+		}
+	}
+
+	.sit-wcpg-catalog__progress-bar {
+		flex: 0 1 220px;
+		background: token("surface");
+
+		.sit-wcpg-ui-bar__fill {
+			background: token("info-700");
+		}
+	}
+
+	// The table card.
+
+	.sit-wcpg-catalog__form {
+		margin: 0;
+	}
+
+	// `.tablenav` and `.tablenav-pages` are core's list-table classes.
+	/* stylelint-disable selector-class-pattern -- core list-table classes */
+	.sit-wcpg-catalog__table {
+		overflow-x: auto;
+
+		.tablenav {
+			height: auto;
+			margin: 0;
+			padding: token("space-3") token("space-4");
+		}
+
+		.tablenav.bottom {
+			border-top: 1px solid token("line");
+		}
+
+		.tablenav .tablenav-pages {
+			margin: 0;
+		}
+
+		table {
+			min-width: 760px;
+		}
+
+		tbody td {
+			padding-top: token("space-4");
+			padding-bottom: token("space-4");
+		}
+	}
+	/* stylelint-enable selector-class-pattern */
+
+	// The product cell: thumbnail or initials, name, SKU or type line.
+
+	.sit-wcpg-catalog__product {
+		display: flex;
+		gap: token("space-3");
+		align-items: center;
+	}
+
+	.sit-wcpg-catalog__thumb {
+		display: flex;
+		flex: 0 0 44px;
+		align-items: center;
+		justify-content: center;
+		width: 44px;
+		height: 44px;
+		overflow: hidden;
+		color: token("muted");
+		font-weight: 700;
+		background: token("ground");
+		border-radius: token("radius-control");
+	}
+
+	.sit-wcpg-catalog__thumb-image {
+		display: block;
+		width: 44px;
+		height: 44px;
+		object-fit: cover;
+	}
+
+	.sit-wcpg-catalog__product-text {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	.sit-wcpg-catalog__product-name {
+		font-weight: 600;
+
+		a {
+			color: token("ink");
+			text-decoration: none;
+		}
+
+		a:hover,
+		a:focus {
+			color: token("info-700");
+			text-decoration: underline;
+		}
+	}
+
+	.sit-wcpg-catalog__product-meta {
+		color: token("muted");
+		font-size: 13px;
+	}
+
+	// Failing checks: one required pill each.
+
+	.sit-wcpg-catalog__checks {
+		display: flex;
+		flex-wrap: wrap;
+		gap: token("space-1");
+		margin: 0;
+		padding: 0;
+		list-style: none;
+
+		.sit-wcpg-ui-pill {
+			margin: 0;
+		}
+	}
+
+	.sit-wcpg-catalog__stale {
+		color: token("muted");
+	}
+
+	.sit-wcpg-catalog__edit,
+	.sit-wcpg-catalog__empty-link {
+		font-weight: 600;
+	}
+
+	// Core's list-table classes (`column-{key}`), so they cannot follow the BEM pattern.
+	/* stylelint-disable selector-class-pattern -- core list-table classes */
+	.sit-wcpg-catalog__table .column-action {
+		text-align: end;
+	}
+
+	.sit-wcpg-catalog__table .column-checked {
+		width: 160px;
+		color: token("muted");
+	}
+	/* stylelint-enable selector-class-pattern */
+
+	.sit-wcpg-catalog__empty {
+		margin: 0;
+	}
+}

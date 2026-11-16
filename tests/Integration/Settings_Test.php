@@ -7,6 +7,7 @@
 
 namespace ProductPublishGuard\Tests\Integration;
 
+use ProductPublishGuard\Admin\Admin_Shell;
 use ProductPublishGuard\Admin\Editor_Meta_Box;
 use ProductPublishGuard\Admin\Screen;
 use ProductPublishGuard\Admin\Settings_Footer;
@@ -387,7 +388,7 @@ final class Settings_Test extends WP_UnitTestCase {
 
 		$field = Settings::OPTION_NAME . '[rules][child_products]';
 
-		$this->assertStringContainsString( '<strong>Variations and grouped products</strong>', $output );
+		$this->assertStringContainsString( '<h3 class="sit-wcpg-settings__title">Variations and grouped products</h3>', $output );
 		$this->assertStringContainsString( 'Checks that variable and grouped products have something to sell.', $output );
 		$this->assertMatchesRegularExpression(
 			'/name="' . preg_quote( $field . '[enabled]', '/' ) . '"[^>]*checked=/',
@@ -473,16 +474,15 @@ final class Settings_Test extends WP_UnitTestCase {
 	public function test_rules_render_under_group_headings_in_editor_order(): void {
 		$output = $this->render_screen( $this->built_in_registry() );
 
-		preg_match_all( '#<tr class="sit-wcpg-settings-rules__group"><th colspan="3" scope="colgroup">([^<]+)</th></tr>#', $output, $matches );
+		preg_match_all( '#<section class="sit-wcpg-ui-card sit-wcpg-settings__section sit-wcpg-settings__group"[^>]*>.*?<h2 id="[^"]+">([^<]+)</h2>#s', $output, $matches );
 
 		$this->assertSame( array_values( Editor_Meta_Box::group_labels() ), $matches[1] );
 
-		$price = strpos( $output, '<strong>Regular price</strong>' );
+		$price = strpos( $output, '>Regular price</h3>' );
 
-		$this->assertGreaterThan( strpos( $output, '>Pricing</th>' ), $price );
-		$this->assertLessThan( strpos( $output, '>Organization</th>' ), $price );
-		$this->assertSame( count( $matches[1] ), substr_count( $output, '<tr class="sit-wcpg-settings-rules__group">' ) );
-		$this->assertSame( count( $matches[1] ), substr_count( $output, '<tbody><tr class="sit-wcpg-settings-rules__group">' ), 'Each group is its own tbody.' );
+		$this->assertGreaterThan( strpos( $output, '>Pricing</h2>' ), $price );
+		$this->assertLessThan( strpos( $output, '>Organization</h2>' ), $price );
+		$this->assertSame( count( $matches[1] ), substr_count( $output, 'sit-wcpg-settings__group"' ), 'Each group is its own card.' );
 	}
 
 	/**
@@ -542,8 +542,9 @@ final class Settings_Test extends WP_UnitTestCase {
 
 		$output = $this->render_screen( $registry );
 
-		$this->assertGreaterThan( strpos( $output, '>Inventory</th>' ), strpos( $output, '>Other</th>' ) );
-		$this->assertGreaterThan( strpos( $output, '>Other</th>' ), strpos( $output, '<strong>Acme check</strong>' ) );
+		$this->assertGreaterThan( strpos( $output, '>Inventory</h2>' ), strpos( $output, '>Other</h2>' ) );
+		$this->assertGreaterThan( strpos( $output, '>Other</h2>' ), strpos( $output, '>Acme check</h3>' ) );
+		$this->assertStringContainsString( 'Checks added by other plugins.', $output );
 	}
 
 	/**
@@ -554,7 +555,7 @@ final class Settings_Test extends WP_UnitTestCase {
 	 * @return void
 	 */
 	public function test_no_other_heading_without_unknown_groups(): void {
-		$this->assertStringNotContainsString( '>Other</th>', $this->render_screen( $this->built_in_registry() ) );
+		$this->assertStringNotContainsString( '>Other</h2>', $this->render_screen( $this->built_in_registry() ) );
 	}
 
 	/**
@@ -571,7 +572,7 @@ final class Settings_Test extends WP_UnitTestCase {
 
 		$output = $this->render_screen( $registry );
 
-		$this->assertStringContainsString( '<h2>Readiness filter</h2>', $output );
+		$this->assertMatchesRegularExpression( '#<h2 class="sit-wcpg-ui-banner__title" id="[^"]+">Readiness filter</h2>#', $output );
 		$this->assertStringContainsString( 'All 7 products have been checked against these settings.', $output );
 	}
 
@@ -667,36 +668,90 @@ final class Settings_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Free never links out from this screen.
+	 * The links on this screen that leave the admin, other than WordPress.org's.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param string $html Rendered screen.
+	 * @return string[]
+	 */
+	private function outbound_links( string $html ): array {
+		preg_match_all( '/\bhref="([^"]*)"/', $html, $matches );
+
+		return array_values(
+			array_filter(
+				$matches[1],
+				static function ( string $href ): bool {
+					return 0 !== strpos( $href, '#' )
+						&& ! in_array( $href, array( Settings_Footer::REVIEW_URL, Admin_Shell::DOCS_URL ), true )
+						&& 1 !== preg_match( '#(^|/)(admin|options|edit)\.php(\?|$)#', $href );
+				}
+			)
+		);
+	}
+
+	/**
+	 * The page content without the Checklist nav's "Need channel rules?" box (UI decision U13).
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param string $html Rendered page content.
+	 * @return string
+	 */
+	private static function without_pro_box( string $html ): string {
+		return (string) preg_replace( '#<div class="sit-wcpg-settings__pro">.*?</a></div>#s', '', $html );
+	}
+
+	/**
+	 * Free links out only to WordPress.org and, from the shell's upgrade prompts (UI decision
+	 * U13), to the Pro sales page; with the prompts off, only to WordPress.org.
 	 *
 	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
 	public function test_settings_page_has_no_outbound_links(): void {
-		preg_match_all( '/\bhref="([^"]*)"/', $this->render_screen( $this->built_in_registry() ), $matches );
+		$html  = $this->render_screen( $this->built_in_registry() );
+		$parts = explode( '<hr class="wp-header-end" />', $html, 2 );
 
-		$outbound = array_filter(
-			$matches[1],
-			static function ( string $href ): bool {
-				return Settings_Footer::REVIEW_URL !== $href && 1 !== preg_match( '#(^|/)(admin|options)\.php(\?|$)#', $href );
-			}
-		);
+		$this->assertCount( 2, $parts );
+		$this->assertSame( array( Admin_Shell::PRO_URL ), $this->outbound_links( $parts[1] ), 'The page content links out only from the "Need channel rules?" box.' );
+		$this->assertSame( array(), $this->outbound_links( self::without_pro_box( $parts[1] ) ), 'The page content links out.' );
+		$this->assertSame( array( Admin_Shell::PRO_URL, Admin_Shell::PRO_PRICING_URL ), $this->outbound_links( $parts[0] ) );
 
-		$this->assertSame( array(), array_values( $outbound ) );
+		add_filter( Admin_Shell::PROMPTS_FILTER, '__return_false' );
+
+		$html = $this->render_screen( $this->built_in_registry() );
+
+		remove_filter( Admin_Shell::PROMPTS_FILTER, '__return_false' );
+
+		$this->assertSame( array(), $this->outbound_links( $html ) );
 	}
 
 	/**
-	 * The screen primes nothing by selling it.
+	 * The page content primes nothing by selling it; only the shell's upgrade prompts
+	 * (UI decision U13) mention Pro, and not when they are turned off.
 	 *
 	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
 	public function test_settings_page_mentions_no_pro(): void {
+		$parts = explode( '<hr class="wp-header-end" />', $this->render_screen( $this->built_in_registry() ), 2 );
+
+		$this->assertCount( 2, $parts );
+		$this->assertStringContainsString( 'sit-wcpg-settings__pro', $parts[1], 'The nav box is one of the U13 prompts.' );
+		$this->assertDoesNotMatchRegularExpression( '/\b(pro|upgrade|premium)\b/i', self::without_pro_box( $parts[1] ) );
+
+		add_filter( Admin_Shell::PROMPTS_FILTER, '__return_false' );
+
+		$html = $this->render_screen( $this->built_in_registry() );
+
+		remove_filter( Admin_Shell::PROMPTS_FILTER, '__return_false' );
+
 		$this->assertDoesNotMatchRegularExpression(
 			'/\b(pro|upgrade|premium)\b/i',
-			$this->render_screen( $this->built_in_registry() )
+			$html
 		);
 	}
 

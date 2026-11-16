@@ -2,14 +2,16 @@
  * Captures the WordPress.org screenshots that show the plugin's own screens:
  *
  * 1. the checklist panel in the product editor;
+ * 2. the products list with its Readiness column;
  * 3. the settings screen;
  * 4. the notice after a Bulk Edit refused a product;
  * 5. publishing refused, with the reason and where to fix it;
  * 6. the live products that would fail the current rules;
- * 7. the pre-flight statement on a product that can't be published yet.
+ * 7. the pre-flight statement on a product that can't be published yet;
+ * 8. the Dashboard (UI phase U10).
  *
- * Screenshot 2, the products list with its readiness column, needs a catalog
- * that looks like a real store, so it is still taken by hand.
+ * Screenshot 2 lists only the screenshot fixtures (their SKUs share `shot`), so
+ * the list looks like a small store rather than the whole E2E catalog.
  *
  * Skipped unless SIT_WCPG_CAPTURE=1, so the suite never runs it: it is a
  * generator, not a test, and asserts only enough to be sure it photographs the
@@ -31,8 +33,10 @@ import { expect, test } from '@wordpress/e2e-test-utils-playwright';
  */
 import {
 	BASELINE,
+	SCREENS,
 	checklist,
 	fixtures,
+	flushReadinessStats,
 	guardNotice,
 	openProduct,
 	preflight,
@@ -119,13 +123,49 @@ test.describe( 'WordPress.org screenshots', () => {
 		} );
 	} );
 
+	test( 'screenshot-2: the Readiness column in the products list', async ( {
+		page,
+	} ) => {
+		runRebuildQueue();
+
+		await page.goto( '/wp-admin/edit.php?post_type=product&s=shot' );
+		await expect(
+			page.locator( '#the-list .sit-wcpg-readiness--fail' ).first()
+		).toBeVisible();
+
+		/*
+		 * The fixture SKUs carry a run token, and the search line names the
+		 * fixtures' shared word. Hide both and empty the search box, as a store would show it.
+		 */
+		await page.addStyleTag( {
+			content: '.column-sku, .wrap .subtitle { display: none; }',
+		} );
+		await page.locator( '#post-search-input' ).fill( '' );
+
+		await page.evaluate( () => window.scrollTo( 0, 0 ) );
+		await page.screenshot( { path: out( 2 ) } );
+	} );
+
 	test( 'screenshot-3: the settings screen', async ( { page } ) => {
 		await page.goto( '/wp-admin/admin.php?page=sit-wcpg-settings' );
 		await expect(
-			page.getByRole( 'heading', { name: 'Product Checklist' } )
+			page.getByRole( 'heading', { level: 1, name: 'Product checklist' } )
 		).toBeVisible();
 
 		await page.screenshot( { path: out( 3 ) } );
+	} );
+
+	test( 'screenshot-8: the Dashboard', async ( { page } ) => {
+		// Current flags and fresh numbers, not the 15-minute cache.
+		runRebuildQueue();
+		flushReadinessStats();
+
+		await page.goto( SCREENS.dashboard );
+		await expect(
+			page.locator( '.sit-wcpg-dashboard__headline' )
+		).toBeVisible();
+
+		await page.screenshot( { path: out( 8 ) } );
 	} );
 
 	test( 'screenshot-4: the notice after a Bulk Edit refused a product', async ( {

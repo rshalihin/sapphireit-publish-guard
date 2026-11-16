@@ -50,6 +50,8 @@ Each check can be turned off, or set to **required** (it must pass before the pr
 
 **Live products that would fail your rules.** A screen under Products, then Publish Guard, lists every published product that would be refused if it were published today, and the required checks it fails. They stay live: Publish Guard never takes a product offline.
 
+**A dashboard for the whole catalog.** WooCommerce, then Publish Guard, shows how many products pass every required check, how many are not ready, have warnings or are live and would fail today, and which required checks fail most often. Every number links to the products behind it.
+
 **A pre-flight statement in the editor.** One sentence tells you whether this product can be published right now, how many required checks stand in the way, and what will happen when you press Publish.
 
 **WP-CLI.** `wp sit-wcpg check` runs the checklist across the catalog from the command line, and `--strict` exits with an error when a product fails a required check. `wp sit-wcpg reindex` rechecks every product straight away.
@@ -60,10 +62,14 @@ Each check can be turned off, or set to **required** (it must pass before the pr
 
 * Five options (the settings, a temporary flag removed once the welcome notice has been shown, the capped override record, the progress of the background recheck and the state of the review request) and three hidden post meta keys on each product holding its stored readiness. No custom tables, roles or capabilities. All of it is removed when you delete the plugin.
 * Background rechecks run through WooCommerce's own Action Scheduler, only after something has changed, such as your settings or the plugin version. Nothing runs on a recurring schedule.
-* Assets load only on the product editor, the products list, the catalog screen and the settings screen, once on the Plugins screen for the welcome notice, and, when the review request is due, a small script for it on those list, catalog and settings screens.
+* Assets load only on the product editor, the products list, the Dashboard, the catalog screen and the settings screen, once on the Plugins screen for the welcome notice, and, when the review request is due, a small script for it on those list, catalog and settings screens. The style of Publish Guard's screens is registered on every admin screen, so an add-on can use it, but it is loaded only on Publish Guard's own screens.
 * No outbound network requests or tracking. Publish Guard's own screens mention the Pro add-on; nothing else in your admin does. After 30 days, and only once the checklist has stopped an incomplete product, it asks once for a review; you can dismiss it for good.
 
 SapphireIT Publish Guard for WooCommerce is an independent plugin. It is not affiliated with or endorsed by WooCommerce or Automattic.
+
+= Credits =
+
+The admin screens use the Inter typeface, Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter), licensed under the SIL Open Font License, Version 1.1. The font ships inside the plugin with its licence (`assets/fonts/OFL.txt`) and is never loaded from a font service.
 
 == Installation ==
 
@@ -138,13 +144,14 @@ The readiness column adds three database queries for a page of simple products, 
 
 == Screenshots ==
 
-1. The checklist panel in the product editor.
+1. The readiness panel in the product editor: failing checks first, the passed ones folded away, each failure linked to its fix.
 2. The readiness column in the products list.
-3. The settings screen under WooCommerce, then Product Checklist.
+3. The Checklist settings under WooCommerce, then Product Checklist: one section at a time, with Save and Discard at the top and the bottom.
 4. The notice shown when a product could not be published.
 5. Publishing refused, with the reason and where to fix it.
-6. Live products that would fail your rules.
+6. Live products that would fail today, with the required checks each one fails.
 7. The pre-flight statement on a product that can't be published yet.
+8. The Dashboard: catalog health, products by readiness, the most common issues and the active checks.
 
 == Source Code ==
 
@@ -162,11 +169,16 @@ The build uses `@wordpress/scripts` and writes the compiled files to `build/`.
 == Changelog ==
 
 = 1.2.0 =
+* New: a refreshed design for every Publish Guard screen, with one header and tabs for the Dashboard, the Checklist settings and Live products. The settings screen shows one section at a time, with Save and Discard at the top and the bottom, and asks before you leave with unsaved changes. Works without JavaScript, too.
+* New: a Dashboard under WooCommerce, then Publish Guard: catalog health, the number of products that are ready, not ready, have warnings or are live and would fail today, the required checks that fail most often, and which checks are on. Every number links to the products behind it.
 * New: a readiness filter on the products list finds products that are ready, have warnings, are not ready or have not been checked yet, across the whole catalog. Readiness is stored when a product is saved and rechecked in the background when the settings change.
+* New: the products list can be filtered by one failing required check, from the Dashboard's most common issues.
 * New: overrides are recorded: who published past which required checks, and when. At most 200 entries, each kept for up to 90 days. Nothing is shown or sent anywhere.
 * New: a pre-flight statement in the product editor says in one sentence whether the product can be published right now.
+* Improved: the readiness panel in the product editor lists failing checks first and folds the passed ones away.
 * Improved: the settings screen explains what each check protects against, and groups the checks.
 * Changed: Requires PHP 8.1.
+* New for developers: add-on screens can join the Publish Guard header: `sit_wcpg_admin_tabs`, `sit_wcpg_admin_header_items`, `Admin_Shell::render()` and the `--sit-wcpg-*` CSS custom properties. `sit_wcpg_show_upgrade_prompts` hides the Pro prompts.
 * New for developers: rules can read how a product is being saved through `Product_Context::get_save_path()`.
 * New for developers: the rule API is versioned and documented. `sit_wcpg_register_rules` now passes the API version, and `sit_wcpg_publish_blocked` and `sit_wcpg_publish_overridden` report each outcome.
 * New for developers: extension points for add-ons (rule API 2.1). An add-on can register rules it switches on and off itself, product by product, give them data of its own on every save path and in the live checklist, add a checklist group, and ask for stored readiness to be rebuilt.

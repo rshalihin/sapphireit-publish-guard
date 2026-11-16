@@ -11,8 +11,8 @@ use ProductPublishGuard\Admin\Plugin_Action_Links;
 use WP_UnitTestCase;
 
 /**
- * The plugin's row on the Plugins screen leads with a Settings link, for users who can
- * open the settings page.
+ * The plugin's row on the Plugins screen leads with Dashboard and Settings links, each for
+ * users who can open that page.
  *
  * @since 1.1.0
  */
@@ -68,11 +68,32 @@ final class Plugin_Action_Links_Test extends WP_UnitTestCase {
 
 		$links = $this->links->filter_action_links( array( 'deactivate' => '<a href="#">Deactivate</a>' ) );
 
-		$this->assertSame( array( 'settings', 'deactivate' ), array_keys( $links ) );
+		$this->assertSame( array( 'dashboard', 'settings', 'deactivate' ), array_keys( $links ) );
+		$this->assertSame(
+			'<a href="' . esc_url( admin_url( 'admin.php?page=sit-wcpg-dashboard' ) ) . '">Dashboard</a>',
+			$links['dashboard']
+		);
 		$this->assertSame(
 			'<a href="' . esc_url( admin_url( 'admin.php?page=sit-wcpg-settings' ) ) . '">Settings</a>',
 			$links['settings']
 		);
+	}
+
+	/**
+	 * A user who can edit products but not manage WooCommerce gets the Dashboard link only.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_dashboard_link_without_manage_woocommerce() {
+		$user = self::factory()->user->create_and_get( array( 'role' => 'subscriber' ) );
+		$user->add_cap( 'edit_products' );
+		wp_set_current_user( $user->ID );
+
+		$links = $this->links->filter_action_links( array( 'deactivate' => '<a href="#">Deactivate</a>' ) );
+
+		$this->assertSame( array( 'dashboard', 'deactivate' ), array_keys( $links ) );
 	}
 
 	/**

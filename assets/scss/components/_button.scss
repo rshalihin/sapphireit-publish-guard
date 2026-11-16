@@ -1,0 +1,96 @@
+/**
+ * Button (U5): `--primary`, `--secondary`, `--gold`, `--icon`. Real `<button>` or `<a>`.
+ */
+
+@use "../tokens" as *;
+
+.sit-wcpg-ui {
+
+	.sit-wcpg-ui-button {
+		display: inline-flex;
+		gap: token("space-2");
+		align-items: center;
+		justify-content: center;
+		min-height: 40px;
+		margin: 0;
+		padding: 0 token("space-4");
+		color: token("ink");
+		font-family: inherit;
+		font-size: 14px;
+		font-weight: 600;
+		line-height: 1.2;
+		text-decoration: none;
+		white-space: nowrap;
+		background: token("surface");
+		border: 1px solid token("line-strong");
+		border-radius: token("radius-control");
+		box-shadow: none;
+		cursor: pointer;
+		transition: background-color 0.1s ease-in-out, border-color 0.1s ease-in-out;
+
+		&:hover {
+			color: token("ink");
+			background: token("ground");
+		}
+
+		&:focus-visible {
+
+			@include focus-ring;
+		}
+
+		&:disabled,
+		&[aria-disabled="true"] {
+			opacity: 0.55;
+			cursor: not-allowed;
+		}
+	}
+
+	.sit-wcpg-ui-button--primary {
+		padding: 0 18px;
+		color: #fff;
+		background: token("navy-700");
+		border-color: token("navy-700");
+
+		&:hover {
+			color: #fff;
+			background: token("navy-900");
+			border-color: token("navy-900");
+		}
+	}
+
+	.sit-wcpg-ui-button--secondary {
+		color: token("ink");
+		background: token("surface");
+		border-color: token("line-strong");
+
+		&:hover {
+			color: token("ink");
+		}
+	}
+
+	.sit-wcpg-ui-button--gold {
+		padding: 0 18px;
+		color: token("navy-900");
+		font-weight: 700;
+		background: token("gold-300");
+		border-color: token("gold-300");
+
+		&:hover {
+			color: token("navy-900");
+			background: #ffc552;
+			border-color: #ffc552;
+		}
+	}
+
+	.sit-wcpg-ui-button--icon {
+		width: 40px;
+		padding: 0;
+	}
+}
+
+@media (forced-colors: active) {
+
+	.sit-wcpg-ui .sit-wcpg-ui-button {
+		border-color: ButtonText;
+	}
+}

@@ -1,8 +1,9 @@
 import { createElement } from '@wordpress/element';
-import { Button, Notice } from '@wordpress/components';
+import { Notice } from '@wordpress/components';
 import { dateI18n, getSettings } from '@wordpress/date';
 import { __, sprintf } from '@wordpress/i18n';
 
+import { Icon } from '../../shared/icons';
 import { ERROR_SESSION } from '../api';
 
 /**
@@ -52,7 +53,7 @@ function ErrorNotice( { error, onRetry } ) {
 }
 
 /**
- * Last-checked time, the manual Re-check fallback and the error notice.
+ * The error notice, a full-width manual Re-check, and when the panel last checked.
  *
  * @param {Object}      props           Props.
  * @param {number|null} props.checkedAt Time of the last good result, in milliseconds.
@@ -64,31 +65,26 @@ export function ChecklistFooter( { checkedAt, error, onRecheck } ) {
 	return (
 		<div className="sit-wcpg-checklist__footer">
 			{ error && <ErrorNotice error={ error } onRetry={ onRecheck } /> }
-			<div className="sit-wcpg-checklist__footer-row">
-				<span className="sit-wcpg-checklist__time">
-					{ checkedAt
-						? sprintf(
-								/* translators: %s: time of day the checklist was last checked. */
-								__(
-									'Checked at %s',
-									'sapphireit-publish-guard'
-								),
-								dateI18n(
-									getSettings().formats.time,
-									checkedAt
-								)
-							)
-						: '' }
-				</span>
-				<Button
-					variant="secondary"
-					size="small"
-					className="sit-wcpg-checklist__recheck"
-					onClick={ onRecheck }
-				>
-					{ __( 'Re-check', 'sapphireit-publish-guard' ) }
-				</Button>
-			</div>
+			<button
+				type="button"
+				className="sit-wcpg-ui-button sit-wcpg-ui-button--secondary sit-wcpg-checklist__recheck"
+				onClick={ onRecheck }
+			>
+				<Icon name="refresh" size={ 16 } />
+				{ __( 'Re-check', 'sapphireit-publish-guard' ) }
+			</button>
+			<p className="sit-wcpg-checklist__time">
+				{ checkedAt
+					? sprintf(
+							/* translators: %s: time of day the checklist was last checked. */
+							__(
+								'Checked at %s · updates as you type',
+								'sapphireit-publish-guard'
+							),
+							dateI18n( getSettings().formats.time, checkedAt )
+						)
+					: __( 'Updates as you type', 'sapphireit-publish-guard' ) }
+			</p>
 		</div>
 	);
 }

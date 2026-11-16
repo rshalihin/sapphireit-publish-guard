@@ -1,0 +1,366 @@
+/**
+ * The Product Checklist page (UI phase U06, decisions U8 and U15): the section nav, the
+ * page bar with the master switch, one card per rule group with icon rows, inline
+ * threshold fields, the Publishing card, the readiness banner and the bottom save bar.
+ *
+ * U07 adds the section behaviour (one section at a time, `hidden`) and the sticky bottom
+ * save bar; the script lives in assets/js/settings/. Layout uses
+ * flex-wrap only (no container queries, no `:has()`), so it reflows from 1440 px down to
+ * 375 px on every browser WordPress 6.5 supports: below 782 px the nav stacks above the
+ * content, rows wrap and each segmented control keeps its segments side by side.
+ */
+
+@use "../tokens" as *;
+
+.sit-wcpg-ui.sit-wcpg-settings {
+	max-width: 1600px;
+	margin-top: token("space-6");
+}
+
+.sit-wcpg-ui {
+
+	.sit-wcpg-settings__form {
+		margin: 0;
+	}
+
+	.sit-wcpg-settings__layout {
+		display: flex;
+		flex-wrap: wrap;
+		gap: token("space-6");
+		align-items: flex-start;
+	}
+
+	.sit-wcpg-settings__main {
+		flex: 999 1 560px;
+		min-width: 0;
+	}
+
+	.sit-wcpg-settings__sections {
+		display: flex;
+		flex-direction: column;
+		gap: token("space-5");
+
+		> .sit-wcpg-ui-card,
+		> .sit-wcpg-ui-banner {
+			margin: 0;
+		}
+	}
+
+	// U07: the script shows one section at a time; the card's `display: flex` must not
+	// override `hidden`. A focused heading clears the admin bar.
+	.sit-wcpg-settings__section {
+		scroll-margin-top: 48px;
+	}
+
+	.sit-wcpg-settings__section[hidden] {
+		display: none;
+	}
+
+	// U07: the bottom save bar stays in view while the section scrolls.
+	.sit-wcpg-settings__main > .sit-wcpg-ui-savebar--bottom {
+		position: sticky;
+		bottom: 0;
+		z-index: 2;
+		box-shadow: 0 -4px 12px rgba(15, 24, 52, 0.06);
+	}
+
+	// Page bar: what Required and Warning mean, the master switch and Save.
+
+	.sit-wcpg-settings__term--required {
+		color: token("required-700");
+	}
+
+	.sit-wcpg-settings__term--warning {
+		color: token("warning-700");
+	}
+
+	.sit-wcpg-settings__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: token("space-3");
+		align-items: center;
+	}
+
+	.sit-wcpg-settings__master {
+		display: flex;
+		gap: 14px;
+		align-items: center;
+		padding: token("space-3") token("space-4");
+		background: token("surface");
+		border: 1px solid token("line");
+		border-radius: 12px;
+	}
+
+	.sit-wcpg-settings__master-text {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.sit-wcpg-settings__master-label {
+		color: token("ink");
+		font-size: 14px;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.sit-wcpg-settings__master-hint {
+		max-width: 28ch;
+		color: token("muted");
+		font-size: 12px;
+		line-height: 1.4;
+	}
+
+	// Section nav.
+
+	.sit-wcpg-settings__nav {
+		flex: 1 1 220px;
+		min-width: 0;
+		max-width: 260px;
+	}
+
+	.sit-wcpg-settings__nav-card {
+		margin: 0;
+		padding: token("space-3");
+	}
+
+	.sit-wcpg-settings__nav-heading {
+		margin: 0;
+		padding: token("space-2") token("space-3") 6px;
+		color: token("muted");
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+	}
+
+	.sit-wcpg-ui-nav + .sit-wcpg-settings__nav-heading {
+		margin-top: token("space-2");
+		border-top: 1px solid token("line");
+	}
+
+	.sit-wcpg-settings__pro {
+		margin: token("space-3") token("space-1") token("space-1");
+		padding: 14px;
+		background: token("ground");
+		border: 1px dashed token("line-strong");
+		border-radius: 10px;
+	}
+
+	.sit-wcpg-settings__pro-title {
+		margin: 0;
+		color: token("ink");
+		font-size: 13px;
+		font-weight: 600;
+	}
+
+	.sit-wcpg-settings__pro-text {
+		margin: token("space-1") 0 token("space-2");
+		color: token("muted");
+		font-size: 12px;
+		line-height: 1.5;
+	}
+
+	.sit-wcpg-settings__pro-link {
+		display: inline-flex;
+		gap: token("space-1");
+		align-items: center;
+		font-size: 13px;
+		font-weight: 600;
+	}
+
+	// Cards and rows.
+
+	.sit-wcpg-settings__heading {
+		min-width: 0;
+	}
+
+	.sit-wcpg-settings__summary {
+		margin: 3px 0 0;
+		color: token("muted");
+		font-size: 13px;
+	}
+
+	.sit-wcpg-settings__counts {
+		display: flex;
+		flex-wrap: wrap;
+		gap: token("space-2");
+		margin: 0;
+	}
+
+	.sit-wcpg-settings__row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: token("space-4") token("space-6");
+		align-items: center;
+		padding: token("space-5") token("space-6");
+	}
+
+	.sit-wcpg-settings__row + .sit-wcpg-settings__row {
+		border-top: 1px solid token("line");
+	}
+
+	.sit-wcpg-settings__icon {
+		display: flex;
+		flex: 0 0 40px;
+		align-items: center;
+		justify-content: center;
+		width: 40px;
+		height: 40px;
+		color: token("navy-700");
+		background: token("ground");
+		border-radius: 10px;
+	}
+
+	.sit-wcpg-settings__text {
+		flex: 1 1 300px;
+		min-width: 0;
+	}
+
+	.sit-wcpg-settings__title {
+		display: block;
+		margin: 0;
+		padding: 0;
+		color: token("ink");
+		font-size: 15px;
+		font-weight: 600;
+		line-height: 1.4;
+	}
+
+	label.sit-wcpg-settings__title {
+		cursor: pointer;
+	}
+
+	.sit-wcpg-settings__description {
+		margin: 3px 0 0;
+		color: token("muted");
+		font-size: 13px;
+		line-height: 1.5;
+	}
+
+	.sit-wcpg-settings__controls {
+		display: flex;
+		flex: none;
+		flex-wrap: wrap;
+		gap: token("space-4");
+		align-items: center;
+		max-width: 100%;
+	}
+
+	// A threshold inside its rule's row, indented under the text.
+
+	.sit-wcpg-settings__threshold {
+		display: flex;
+		flex: 1 1 100%;
+		flex-wrap: wrap;
+		gap: token("space-3");
+		align-items: center;
+		margin-inline-start: 64px;
+		padding: 14px token("space-4");
+		border: 1px solid token("line");
+		border-radius: 10px;
+	}
+
+	.sit-wcpg-settings__row--field .sit-wcpg-settings__threshold {
+		margin-inline-start: 0;
+	}
+
+	.sit-wcpg-settings__threshold-label {
+		color: token("ink");
+		font-size: 13px;
+		font-weight: 600;
+	}
+
+	.sit-wcpg-settings__number {
+		display: inline-flex;
+		align-items: stretch;
+		overflow: hidden;
+		background: token("surface");
+		border: 1px solid token("line-strong");
+		border-radius: 8px;
+
+		&:focus-within {
+
+			@include focus-ring;
+		}
+
+		// Core's text-input skin (border, radius, shadow, min-height) is drawn by the
+		// wrapper instead, so the unit sits inside the same box.
+		input[type="number"] {
+			width: 72px;
+			min-height: 36px;
+			height: 36px;
+			margin: 0;
+			padding: 0 10px;
+			color: token("ink");
+			font-size: 14px;
+			font-weight: 500;
+			background: transparent;
+			border: 0;
+			border-radius: 0;
+			box-shadow: none;
+
+			&:focus {
+				outline: 0;
+				box-shadow: none;
+			}
+		}
+	}
+
+	.sit-wcpg-settings__unit {
+		display: flex;
+		align-items: center;
+		padding: 0 10px;
+		color: token("muted");
+		font-size: 13px;
+		background: token("ground");
+	}
+
+	.sit-wcpg-settings__hint {
+		flex: 1 1 200px;
+		color: token("muted");
+		font-size: 13px;
+	}
+}
+
+// The chevron after "Learn about Pro" points the way the text reads.
+/* stylelint-disable-next-line selector-class-pattern -- core's body class */
+.rtl .sit-wcpg-ui .sit-wcpg-settings__pro-link .sit-wcpg-ui-icon {
+	transform: scaleX(-1);
+}
+
+// WordPress's mobile breakpoint: the nav stacks above the content at full width, rows
+// tighten, thresholds lose their indent, and segment labels may wrap inside their segment
+// so a segmented control never widens the page.
+@media screen and (max-width: 782px) {
+
+	.sit-wcpg-ui .sit-wcpg-settings__nav {
+		flex-basis: 100%;
+		max-width: none;
+	}
+
+	.sit-wcpg-ui .sit-wcpg-settings__row {
+		padding: token("space-4");
+	}
+
+	.sit-wcpg-ui .sit-wcpg-settings__threshold {
+		margin-inline-start: 0;
+	}
+
+	.sit-wcpg-ui .sit-wcpg-settings__controls .sit-wcpg-ui-segmented {
+		max-width: 100%;
+	}
+
+	.sit-wcpg-ui .sit-wcpg-settings__controls .sit-wcpg-ui-segmented__option {
+		white-space: normal;
+	}
+}
+
+@media (forced-colors: active) {
+
+	.sit-wcpg-ui .sit-wcpg-settings__master,
+	.sit-wcpg-ui .sit-wcpg-settings__threshold,
+	.sit-wcpg-ui .sit-wcpg-settings__number,
+	.sit-wcpg-ui .sit-wcpg-settings__pro {
+		border-color: CanvasText;
+	}
+}

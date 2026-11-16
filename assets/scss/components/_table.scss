@@ -1,0 +1,68 @@
+/**
+ * List table skin (U5). Wrap a core `.wp-list-table` (or any table) in
+ * `.sit-wcpg-ui-table`; core's markup, sorting and row actions keep working.
+ */
+
+@use "../tokens" as *;
+
+.sit-wcpg-ui {
+
+	.sit-wcpg-ui-table {
+		// Positioned, so core's absolutely placed `.screen-reader-text` inside a cell stays
+		// inside the clip/scroll box instead of widening the page (V-U15, 782 px).
+		position: relative;
+		overflow: hidden;
+		background: token("surface");
+		border: 1px solid token("line");
+		border-radius: token("radius-card");
+
+		table {
+			width: 100%;
+			border: 0;
+			border-collapse: collapse;
+			box-shadow: none;
+		}
+
+		thead th,
+		thead td,
+		tfoot th,
+		tfoot td {
+			padding: token("space-3") token("space-4");
+			color: token("muted");
+			font-size: 12px;
+			font-weight: 600;
+			letter-spacing: 0.06em;
+			text-transform: uppercase;
+			background: token("ground");
+			border-bottom: 1px solid token("line");
+		}
+
+		tbody th,
+		tbody td {
+			padding: token("space-3") token("space-4");
+			color: token("ink");
+			vertical-align: middle;
+			border-bottom: 1px solid token("line");
+		}
+
+		tbody tr {
+			background: token("surface");
+		}
+
+		tbody tr:hover {
+			background: token("ground");
+		}
+
+		tbody tr:last-child th,
+		tbody tr:last-child td {
+			border-bottom: 0;
+		}
+	}
+}
+
+@media (forced-colors: active) {
+
+	.sit-wcpg-ui .sit-wcpg-ui-table {
+		border-color: CanvasText;
+	}
+}

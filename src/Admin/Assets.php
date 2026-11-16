@@ -24,13 +24,20 @@ defined( 'ABSPATH' ) || exit;
  * | Screen                              | JS           | CSS         | Inline payload  |
  * | product editor (`post.php`/`post-new.php`) | `sit-wcpg-editor` | editor.css | `sitWcpgEditorData` |
  * | products list (`edit.php`)          | review*      | admin.css   | review*         |
- * | plugin settings page                | review*      | admin.css   | review*         |
+ * | plugin settings page                | settings, review* | admin.css | review*       |
  * | catalog screen                      | review*      | admin.css   | review*         |
  * | Plugins screen, welcome notice pending | none      | admin.css   | none            |
  * | everything else                     | none         | none        | none            |
  *
  * `review*`: `sit-wcpg-review-notice` and `sitWcpgReviewNotice`, only while the review
  * request is due and only for a user who can answer it.
+ *
+ * Since 1.2.0 the admin shell stylesheet (`Admin_Shell::STYLE_HANDLE`) is registered on
+ * every admin request and enqueued on the Dashboard, the settings page and the catalog
+ * screen, the screens that render the shell, and on the products list, whose Readiness
+ * pills use the same kit (UI phase U08). On the product editor it loads as a dependency of
+ * editor.css, whose readiness panel is built on the kit (UI phase U09). Each stylesheet
+ * carries `rtl` => `replace`, so RTL sites load the built `-rtl.css` file.
  *
  * The screen is decided before the settings are read, because reading a setting builds
  * the rule registry and the overwhelming majority of admin requests are none of these
@@ -85,6 +92,14 @@ final class Assets {
 	public const REVIEW_PAYLOAD_GLOBAL = 'sitWcpgReviewNotice';
 
 	/**
+	 * Handle of the settings screen's script (section nav, save state; UI decision U8).
+	 *
+	 * @since 1.2.0
+	 * @var string
+	 */
+	public const SETTINGS_HANDLE = 'sit-wcpg-settings';
+
+	/**
 	 * The merchant's configuration.
 	 *
 	 * @since 1.0.0
@@ -135,6 +150,8 @@ final class Assets {
 	public function enqueue( $hook_suffix ): void {
 		$hook_suffix = is_string( $hook_suffix ) ? $hook_suffix : '';
 
+		$this->register_shell_style();
+
 		if ( Screen::is_product_edit_screen( $hook_suffix ) ) {
 			if ( ! $this->settings->is_enabled() ) {
 				return;
@@ -143,6 +160,22 @@ final class Assets {
 			$this->enqueue_editor();
 
 			return;
+		}
+
+		// Free's screens inside the admin shell (UI decision U6), and the products list, whose
+		// Readiness pills and rule chip come from the same kit (UI phase U08). Every rule is
+		// scoped under `.sit-wcpg-ui`, so nothing else on the products list changes.
+		$uses_kit = Screen::is_dashboard_screen( $hook_suffix )
+			|| Screen::is_settings_screen( $hook_suffix )
+			|| Screen::is_catalog_screen( $hook_suffix )
+			|| Screen::is_product_list_screen( $hook_suffix );
+
+		if ( $uses_kit && wp_style_is( Admin_Shell::STYLE_HANDLE, 'registered' ) ) {
+			wp_enqueue_style( Admin_Shell::STYLE_HANDLE );
+		}
+
+		if ( Screen::is_settings_screen( $hook_suffix ) ) {
+			$this->enqueue_settings();
 		}
 
 		$is_review_screen = Review_Notice::is_listed_screen( $hook_suffix );
@@ -154,6 +187,35 @@ final class Assets {
 		if ( $is_review_screen && current_user_can( Settings_Page::CAPABILITY ) && Review_Notice::is_due() ) {
 			$this->enqueue_review_notice();
 		}
+	}
+
+	/**
+	 * Enqueue the settings screen's script, if it was built.
+	 *
+	 * The screen is a complete Settings API form without it (UI decision U8), so a
+	 * missing build only loses the section nav and the save state. No payload: the script
+	 * reads the form's data attributes.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	private function enqueue_settings(): void {
+		if ( ! file_exists( SIT_WCPG_PATH . 'build/settings.js' ) ) {
+			return;
+		}
+
+		$asset = $this->read_asset_file( 'settings' );
+
+		wp_enqueue_script(
+			self::SETTINGS_HANDLE,
+			SIT_WCPG_URL . 'build/settings.js',
+			array_values( array_unique( array_merge( $asset['dependencies'], array( 'wp-dom-ready', 'wp-i18n' ) ) ) ),
+			$asset['version'],
+			true
+		);
+
+		wp_set_script_translations( self::SETTINGS_HANDLE, 'sapphireit-publish-guard', SIT_WCPG_PATH . 'languages' );
 	}
 
 	/**
@@ -202,10 +264,19 @@ final class Assets {
 		$asset = $this->read_asset_file( 'editor' );
 
 		/*
-		 * The panel renders `@wordpress/components` (Button, Notice, Spinner), whose
-		 * stylesheet the classic product editor does not load on its own.
+		 * The panel renders `@wordpress/components` (Notice, Spinner), whose stylesheet
+		 * the classic product editor does not load on its own. Since 1.2.0 it also builds
+		 * on the admin UI kit (UI phase U09): the shell stylesheet emits the tokens, the
+		 * font and the button the panel uses, so editor.css depends on it whenever it
+		 * was built. A dependency that is not registered would drop editor.css too.
 		 */
-		$this->enqueue_style( self::EDITOR_HANDLE, 'editor.css', $asset['version'], array( 'wp-components' ) );
+		$style_deps = array( 'wp-components' );
+
+		if ( wp_style_is( Admin_Shell::STYLE_HANDLE, 'registered' ) ) {
+			$style_deps[] = Admin_Shell::STYLE_HANDLE;
+		}
+
+		$this->enqueue_style( self::EDITOR_HANDLE, 'editor.css', $asset['version'], $style_deps );
 
 		if ( ! file_exists( SIT_WCPG_PATH . 'build/editor.js' ) ) {
 			return;
@@ -345,6 +416,29 @@ final class Assets {
 		}
 
 		wp_enqueue_style( $handle, SIT_WCPG_URL . 'build/' . $file, $deps, $version );
+
+		// The build writes a `-rtl.css` twin of every stylesheet; RTL sites get that one.
+		wp_style_add_data( $handle, 'rtl', 'replace' );
+	}
+
+	/**
+	 * Register, but do not enqueue, the admin shell stylesheet.
+	 *
+	 * Registered on every admin request so that each shell screen, and an add-on page
+	 * inside the shell, only has to enqueue the handle. Nothing is registered when the
+	 * stylesheet was not built.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	private function register_shell_style(): void {
+		if ( ! file_exists( SIT_WCPG_PATH . 'build/shell.css' ) ) {
+			return;
+		}
+
+		wp_register_style( Admin_Shell::STYLE_HANDLE, SIT_WCPG_URL . 'build/shell.css', array(), $this->read_asset_file( 'shell' )['version'] );
+		wp_style_add_data( Admin_Shell::STYLE_HANDLE, 'rtl', 'replace' );
 	}
 
 	/**

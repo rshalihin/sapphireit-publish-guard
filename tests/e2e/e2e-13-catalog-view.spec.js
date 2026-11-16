@@ -50,12 +50,13 @@ test.describe( 'E2E-13: catalog view', () => {
 			'/wp-admin/edit.php?post_type=product&page=sit-wcpg-catalog'
 		);
 
-		await expect( page.locator( 'h1' ) ).toHaveText(
-			'Live products that would fail your rules'
-		);
+		// UI phase U08 retitled the screen and shortened its intro.
+		await expect(
+			page.locator( '.sit-wcpg-ui-pagebar__title' )
+		).toHaveText( 'Live products that would fail today' );
 		await expect(
 			page.getByText(
-				'These products are published. Under the checks you have set as required, each one would be refused if it were published today. They stay live — Publish Guard never takes a product offline.'
+				'These products are published. Under your required checks, each would be held as a draft if it were published today.'
 			)
 		).toBeVisible();
 

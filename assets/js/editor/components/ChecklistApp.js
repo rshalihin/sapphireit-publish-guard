@@ -5,6 +5,7 @@ import {
 	useEffect,
 	useMemo,
 	useRef,
+	useState,
 } from '@wordpress/element';
 import { Notice } from '@wordpress/components';
 import { __, _n, sprintf } from '@wordpress/i18n';
@@ -17,6 +18,8 @@ import {
 	publishMode,
 	warningText,
 } from '../publish-guard';
+import { Icon } from '../../shared/icons';
+import { readOpen, writeOpen } from '../utils/rememberedOpen';
 import { ChecklistFooter } from './ChecklistFooter';
 import { ChecklistGroup } from './ChecklistGroup';
 import { ChecklistItem } from './ChecklistItem';
@@ -24,16 +27,33 @@ import { ChecklistSummary } from './ChecklistSummary';
 import { PreflightStatement } from './PreflightStatement';
 
 /**
- * Rows grouped for display: known groups in the payload's order, then any group a
- * third-party rule invented, with skipped rows pulled out to go last.
+ * Display rank inside a failing group: required failures first, then warnings.
+ */
+const ISSUE_RANK = { fail: 0, warning: 1 };
+
+/**
+ * Preflight kinds whose statement already says what the publish notice would say
+ * (`blocked` ↔ MODE_BLOCK, `override` ↔ MODE_OVERRIDE).
+ */
+const STATEMENT_COVERS_NOTICE = [ 'blocked', 'override' ];
+
+/**
+ * Rows split for display (UI phase U09): the failing view, the passed rows and the rows
+ * that do not apply.
+ *
+ * Both grouped lists keep the editor's groups in the payload's order (core groups, then
+ * add-on groups), then any group a third-party rule invented. Inside a failing group the
+ * required failures come before the warnings; otherwise the server's order is kept.
  *
  * @param {Object[]} results Rule_Result arrays in display order.
  * @param {Object}   labels  Translated group labels keyed by group, in display order.
- * @return {{groups: Array, skipped: Object[]}} Grouped rows.
+ * @return {{failing: Array, passed: Array, passedCount: number, skipped: Object[]}} Rows.
  */
-function groupResults( results, labels ) {
-	const byGroup = {};
+export function partitionResults( results, labels ) {
+	const issues = {};
+	const passes = {};
 	const skipped = [];
+	let passedCount = 0;
 
 	results.forEach( ( item ) => {
 		if ( 'skipped' === item.status ) {
@@ -42,23 +62,137 @@ function groupResults( results, labels ) {
 			return;
 		}
 
-		( byGroup[ item.group ] = byGroup[ item.group ] || [] ).push( item );
+		let bucket = issues;
+
+		if ( 'pass' === item.status ) {
+			bucket = passes;
+			passedCount++;
+		}
+
+		( bucket[ item.group ] = bucket[ item.group ] || [] ).push( item );
 	} );
 
-	const order = [
-		...Object.keys( labels ),
-		...Object.keys( byGroup ).filter( ( group ) => ! ( group in labels ) ),
-	];
+	const order = Object.keys( labels );
 
-	const groups = order
-		.filter( ( group ) => byGroup[ group ] )
-		.map( ( group ) => ( {
-			key: group,
-			label: labels[ group ] || group,
-			items: byGroup[ group ],
-		} ) );
+	results.forEach( ( item ) => {
+		if ( ! order.includes( item.group ) ) {
+			order.push( item.group );
+		}
+	} );
 
-	return { groups, skipped };
+	const toGroups = ( bucket ) =>
+		order
+			.filter( ( group ) => bucket[ group ] )
+			.map( ( group ) => ( {
+				key: group,
+				label: labels[ group ] || group,
+				items: bucket[ group ],
+			} ) );
+
+	const rank = ( item ) => ISSUE_RANK[ item.status ] ?? 2;
+
+	const failing = toGroups( issues ).map( ( group ) => ( {
+		...group,
+		// A stable sort: equal ranks keep the server's order.
+		items: group.items
+			.map( ( item, index ) => ( { item, index } ) )
+			.sort(
+				( a, b ) => rank( a.item ) - rank( b.item ) || a.index - b.index
+			)
+			.map( ( { item } ) => item ),
+	} ) );
+
+	return { failing, passed: toGroups( passes ), passedCount, skipped };
+}
+
+/**
+ * The disclosure chevron: one icon per state (the stylesheet shows the right one).
+ */
+function Chevron() {
+	return (
+		<>
+			<span
+				className="sit-wcpg-checklist__chevron sit-wcpg-checklist__chevron--closed"
+				aria-hidden="true"
+			>
+				<Icon name="chevron-right" size={ 14 } />
+			</span>
+			<span
+				className="sit-wcpg-checklist__chevron sit-wcpg-checklist__chevron--open"
+				aria-hidden="true"
+			>
+				<Icon name="chevron-down" size={ 14 } />
+			</span>
+		</>
+	);
+}
+
+/**
+ * Storage name of the passed section's open state (see utils/rememberedOpen.js).
+ */
+const PASSED_OPEN = 'checklist-passed-open';
+
+/**
+ * The passed rows, collapsed into one `<details>` whose open state is remembered.
+ *
+ * @param {Object}  props           Props.
+ * @param {Array}   props.groups    Passed rows by group.
+ * @param {number}  props.count     Number of passed rows.
+ * @param {boolean} props.hasIssues Whether a failing view is shown above it.
+ */
+function PassedSection( { groups, count, hasIssues } ) {
+	const [ open, setOpen ] = useState( () => readOpen( PASSED_OPEN ) );
+
+	const onToggle = ( event ) => {
+		const next = event.currentTarget.open;
+
+		if ( next !== open ) {
+			setOpen( next );
+			writeOpen( PASSED_OPEN, next );
+		}
+	};
+
+	const label = hasIssues
+		? sprintf(
+				/* translators: %d: number of checks that passed, listed below the failing ones. */
+				_n(
+					'%d more passed',
+					'%d more passed',
+					count,
+					'sapphireit-publish-guard'
+				),
+				count
+			)
+		: sprintf(
+				/* translators: %d: number of checks that passed. */
+				_n(
+					'%d passed',
+					'%d passed',
+					count,
+					'sapphireit-publish-guard'
+				),
+				count
+			);
+
+	return (
+		<details
+			className="sit-wcpg-checklist__passed"
+			open={ open }
+			onToggle={ onToggle }
+		>
+			<summary className="sit-wcpg-checklist__disclosure sit-wcpg-checklist__disclosure--passed">
+				<Chevron />
+				{ label }
+			</summary>
+			{ groups.map( ( group ) => (
+				<ChecklistGroup
+					key={ group.key }
+					label={ group.label }
+					items={ group.items }
+				/>
+			) ) }
+		</details>
+	);
 }
 
 /**
@@ -98,6 +232,13 @@ export function ChecklistApp( { data } ) {
 	const mode = publishMode( data, result );
 	const modeRef = useRef( mode );
 
+	// The `blocked` and `override` preflight statements already say what the publish
+	// notice says, so the notice shows only when no statement covers it. The mode itself
+	// (and the confirmation prompt it drives) is unchanged.
+	const showPublishNotice =
+		Boolean( mode ) &&
+		! STATEMENT_COVERS_NOTICE.includes( result?.preflight?.kind );
+
 	modeRef.current = mode;
 
 	// Installed once; reads the latest mode at click time.
@@ -123,23 +264,36 @@ export function ChecklistApp( { data } ) {
 			</p>
 		);
 	} else if ( result ) {
-		const { groups, skipped } = groupResults(
+		const { failing, passed, passedCount, skipped } = partitionResults(
 			result.results,
 			data.groups || {}
 		);
 
 		body = (
 			<>
-				{ groups.map( ( group ) => (
-					<ChecklistGroup
-						key={ group.key }
-						label={ group.label }
-						items={ group.items }
+				{ failing.length > 0 && (
+					<div className="sit-wcpg-checklist__failing">
+						{ failing.map( ( group ) => (
+							<ChecklistGroup
+								key={ group.key }
+								label={ group.label }
+								items={ group.items }
+								showCount
+							/>
+						) ) }
+					</div>
+				) }
+				{ passedCount > 0 && (
+					<PassedSection
+						groups={ passed }
+						count={ passedCount }
+						hasIssues={ failing.length > 0 }
 					/>
-				) ) }
+				) }
 				{ skipped.length > 0 && (
 					<details className="sit-wcpg-checklist__skipped">
-						<summary className="sit-wcpg-checklist__group sit-wcpg-checklist__group--skipped">
+						<summary className="sit-wcpg-checklist__disclosure sit-wcpg-checklist__disclosure--skipped">
+							<Chevron />
 							{ sprintf(
 								/* translators: %d: number of checks that do not apply to this product. */
 								_n(
@@ -169,7 +323,7 @@ export function ChecklistApp( { data } ) {
 		<div className="sit-wcpg-checklist__app" aria-busy={ loading }>
 			<ChecklistSummary result={ result } loading={ loading } />
 			<PreflightStatement preflight={ result?.preflight } />
-			{ mode && (
+			{ showPublishNotice && (
 				<Notice
 					status="warning"
 					isDismissible={ false }

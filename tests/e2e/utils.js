@@ -12,8 +12,16 @@ import { expect } from '@wordpress/e2e-test-utils-playwright';
  */
 import { loadFixtures } from './fixtures';
 import { SAVE_TIMEOUT } from './settings';
+import { wp } from './wp-cli';
 
-export { BASELINE, saveSettings } from './settings';
+export {
+	BASELINE,
+	SETTINGS_URL,
+	fieldName,
+	pickRadio,
+	saveSettings,
+	setSwitch,
+} from './settings';
 export { runRebuildQueue, wp } from './wp-cli';
 
 /**
@@ -241,4 +249,158 @@ export async function readinessFilter( page, value ) {
 		),
 		page.locator( '#post-query-submit' ).click( { noWaitAfter: true } ),
 	] );
+}
+
+/**
+ * Publish Guard's screens inside the admin shell (UI decision U7), relative to the site.
+ *
+ * @type {{dashboard: string, checklist: string, liveProducts: string}}
+ */
+export const SCREENS = {
+	dashboard: '/wp-admin/admin.php?page=sit-wcpg-dashboard',
+	checklist: '/wp-admin/admin.php?page=sit-wcpg-settings',
+	liveProducts: '/wp-admin/edit.php?post_type=product&page=sit-wcpg-catalog',
+};
+
+/**
+ * The products list, relative to the site.
+ *
+ * @type {string}
+ */
+export const PRODUCTS_LIST = '/wp-admin/edit.php?post_type=product';
+
+/**
+ * The shell's tab links, in order.
+ *
+ * @param {Object} page Playwright page.
+ * @return {Object} Locator.
+ */
+export function shellTabs( page ) {
+	return page.locator( '.sit-wcpg-ui-header__tabs > li > a' );
+}
+
+/**
+ * Fails when the page can scroll sideways.
+ *
+ * @param {Object} page Playwright page.
+ * @return {Promise<void>}
+ */
+export async function expectNoHorizontalScroll( page ) {
+	const { scroll, client } = await page.evaluate( () => ( {
+		scroll: document.documentElement.scrollWidth,
+		client: document.documentElement.clientWidth,
+	} ) );
+
+	expect(
+		scroll,
+		`${ page.url() } scrolls sideways at ${ client } px`
+	).toBeLessThanOrEqual( client );
+}
+
+/**
+ * The number in the list table's "N items" counter.
+ *
+ * @param {Object} page Playwright page, on a list table screen.
+ * @return {Promise<number>} The count.
+ */
+export async function listCount( page ) {
+	const text = await page
+		.locator( '.tablenav.top .displaying-num' )
+		.first()
+		.innerText();
+
+	return Number( text.replace( /[^0-9]/g, '' ) );
+}
+
+/**
+ * Creates (or recreates) a user on the E2E site, with password "password".
+ *
+ * @param {string}   login Login.
+ * @param {string}   role  Role.
+ * @param {string[]} caps  Extra capabilities.
+ */
+export function createUser( login, role, caps = [] ) {
+	deleteUser( login );
+	wp( [
+		'user',
+		'create',
+		login,
+		`${ login }@example.test`,
+		`--role=${ role }`,
+		'--user_pass=password',
+	] );
+
+	for ( const cap of caps ) {
+		wp( [ 'user', 'add-cap', login, cap ] );
+	}
+}
+
+/**
+ * Deletes a user the specs created, if it exists. Their posts are deleted too.
+ *
+ * @param {string} login Login.
+ */
+export function deleteUser( login ) {
+	try {
+		wp( [ 'user', 'delete', login, '--yes' ] );
+	} catch {
+		// Not there.
+	}
+}
+
+/**
+ * Signs a fresh context's page in through the login form.
+ *
+ * @param {Object} page  Playwright page with no cookies.
+ * @param {string} login Login; the password is "password".
+ * @return {Promise<void>}
+ */
+export async function logIn( page, login ) {
+	await page.goto( '/wp-login.php' );
+
+	// wp-login.php clears and focuses the username shortly after load
+	// (wp_attempt_focus); typing before that loses the text.
+	await expect( page.locator( '#user_login' ) ).toBeFocused();
+
+	await page.locator( '#user_login' ).fill( login );
+	await page.locator( '#user_pass' ).fill( 'password' );
+	await expect( page.locator( '#user_login' ) ).toHaveValue( login );
+	await Promise.all( [
+		page.waitForURL( /wp-admin/, { timeout: SAVE_TIMEOUT } ),
+		page.locator( '#wp-submit' ).click( { noWaitAfter: true } ),
+	] );
+}
+
+/**
+ * The plugin's settings option, as WP-CLI reads it.
+ *
+ * @return {Object} The stored option.
+ */
+export function readSettingsOption() {
+	return JSON.parse(
+		wp( [ 'option', 'get', 'sit_wcpg_settings', '--format=json' ] )
+	);
+}
+
+/**
+ * Writes the plugin's settings option directly (the same update_option hooks run,
+ * so a rebuild is queued). For a state the form would take dozens of clicks to reach.
+ *
+ * @param {Object} value The option.
+ */
+export function writeSettingsOption( value ) {
+	wp( [
+		'option',
+		'update',
+		'sit_wcpg_settings',
+		JSON.stringify( value ),
+		'--format=json',
+	] );
+}
+
+/**
+ * Drops the Dashboard's cached numbers (UI decision U14: cached 15 minutes).
+ */
+export function flushReadinessStats() {
+	wp( [ 'transient', 'delete', 'sit_wcpg_readiness_stats' ] );
 }

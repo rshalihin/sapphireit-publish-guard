@@ -1,0 +1,72 @@
+/**
+ * Section nav (U5): a vertical list of links, `__item`, `__item--current`, `__count`.
+ * The current item also carries `aria-current`; colour is not its only cue.
+ */
+
+@use "../tokens" as *;
+
+.sit-wcpg-ui {
+
+	.sit-wcpg-ui-nav {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.sit-wcpg-ui-nav__item {
+		display: flex;
+		gap: token("space-2");
+		align-items: center;
+		margin: 0;
+		// 1 px transparent border + 9/11 px padding = the artboard's 10/12 px; the
+		// current item's ring is that border, so it survives forced colours.
+		padding: 9px 11px;
+		color: token("ink");
+		font-size: 14px;
+		font-weight: 500;
+		text-decoration: none;
+		border: 1px solid transparent;
+		border-radius: token("radius-control");
+
+		&:hover {
+			color: token("ink");
+			background: token("ground");
+		}
+
+		&:focus-visible {
+
+			@include focus-ring;
+		}
+	}
+
+	.sit-wcpg-ui-nav__item--current,
+	.sit-wcpg-ui-nav__item--current:hover {
+		color: token("ink");
+		font-weight: 600;
+		background: token("info-50");
+		border-color: token("line-strong");
+	}
+
+	.sit-wcpg-ui-nav__count {
+		min-width: 22px;
+		margin-inline-start: auto;
+		padding: 2px 8px;
+		color: token("muted");
+		font-size: 12px;
+		font-weight: 600;
+		line-height: 1.5;
+		text-align: center;
+		background: token("ground");
+		border-radius: 999px;
+	}
+}
+
+@media (forced-colors: active) {
+
+	.sit-wcpg-ui .sit-wcpg-ui-nav__item--current {
+		border-color: Highlight;
+	}
+}

@@ -1,0 +1,517 @@
+/**
+ * The Dashboard page (UI phase U05, decision U12): rows, the health ring, the navy Pro
+ * card, the issue rows, the active-check pills and the help cards.
+ *
+ * Layout uses flex-wrap and auto-fit grids only (no container queries, no `:has()`), so
+ * it reflows from 1440 px down to 375 px on every browser WordPress 6.5 supports.
+ */
+
+@use "../tokens" as *;
+
+.sit-wcpg-ui.sit-wcpg-dashboard {
+	display: flex;
+	flex-direction: column;
+	gap: token("space-6");
+	max-width: 1240px;
+	margin-top: token("space-6");
+}
+
+.sit-wcpg-ui {
+
+	.sit-wcpg-dashboard__row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: token("space-6");
+	}
+
+	// Most common issues and Active checks share a row at the same height, so a short
+	// issue list never leaves a hole under its card.
+	.sit-wcpg-dashboard__row--split {
+		align-items: stretch;
+	}
+
+	&.sit-wcpg-dashboard .sit-wcpg-ui-card {
+		min-width: 0;
+		margin: 0;
+	}
+
+	// Catalog health.
+
+	.sit-wcpg-dashboard__health {
+		display: flex;
+		flex: 2 1 640px;
+		flex-wrap: wrap;
+		gap: 36px;
+		align-items: center;
+		padding: token("space-7");
+
+		.sit-wcpg-ui-empty {
+			flex: 1 1 100%;
+		}
+	}
+
+	.sit-wcpg-dashboard__health--wide {
+		flex-basis: 100%;
+	}
+
+	.sit-wcpg-dashboard__ring {
+		position: relative;
+		flex: none;
+		width: 168px;
+		height: 168px;
+	}
+
+	.sit-wcpg-dashboard__ring-svg {
+		display: block;
+	}
+
+	.sit-wcpg-dashboard__ring-track {
+		stroke: token("ground");
+	}
+
+	.sit-wcpg-dashboard__ring-fill {
+		stroke: token("shield-500");
+	}
+
+	.sit-wcpg-dashboard__ring-label {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		margin: 0;
+	}
+
+	.sit-wcpg-dashboard__ring-value {
+		color: token("ink");
+		font-size: 40px;
+		font-weight: 700;
+		line-height: 1.1;
+		letter-spacing: -0.03em;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.sit-wcpg-dashboard__ring-caption {
+		color: token("muted");
+		font-size: 13px;
+	}
+
+	.sit-wcpg-dashboard__health-text {
+		display: flex;
+		flex: 1 1 300px;
+		flex-direction: column;
+		gap: 14px;
+		min-width: 0;
+	}
+
+	.sit-wcpg-dashboard__overline {
+		margin: 0;
+		color: token("muted");
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+	}
+
+	.sit-wcpg-dashboard__headline {
+		margin: 0;
+		color: token("ink");
+		font-size: 28px;
+		font-weight: 700;
+		line-height: 1.2;
+		letter-spacing: -0.02em;
+	}
+
+	.sit-wcpg-dashboard__summary {
+		margin: 0;
+		color: token("muted");
+		font-size: 15px;
+		line-height: 1.55;
+	}
+
+	.sit-wcpg-dashboard__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+		align-items: center;
+		margin-top: 6px;
+	}
+
+	.sit-wcpg-dashboard__recheck {
+		display: inline-flex;
+		gap: 6px;
+		align-items: center;
+		margin: 0;
+		color: token("muted");
+		font-size: 13px;
+	}
+
+	// The Pro card (U13).
+
+	.sit-wcpg-dashboard__pro {
+		display: flex;
+		flex: 1 1 320px;
+		flex-direction: column;
+		gap: 14px;
+		min-width: 0;
+		padding: 28px;
+		color: token("surface");
+		background: token("navy-900");
+		border-radius: token("radius-card");
+	}
+
+	.sit-wcpg-dashboard__pro-eyebrow {
+		display: flex;
+		gap: token("space-2");
+		align-items: center;
+		margin: 0;
+		color: rgba(255, 255, 255, 0.82);
+		font-size: 13px;
+	}
+
+	.sit-wcpg-dashboard__pro-title {
+		margin: 0;
+		color: token("surface");
+		font-size: 22px;
+		font-weight: 700;
+		line-height: 1.25;
+		letter-spacing: -0.01em;
+	}
+
+	.sit-wcpg-dashboard__pro-list {
+		display: flex;
+		flex-direction: column;
+		gap: 9px;
+		margin: 0;
+		padding: 0;
+		color: rgba(255, 255, 255, 0.9);
+		font-size: 14px;
+		list-style: none;
+
+		li {
+			display: flex;
+			gap: 10px;
+			align-items: center;
+			margin: 0;
+		}
+
+		.sit-wcpg-ui-icon {
+			flex: none;
+			color: token("shield-500");
+		}
+	}
+
+	.sit-wcpg-dashboard__pro-link {
+		justify-content: center;
+		min-height: 44px;
+		margin-top: auto;
+	}
+
+	// Stat cards.
+
+	// Four cards (five with "Not checked yet") never leave one alone on a row (V-U15):
+	// one row on wide screens, two columns in between (a fifth card spans the row), one
+	// column on phones. Viewport media queries only, no container queries (U-INDEX floor).
+	.sit-wcpg-dashboard__stats {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: token("space-4");
+
+		> .sit-wcpg-ui-stat:nth-child(5):last-child {
+			grid-column: 1 / -1;
+		}
+	}
+
+	.sit-wcpg-dashboard__stats .sit-wcpg-ui-stat__value {
+		align-self: flex-start;
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+
+	.sit-wcpg-dashboard__value--required {
+		color: token("required-700");
+	}
+
+	// Most common issues.
+
+	.sit-wcpg-dashboard__issues {
+		display: flex;
+		flex: 3 1 560px;
+		flex-direction: column;
+
+		> .sit-wcpg-ui-card__body {
+			display: flex;
+			flex: 1 1 auto;
+			flex-direction: column;
+		}
+	}
+
+	// The caption sits at the foot of the card, under however many rows there are.
+	.sit-wcpg-dashboard__issues .sit-wcpg-dashboard__caption {
+		order: 2;
+		margin: auto 0 0;
+		padding-top: token("space-4");
+	}
+
+	.sit-wcpg-dashboard__more {
+		font-size: 14px;
+		font-weight: 600;
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+
+	.sit-wcpg-dashboard__caption {
+		margin: 0 0 token("space-2");
+		color: token("muted");
+		font-size: 13px;
+	}
+
+	.sit-wcpg-dashboard__issue-list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.sit-wcpg-dashboard__issue {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 160px 48px;
+		gap: token("space-4");
+		align-items: center;
+		margin: 0;
+		padding: token("space-3") 0;
+		border-bottom: 1px solid token("line");
+
+		&:last-child {
+			border-bottom: 0;
+		}
+	}
+
+	.sit-wcpg-dashboard__issue-name {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	.sit-wcpg-dashboard__issue-label {
+		overflow-wrap: anywhere;
+		font-size: 14px;
+		font-weight: 600;
+	}
+
+	.sit-wcpg-dashboard__issue-meta {
+		color: token("muted");
+		font-size: 13px;
+	}
+
+	.sit-wcpg-dashboard__issue-count {
+		font-size: 14px;
+		font-weight: 600;
+		text-align: end;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.sit-wcpg-dashboard__none {
+		display: flex;
+		flex: 1 1 auto;
+		gap: token("space-2");
+		align-items: center;
+		justify-content: center;
+		min-height: 120px;
+		margin: 0;
+		color: token("shield-700");
+		font-weight: 600;
+	}
+
+	// Active checks.
+
+	.sit-wcpg-dashboard__checks {
+		flex: 2 1 360px;
+	}
+
+	.sit-wcpg-dashboard__check-list {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 10px;
+		margin: 0 0 token("space-4");
+		padding: 0;
+		list-style: none;
+	}
+
+	.sit-wcpg-dashboard__check {
+		display: flex;
+		gap: token("space-2");
+		align-items: center;
+		justify-content: space-between;
+		margin: 0;
+		padding: 11px token("space-3");
+		font-size: 13px;
+		font-weight: 500;
+		border: 1px solid token("line");
+		border-radius: 10px;
+	}
+
+	.sit-wcpg-dashboard__check--off {
+		color: token("muted");
+	}
+
+	.sit-wcpg-dashboard__check-label {
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
+
+	.sit-wcpg-dashboard__check-state {
+		flex: none;
+	}
+
+	.sit-wcpg-dashboard__manage {
+		margin: 0;
+		font-size: 14px;
+		font-weight: 600;
+
+		a {
+			text-decoration: none;
+		}
+
+		a:hover {
+			text-decoration: underline;
+		}
+	}
+
+	// Help cards.
+
+	// Three help cards: one row, or one column below 961 px (where WordPress folds its
+	// menu), never two plus one (V-U15).
+	.sit-wcpg-dashboard__help {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: token("space-4");
+	}
+
+	&.sit-wcpg-dashboard .sit-wcpg-dashboard__help-card {
+		display: flex;
+		gap: 14px;
+		padding: 22px;
+
+		a {
+			font-size: 13px;
+			font-weight: 600;
+		}
+	}
+
+	.sit-wcpg-dashboard__help-icon {
+		display: flex;
+		flex: none;
+		align-items: center;
+		justify-content: center;
+		width: 40px;
+		height: 40px;
+		border-radius: 10px;
+	}
+
+	.sit-wcpg-dashboard__help-icon--info {
+		color: token("info-700");
+		background: token("info-50");
+	}
+
+	.sit-wcpg-dashboard__help-icon--success {
+		color: token("shield-700");
+		background: token("shield-50");
+	}
+
+	.sit-wcpg-dashboard__help-icon--warning {
+		color: token("warning-700");
+		background: token("warning-50");
+	}
+
+	.sit-wcpg-dashboard__help-title {
+		margin: 0;
+		color: token("ink");
+		font-size: 15px;
+		font-weight: 600;
+		line-height: 1.4;
+	}
+
+	.sit-wcpg-dashboard__help-text {
+		margin: token("space-1") 0 token("space-2");
+		color: token("muted");
+		font-size: 13px;
+		line-height: 1.5;
+	}
+}
+
+@media screen and (min-width: 961px) {
+
+	.sit-wcpg-ui .sit-wcpg-dashboard__help {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+@media screen and (min-width: 1280px) {
+
+	.sit-wcpg-ui .sit-wcpg-dashboard__stats {
+		grid-auto-columns: minmax(0, 1fr);
+		grid-auto-flow: column;
+		grid-template-columns: none;
+
+		> .sit-wcpg-ui-stat:nth-child(5):last-child {
+			grid-column: auto;
+		}
+	}
+}
+
+@media screen and (max-width: 782px) {
+
+	.sit-wcpg-ui .sit-wcpg-dashboard__health {
+		padding: token("space-6");
+	}
+
+	.sit-wcpg-ui .sit-wcpg-dashboard__headline {
+		font-size: 22px;
+	}
+}
+
+@media screen and (max-width: 600px) {
+
+	.sit-wcpg-ui .sit-wcpg-dashboard__stats {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.sit-wcpg-ui .sit-wcpg-dashboard__issue {
+		grid-template-columns: minmax(0, 1fr) 48px;
+	}
+
+	.sit-wcpg-ui .sit-wcpg-dashboard__issue-bar {
+		grid-row: 2;
+		grid-column: 1 / -1;
+	}
+
+	.sit-wcpg-ui .sit-wcpg-dashboard__check-list {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+@media (forced-colors: active) {
+
+	.sit-wcpg-ui .sit-wcpg-dashboard__pro {
+		border: 1px solid CanvasText;
+	}
+
+	.sit-wcpg-ui .sit-wcpg-dashboard__ring-fill {
+		stroke: Highlight;
+	}
+
+	.sit-wcpg-ui .sit-wcpg-dashboard__ring-track {
+		stroke: GrayText;
+	}
+
+	.sit-wcpg-ui .sit-wcpg-dashboard__check {
+		border-color: CanvasText;
+	}
+}

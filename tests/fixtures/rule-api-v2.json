@@ -202,6 +202,27 @@
                 "settings": "(): ProductPublishGuard\\Settings\\Settings",
                 "registry": "(): ProductPublishGuard\\Engine\\Rule_Registry"
             }
+        },
+        "ProductPublishGuard\\Admin\\Admin_Shell": {
+            "constants": {
+                "STYLE_HANDLE": "sit-wcpg-shell",
+                "TABS_FILTER": "sit_wcpg_admin_tabs",
+                "ITEMS_FILTER": "sit_wcpg_admin_header_items",
+                "PROMPTS_FILTER": "sit_wcpg_show_upgrade_prompts",
+                "PRO_URL": "https://sapphireitlabs.com/publish-guard/",
+                "PRO_PRICING_URL": "https://sapphireitlabs.com/publish-guard/#pricing",
+                "DOCS_URL": "https://wordpress.org/plugins/sapphireit-publish-guard/",
+                "TAB_DASHBOARD": "dashboard",
+                "TAB_CHECKLIST": "checklist",
+                "TAB_LIVE_PRODUCTS": "live-products",
+                "TAB_UPGRADE": "upgrade"
+            },
+            "methods": {
+                "render": "(string $active): void",
+                "tabs": "(string $active): array",
+                "header_items": "(string $active): array",
+                "show_upgrade_prompts": "(): bool"
+            }
         }
     },
     "hooks": {
@@ -220,11 +241,46 @@
             "sit_wcpg_draft_extras",
             "sit_wcpg_rule_groups",
             "sit_wcpg_editor_script_dependencies",
-            "sit_wcpg_rules_changed"
+            "sit_wcpg_rules_changed",
+            "sit_wcpg_admin_tabs",
+            "sit_wcpg_admin_header_items",
+            "sit_wcpg_show_upgrade_prompts"
         ],
         "internal": [
             "sit_wcpg_rebuild_readiness",
             "sit_wcpg_reindex_products"
         ]
-    }
+    },
+    "css_custom_properties": [
+        "--sit-wcpg-navy-900",
+        "--sit-wcpg-navy-700",
+        "--sit-wcpg-shield-500",
+        "--sit-wcpg-shield-700",
+        "--sit-wcpg-shield-50",
+        "--sit-wcpg-gold-300",
+        "--sit-wcpg-ink",
+        "--sit-wcpg-muted",
+        "--sit-wcpg-line",
+        "--sit-wcpg-line-strong",
+        "--sit-wcpg-ground",
+        "--sit-wcpg-surface",
+        "--sit-wcpg-required-700",
+        "--sit-wcpg-required-50",
+        "--sit-wcpg-warning-700",
+        "--sit-wcpg-warning-50",
+        "--sit-wcpg-info-700",
+        "--sit-wcpg-info-50",
+        "--sit-wcpg-radius-control",
+        "--sit-wcpg-radius-card",
+        "--sit-wcpg-radius-panel",
+        "--sit-wcpg-space-1",
+        "--sit-wcpg-space-2",
+        "--sit-wcpg-space-3",
+        "--sit-wcpg-space-4",
+        "--sit-wcpg-space-5",
+        "--sit-wcpg-space-6",
+        "--sit-wcpg-space-7",
+        "--sit-wcpg-space-8",
+        "--sit-wcpg-font"
+    ]
 }

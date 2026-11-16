@@ -762,6 +762,131 @@ add_filter( 'sit_wcpg_rule_groups', static function ( $labels ) {
 } );
 ```
 
+#### Admin screens (1.2.0)
+
+Version 1.2.0 draws a branded header above every Publish Guard screen: the logo and version,
+the tabs (Dashboard, Checklist, Live products), a Docs link and, while the upgrade prompts are
+on, an "Upgrade to Pro" button and a "Channel Readiness" tab linking to the Pro sales page. An
+add-on can join it. These ship in the same release as rule API 2.1, so
+`Rule_Registry::API_MINOR` stays `1`.
+
+| # | Extension point | Use it to |
+|---|---|---|
+| S12 | `sit_wcpg_admin_tabs` | add a tab for your own page |
+| S13 | `sit_wcpg_admin_header_items` | show up to three status pills in the header |
+| S14 | `Admin_Shell::render()`, `Admin_Shell::STYLE_HANDLE`, the `--sit-wcpg-*` CSS custom properties | draw the same header and use the same look on your own page |
+| S15 | `sit_wcpg_show_upgrade_prompts` | hide the Pro prompts on Publish Guard's screens |
+
+Everything an add-on passes in is validated after the filter runs and escaped on output;
+anything malformed is dropped (and logged when `WP_DEBUG` is on). The core tabs cannot be
+removed, replaced or relabelled.
+
+```php
+use ProductPublishGuard\Admin\Admin_Shell;
+
+add_filter( 'sit_wcpg_admin_tabs', static function ( $tabs ) {
+	$tabs[] = array(
+		'id'         => 'acme-feeds',
+		'label'      => __( 'Feeds', 'acme' ),
+		'url'        => admin_url( 'admin.php?page=acme-feeds' ),
+		'capability' => 'manage_woocommerce',
+	);
+	return $tabs;
+} );
+
+add_filter( 'sit_wcpg_show_upgrade_prompts', '__return_false' );
+
+// The page callback of `acme-feeds`; enqueue Admin_Shell::STYLE_HANDLE on its screen.
+function acme_feeds_page() {
+	Admin_Shell::render( 'acme-feeds' );
+	echo '<div class="wrap sit-wcpg-ui">…</div>';
+}
+```
+
+`Admin_Shell::render()` prints `<hr class="wp-header-end">` after the header, so WordPress
+moves admin notices below it. The stylesheet is registered on every admin request; enqueue it
+(or list it as a dependency) on your screen. The `--sit-wcpg-*` custom properties set on
+`.sit-wcpg-ui` are part of the API and change only with `API_VERSION`.
+
+#### Admin UI kit
+
+Inside an element with the `sit-wcpg-ui` class, the shell stylesheet sets these custom
+properties. Use them in your own CSS (`color: var(--sit-wcpg-ink)`) so an add-on screen keeps
+the same look. They are `@api`: renamed or removed only with a new `API_VERSION`, and
+`tests/fixtures/rule-api-v2.json` lists them. The values may be tuned in a minor release.
+
+| Property | Value | Use |
+|---|---|---|
+| `--sit-wcpg-navy-900` | `#16224A` | logo tile, dark surfaces |
+| `--sit-wcpg-navy-700` | `#1B2A5C` | primary buttons, active tab underline |
+| `--sit-wcpg-shield-500` | `#00A32A` | "on", "ready" and progress fills; never text on white |
+| `--sit-wcpg-shield-700` | `#0A6B26` | success text |
+| `--sit-wcpg-shield-50` | `#E6F6EB` | success tint |
+| `--sit-wcpg-gold-300` | `#FFD27A` | Pro prompts only |
+| `--sit-wcpg-ink` | `#0F1834` | body text |
+| `--sit-wcpg-muted` | `#5B6478` | secondary text |
+| `--sit-wcpg-line` | `#E3E7EF` | borders |
+| `--sit-wcpg-line-strong` | `#D5DBE7` | input and button borders |
+| `--sit-wcpg-ground` | `#F4F6FA` | page and muted backgrounds |
+| `--sit-wcpg-surface` | `#FFFFFF` | cards |
+| `--sit-wcpg-required-700`, `--sit-wcpg-required-50` | `#B42318`, `#FEECEB` | required, failing |
+| `--sit-wcpg-warning-700`, `--sit-wcpg-warning-50` | `#8A5300`, `#FFF4DE` | warning |
+| `--sit-wcpg-info-700`, `--sit-wcpg-info-50` | `#1B3FA6`, `#EEF2FC` | links, info, focus ring |
+| `--sit-wcpg-radius-control`, `-card`, `-panel` | `9px`, `14px`, `16px` | corner radii |
+| `--sit-wcpg-space-1` … `--sit-wcpg-space-8` | `4 8 12 16 20 24 32 48` px | spacing |
+| `--sit-wcpg-font` | Inter, then the system UI stack | type |
+
+Every text colour above passes WCAG 2.1 AA (4.5:1) on the backgrounds the kit pairs it with:
+`ink` and `muted` on `surface` and `ground`, each `-700` on its `-50` tint and on `surface`, white
+on `navy-700` and `navy-900`, `navy-900` on `gold-300`. `shield-500` is for fills, not text.
+
+The component classes (`sit-wcpg-ui-card`, `sit-wcpg-ui-button`, `sit-wcpg-ui-pill`,
+`sit-wcpg-ui-switch`, `sit-wcpg-ui-banner`, …) style Publish Guard's own screens. They are not
+`@api`: use them if they help, but they may change in any release. Inter ships inside the plugin
+(`assets/fonts/`); nothing is loaded from a font service.
+
+### `sit_wcpg_admin_tabs` (filter)
+
+```php
+apply_filters( 'sit_wcpg_admin_tabs', array $tabs, string $active );
+```
+
+Adds tabs to the header. Each entry is
+`array{ id: string, label: string, url: string, capability: string, badge?: string }`:
+
+* `id` matches `^[a-z][a-z0-9-]{0,39}$` and is unique; the first entry with an id wins.
+  `dashboard`, `checklist`, `live-products` and `upgrade` are Free's.
+* `label` (at most 40 characters) and `badge` (at most 12) are plain text.
+* `url` is an absolute URL inside this site's admin (`admin_url( … )`); anything else drops
+  the tab.
+* `capability` is checked with `current_user_can()`; a user without it does not see the tab.
+
+At most four add-on tabs are printed, in the order added, after Free's tabs and before the
+upgrade tab. `$active` is the id of the current tab. `Admin_Shell::tabs( $active )` returns
+the validated list.
+
+### `sit_wcpg_admin_header_items` (filter)
+
+```php
+apply_filters( 'sit_wcpg_admin_header_items', array $items, string $active );
+```
+
+Adds status pills between the Docs link and the upgrade button. Each entry is
+`array{ id: string, label: string, url?: string, tone?: 'neutral'|'success'|'warning'|'danger' }`;
+the rules for `id`, `label` and `url` are those of `sit_wcpg_admin_tabs`. A pill with a
+`url` is a link. At most three are printed. Free adds none.
+
+### `sit_wcpg_show_upgrade_prompts` (filter)
+
+```php
+apply_filters( 'sit_wcpg_show_upgrade_prompts', bool $show = true );
+```
+
+Return `false` to hide every Pro prompt on Publish Guard's own screens: the "Upgrade to Pro"
+header button, the Channel Readiness tab, the Dashboard's Pro card and the Checklist's
+"Need channel rules?" box. Publish Guard Pro returns `false` whenever it is active. Nothing
+outside Publish Guard's screens ever mentions Pro.
+
 ### Reading readiness from your own code
 
 ```php

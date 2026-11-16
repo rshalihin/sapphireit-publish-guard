@@ -1,191 +1,413 @@
 /**
- * Product Readiness panel (the `side` meta box on the product editor).
+ * Product Readiness panel (the `side` meta box on the product editor), UI phase U09.
  *
  * Styles both renderings of the checklist: the server-rendered no-JS list and the React
  * panel that replaces it, which reuse the same BEM classes so the box does not change
  * shape when React takes over.
  *
- * The three status colours are the only hard-coded palette (coding-plan.md section
- * 10.4); status is always also carried by a glyph and a visually hidden label. The
- * status icons' own colours live with their shapes in _status-icons.scss.
+ * The panel's wrapper carries `.sit-wcpg-ui`, and this stylesheet depends on the shell
+ * stylesheet (`sit-wcpg-shell`), which emits the tokens, the Inter face, the button and
+ * the icon components. This file uses the token API only, so it emits neither again.
+ *
+ * Status is never colour alone: every row also carries an icon and a visually hidden
+ * label. Sized for the WordPress sidebar: 280 px at 1440, nothing overflows at 256 px.
  */
 
-@use "sass:map";
-@use "status-icons" as *;
+@use "token-api" as *;
 
-$sit-wcpg-pass: #00a32a;
-$sit-wcpg-warning: #996800;
-$sit-wcpg-fail: #d63638;
-$sit-wcpg-muted: #646970;
-$sit-wcpg-rule: #dcdcde;
+.sit-wcpg-ui.sit-wcpg-checklist {
+	min-width: 0;
+	color: token("ink");
+	font-family: token("font");
+	font-size: 14px;
+	line-height: 1.5;
+	overflow-wrap: anywhere;
+}
 
 .sit-wcpg-checklist {
-	font-size: 13px;
-	line-height: 1.5;
-}
 
-.sit-wcpg-checklist__summary {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 0 6px;
-	margin: 0 0 8px;
-	padding-bottom: 8px;
-	border-bottom: 1px solid $sit-wcpg-rule;
-}
+	// --- Summary: score ring, state line, counts ---------------------------------
 
-.sit-wcpg-checklist__summary--pass .sit-wcpg-checklist__state {
-	color: $sit-wcpg-pass;
-}
-
-.sit-wcpg-checklist__summary--fail .sit-wcpg-checklist__state {
-	color: $sit-wcpg-fail;
-}
-
-.sit-wcpg-checklist__counts,
-.sit-wcpg-checklist__issues {
-	flex-basis: 100%;
-	color: $sit-wcpg-muted;
-}
-
-.sit-wcpg-checklist__spinner {
-	display: inline-flex;
-	margin-left: auto;
-}
-
-// The pre-flight statement. Its words carry the meaning; the border only sets the tone.
-.sit-wcpg-preflight {
-	margin: 0 0 8px;
-	padding: 2px 0 2px 8px;
-	border-left: 3px solid map.get($sit-wcpg-status-icon-colors, skipped);
-}
-
-@each $kind, $status in (ready: pass, warnings: warning, blocked: fail, override: warning, advisory: warning, live: skipped) {
-
-	.sit-wcpg-preflight--#{$kind} {
-		border-left-color: map.get($sit-wcpg-status-icon-colors, $status);
+	.sit-wcpg-checklist__summary {
+		display: flex;
+		gap: token("space-3");
+		align-items: center;
+		margin: token("space-2") 0 0;
 	}
-}
 
-.sit-wcpg-checklist__body {
-	transition: opacity 0.15s ease-in-out;
-}
+	.sit-wcpg-checklist__ring {
+		position: relative;
+		flex: 0 0 64px;
+		width: 64px;
+		height: 64px;
 
-// A request is in flight: keep the last result visible, dimmed — never blank it.
-.sit-wcpg-checklist__body--stale {
-	opacity: 0.6;
-}
-
-.sit-wcpg-checklist__group {
-	margin: 12px 0 4px;
-	font-size: 11px;
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.04em;
-	color: $sit-wcpg-muted;
-}
-
-.sit-wcpg-checklist__items {
-	margin: 0;
-	padding: 0;
-	list-style: none;
-}
-
-.sit-wcpg-checklist__item {
-	position: relative;
-	margin: 0 0 6px;
-	padding-left: 20px;
-}
-
-.sit-wcpg-checklist__icon {
-	display: inline-block;
-	width: 14px;
-	font-weight: 700;
-	text-align: center;
-}
-
-// Centred on the label's first line: 13px × 1.5 line height, 16px icon.
-.sit-wcpg-checklist__item .sit-wcpg-checklist__icon {
-	position: absolute;
-	top: 2px;
-	left: 0;
-}
-
-// The glyph colours apply only where the icons below fall back to text.
-.sit-wcpg-checklist__item--pass .sit-wcpg-checklist__icon {
-	color: $sit-wcpg-pass;
-}
-
-.sit-wcpg-checklist__item--warning .sit-wcpg-checklist__icon {
-	color: $sit-wcpg-warning;
-}
-
-.sit-wcpg-checklist__item--fail .sit-wcpg-checklist__icon {
-	color: $sit-wcpg-fail;
-}
-
-@each $status in pass, warning, fail, skipped {
-
-	.sit-wcpg-checklist__item--#{$status} .sit-wcpg-checklist__icon {
-
-		@include sit-wcpg-status-icon($status, 16px);
+		svg {
+			display: block;
+		}
 	}
-}
 
-// The summary is only ever ready (pass) or not (fail).
-@each $status in pass, fail {
-
-	.sit-wcpg-checklist__summary--#{$status} .sit-wcpg-checklist__icon {
-
-		@include sit-wcpg-status-icon($status, 16px);
+	.sit-wcpg-checklist__ring-track,
+	.sit-wcpg-checklist__ring-bar {
+		fill: none;
+		stroke-width: 7;
 	}
-}
 
-.sit-wcpg-checklist__item--skipped {
-	color: $sit-wcpg-muted;
-}
+	.sit-wcpg-checklist__ring-track {
+		stroke: token("line");
+	}
 
-.sit-wcpg-checklist__message {
-	display: block;
-	color: $sit-wcpg-muted;
-}
+	.sit-wcpg-checklist__ring-bar {
+		stroke-linecap: round;
+		transition: stroke-dasharray 0.2s ease-in-out;
+	}
 
-.sit-wcpg-checklist__fix {
-	display: inline-block;
-	margin-top: 2px;
-}
+	.sit-wcpg-checklist__ring--fail .sit-wcpg-checklist__ring-bar {
+		stroke: token("required-700");
+	}
 
-.sit-wcpg-checklist__skipped {
-	margin-top: 12px;
+	.sit-wcpg-checklist__ring--warning .sit-wcpg-checklist__ring-bar {
+		stroke: token("warning-700");
+	}
 
-	> .sit-wcpg-checklist__group {
-		margin-top: 0;
+	.sit-wcpg-checklist__ring--pass .sit-wcpg-checklist__ring-bar {
+		stroke: token("shield-500");
+	}
+
+	.sit-wcpg-checklist__ring-value {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 15px;
+		font-weight: 700;
+		line-height: 1;
+		white-space: nowrap;
+	}
+
+	.sit-wcpg-checklist__headline {
+		display: flex;
+		flex: 1 1 auto;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	.sit-wcpg-checklist__state {
+		font-size: 16px;
+		font-weight: 700;
+		line-height: 1.3;
+	}
+
+	.sit-wcpg-checklist__summary--fail .sit-wcpg-checklist__state {
+		color: token("required-700");
+	}
+
+	.sit-wcpg-checklist__summary--pass .sit-wcpg-checklist__state {
+		color: token("shield-700");
+	}
+
+	.sit-wcpg-checklist__counts {
+		margin-top: 2px;
+		color: token("muted");
+		font-size: 13px;
+	}
+
+	.sit-wcpg-checklist__spinner {
+		display: inline-flex;
+		flex: none;
+		margin-inline-start: auto;
+
+		/* stylelint-disable-next-line selector-class-pattern -- the @wordpress/components spinner */
+		.components-spinner {
+			margin: 0;
+		}
+	}
+
+	// --- Pre-flight statement: a banner; its words carry the meaning -------------
+
+	.sit-wcpg-preflight {
+		margin: token("space-3") 0 0;
+		padding: token("space-3");
+		color: token("ink");
+		font-size: 13px;
+		line-height: 1.45;
+		background: token("ground");
+		border: 1px solid token("line");
+		border-radius: 10px;
+	}
+
+	.sit-wcpg-preflight--blocked {
+		color: token("required-700");
+		background: token("required-50");
+		border-color: transparent;
+	}
+
+	.sit-wcpg-preflight--warnings,
+	.sit-wcpg-preflight--override,
+	.sit-wcpg-preflight--advisory {
+		color: token("warning-700");
+		background: token("warning-50");
+		border-color: transparent;
+	}
+
+	.sit-wcpg-preflight--ready {
+		color: token("shield-700");
+		background: token("shield-50");
+		border-color: transparent;
+	}
+
+	.sit-wcpg-preflight--live {
+		color: token("info-700");
+		background: token("info-50");
+		border-color: transparent;
+	}
+
+	.sit-wcpg-checklist__notice {
+		margin: token("space-3") 0 0;
+	}
+
+	// --- Body: failing groups, passed, not applicable ----------------------------
+
+	.sit-wcpg-checklist__body {
+		margin-top: token("space-1");
+		transition: opacity 0.15s ease-in-out;
+	}
+
+	// A request is in flight: keep the last result visible, dimmed — never blank it.
+	.sit-wcpg-checklist__body--stale {
+		opacity: 0.6;
+	}
+
+	.sit-wcpg-checklist__group {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0 token("space-2");
+		align-items: center;
+		justify-content: space-between;
+		margin: 0;
+		padding: 14px 0 token("space-2");
+		color: token("muted");
+		font-size: 12px;
+		font-weight: 600;
+		line-height: 1.4;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+	}
+
+	.sit-wcpg-checklist__group-label {
+		min-width: 0;
+	}
+
+	.sit-wcpg-checklist__group-count--fail {
+		color: token("required-700");
+	}
+
+	.sit-wcpg-checklist__group-count--warning {
+		color: token("warning-700");
+	}
+
+	.sit-wcpg-checklist__items {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.sit-wcpg-checklist__item {
+		display: flex;
+		gap: 10px;
+		align-items: flex-start;
+		margin: 0;
+		padding: 10px 0;
+		border-top: 1px solid token("line");
+	}
+
+	.sit-wcpg-checklist__icon {
+		display: flex;
+		flex: 0 0 20px;
+		align-items: center;
+		justify-content: center;
+		width: 20px;
+		height: 20px;
+		margin-top: 1px;
+		color: token("muted");
+		background: token("ground");
+		border-radius: 50%;
+
+		svg {
+			stroke-width: 3;
+		}
+	}
+
+	.sit-wcpg-checklist__icon--fail {
+		color: token("required-700");
+		background: token("required-50");
+	}
+
+	.sit-wcpg-checklist__icon--warning {
+		color: token("warning-700");
+		background: token("warning-50");
+	}
+
+	.sit-wcpg-checklist__icon--pass {
+		color: token("shield-700");
+		background: token("shield-50");
+	}
+
+	.sit-wcpg-checklist__content {
+		display: flex;
+		flex: 1 1 auto;
+		flex-direction: column;
+		align-items: flex-start;
+		min-width: 0;
+	}
+
+	.sit-wcpg-checklist__label {
+		font-size: 14px;
+		font-weight: 600;
+		line-height: 1.4;
+	}
+
+	.sit-wcpg-checklist__message {
+		margin-top: 2px;
+		color: token("muted");
+		font-size: 13px;
+		line-height: 1.45;
+	}
+
+	.sit-wcpg-checklist__fix {
+		display: inline-flex;
+		gap: 2px;
+		align-items: center;
+		margin: token("space-1") 0 0;
+		padding: 0;
+		color: token("info-700");
+		font-family: inherit;
+		font-size: 13px;
+		font-weight: 600;
+		line-height: 1.45;
+		text-align: start;
+		background: none;
+		border: 0;
+		border-radius: 2px;
 		cursor: pointer;
+
+		&:hover {
+			color: token("ink");
+			text-decoration: underline;
+		}
+
+		&:focus-visible {
+
+			@include focus-ring;
+		}
+	}
+
+	.sit-wcpg-checklist__fix-arrow {
+		display: inline-flex;
+	}
+
+	.sit-wcpg-checklist__item--skipped .sit-wcpg-checklist__label {
+		color: token("muted");
+		font-weight: 500;
+	}
+
+	// The two collapsed sections. Native <details>: keyboard and screen readers for free.
+	.sit-wcpg-checklist__passed,
+	.sit-wcpg-checklist__skipped {
+		border-top: 1px solid token("line");
+	}
+
+	.sit-wcpg-checklist__disclosure {
+		display: flex;
+		gap: 6px;
+		align-items: center;
+		padding: token("space-3") 0;
+		font-size: 13px;
+		font-weight: 600;
+		list-style: none;
+		cursor: pointer;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+
+		&:focus-visible {
+
+			@include focus-ring;
+		}
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+
+	.sit-wcpg-checklist__disclosure--passed {
+		color: token("shield-700");
+	}
+
+	.sit-wcpg-checklist__disclosure--skipped {
+		color: token("muted");
+		font-weight: 500;
+	}
+
+	// The chevron: one icon per state, so nothing depends on a rotated transform in RTL.
+	.sit-wcpg-checklist__chevron {
+		display: inline-flex;
+	}
+
+	.sit-wcpg-checklist__chevron--open,
+	details[open] > summary .sit-wcpg-checklist__chevron--closed {
+		display: none;
+	}
+
+	details[open] > summary .sit-wcpg-checklist__chevron--open {
+		display: inline-flex;
+	}
+
+	.sit-wcpg-checklist__passed > .sit-wcpg-checklist__section:first-of-type .sit-wcpg-checklist__group {
+		padding-top: token("space-1");
+	}
+
+	.sit-wcpg-checklist__empty {
+		margin: token("space-3") 0 0;
+		color: token("muted");
+	}
+
+	// --- Footer: Re-check and the last-checked line ------------------------------
+
+	.sit-wcpg-checklist__footer {
+		padding-top: token("space-3");
+		border-top: 1px solid token("line");
+	}
+
+	.sit-wcpg-checklist__recheck {
+		width: 100%;
+	}
+
+	.sit-wcpg-checklist__time {
+		margin: token("space-2") 0 0;
+		color: token("muted");
+		font-size: 12px;
 	}
 }
 
-.sit-wcpg-checklist__empty {
-	margin: 0;
-	color: $sit-wcpg-muted;
+// Arrows that point "forward" point the other way in a right-to-left admin.
+/* stylelint-disable-next-line selector-class-pattern -- core's body class */
+.rtl .sit-wcpg-checklist {
+
+	.sit-wcpg-checklist__fix-arrow,
+	.sit-wcpg-checklist__chevron--closed {
+		transform: scaleX(-1);
+	}
 }
 
-.sit-wcpg-checklist__footer {
-	margin-top: 10px;
-	padding-top: 8px;
-	border-top: 1px solid $sit-wcpg-rule;
-}
+@media (forced-colors: active) {
 
-.sit-wcpg-checklist__notice {
-	margin: 0 0 8px;
-}
+	.sit-wcpg-checklist .sit-wcpg-checklist__icon {
+		border: 1px solid CanvasText;
+	}
 
-.sit-wcpg-checklist__footer-row {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 8px;
-}
-
-.sit-wcpg-checklist__time {
-	color: $sit-wcpg-muted;
+	.sit-wcpg-checklist .sit-wcpg-checklist__ring-bar {
+		stroke: Highlight;
+	}
 }

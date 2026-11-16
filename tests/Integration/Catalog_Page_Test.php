@@ -13,6 +13,7 @@ use ProductPublishGuard\Admin\Editor_Meta_Box;
 use ProductPublishGuard\Admin\Screen;
 use ProductPublishGuard\Plugin;
 use ProductPublishGuard\Settings\Settings;
+use ProductPublishGuard\Settings\Settings_Page;
 use ProductPublishGuard\Support\Readiness_Rebuild;
 use ProductPublishGuard\Support\Readiness_Store;
 use WC_Product_Simple;
@@ -163,6 +164,44 @@ final class Catalog_Page_Test extends Publish_Guard_Test_Case {
 	}
 
 	/**
+	 * Store a current failure on an existing product.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param int   $id       Product id.
+	 * @param array $rule_ids Failing rule ids.
+	 * @return int The same id.
+	 */
+	private function flag( int $id, array $rule_ids = array( 'price' ) ): int {
+		update_post_meta( $id, Readiness_Store::META_STATUS, 'fail' );
+		update_post_meta( $id, Readiness_Store::META_SIGNATURE, $this->signature() );
+		update_post_meta(
+			$id,
+			Readiness_Store::META_DATA,
+			array(
+				'required_failures' => $rule_ids,
+				'checked_at'        => time() - HOUR_IN_SECONDS,
+			)
+		);
+
+		return $id;
+	}
+
+	/**
+	 * The rendered page from the end of the shell on (the shell is tested in Admin_Shell_Test).
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return string
+	 */
+	private function content(): string {
+		$html = $this->page();
+		$end  = strpos( $html, 'wp-header-end' );
+
+		return false === $end ? $html : substr( $html, $end );
+	}
+
+	/**
 	 * The rendered page.
 	 *
 	 * @since 1.2.0
@@ -296,7 +335,7 @@ final class Catalog_Page_Test extends Publish_Guard_Test_Case {
 
 		$html = $this->page();
 
-		$this->assertStringContainsString( 'Regular price, A check that is no longer active', $html );
+		$this->assertStringContainsString( '<li class="sit-wcpg-ui-pill sit-wcpg-ui-pill--required">A check that is no longer active</li>', $html );
 		$this->assertStringNotContainsString( 'gone_rule', $html );
 	}
 
@@ -384,18 +423,20 @@ final class Catalog_Page_Test extends Publish_Guard_Test_Case {
 	}
 
 	/**
-	 * The empty list says what it means, depending on whether checking is finished.
+	 * An empty list while rechecking says the list may still grow.
 	 *
 	 * @since 1.2.0
 	 *
 	 * @return void
 	 */
-	public function test_empty_state_copy(): void {
-		$this->assertStringContainsString( 'Every live product passes your required checks.', $this->page() );
-
+	public function test_empty_state_copy_while_rechecking(): void {
 		$this->set_index( array( 'state' => 'building' ) );
 
-		$this->assertStringContainsString( 'No failing live products found yet. Rechecking is still running, so this list may grow.', $this->page() );
+		$html = $this->page();
+
+		$this->assertStringContainsString( '<h2 class="sit-wcpg-ui-empty__title">No failing live products found yet</h2>', $html );
+		$this->assertStringContainsString( 'Rechecking is still running, so this list may grow.', $html );
+		$this->assertStringNotContainsString( 'Every live product passes', $html );
 	}
 
 	/**
@@ -515,7 +556,301 @@ final class Catalog_Page_Test extends Publish_Guard_Test_Case {
 		$text = wp_strip_all_tags( $this->page() );
 
 		$this->assertStringNotContainsStringIgnoringCase( 'score', $text );
-		$this->assertStringNotContainsStringIgnoringCase( 'grade', $text );
+
+		// A word match: the shell's "Upgrade to Pro" button (UI decision U13) is not a grade.
+		$this->assertDoesNotMatchRegularExpression( '/\bgrade/i', $text );
 		$this->assertStringNotContainsString( '%', $text );
+	}
+
+	/**
+	 * The page bar names the consequence and links to the products list (U16: no export,
+	 * no "Re-check all").
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_page_bar_title_and_intro(): void {
+		$html = $this->content();
+
+		$this->assertStringContainsString( '<h1 class="sit-wcpg-ui-pagebar__title">Live products that would fail today</h1>', $html );
+		$this->assertStringContainsString( 'These products are published. Under your required checks, each would be held as a draft if it were published today.', $html );
+		$this->assertStringContainsString(
+			'<a class="sit-wcpg-ui-button sit-wcpg-ui-button--secondary" href="' . esc_url( admin_url( 'edit.php?post_type=product' ) ) . '">Open the products list</a>',
+			$html
+		);
+		$this->assertStringNotContainsStringIgnoringCase( 'export', wp_strip_all_tags( $html ) );
+		$this->assertStringNotContainsStringIgnoringCase( 're-check all', wp_strip_all_tags( $html ) );
+	}
+
+	/**
+	 * Listed products come with the reassurance banner; a running recheck adds the info banner.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_success_and_progress_banners(): void {
+		$this->flagged_product();
+
+		$html = $this->content();
+
+		$this->assertMatchesRegularExpression( '#<div class="sit-wcpg-ui-banner sit-wcpg-ui-banner--success">.*They stay live — Publish Guard never takes a product offline\.#s', $html );
+		$this->assertStringNotContainsString( 'sit-wcpg-ui-banner--info', $html );
+
+		$this->set_index(
+			array(
+				'state' => 'building',
+				'done'  => 10,
+				'total' => 40,
+			)
+		);
+
+		$html = $this->content();
+
+		$this->assertStringContainsString( 'sit-wcpg-ui-banner--success', $html );
+		$this->assertMatchesRegularExpression(
+			'#<div class="sit-wcpg-ui-banner sit-wcpg-ui-banner--info sit-wcpg-catalog__progress">.*Rechecking products against your current settings: 10 of 40 done\. This list will be complete when it finishes\.#s',
+			$html
+		);
+	}
+
+	/**
+	 * Without products to reassure about, there is no reassurance banner.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_no_success_banner_on_an_empty_list(): void {
+		$this->assertStringNotContainsString( 'sit-wcpg-ui-banner--success', $this->content() );
+	}
+
+	/**
+	 * The bar shows the same numbers as the sentence, and is named by it.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_progress_bar_values_match_rebuild_status(): void {
+		$this->set_index(
+			array(
+				'state' => 'building',
+				'done'  => 10,
+				'total' => 40,
+			)
+		);
+
+		$html = $this->content();
+
+		$this->assertStringContainsString( '<p id="sit-wcpg-catalog-progress">', $html );
+		$this->assertStringContainsString(
+			'role="progressbar" aria-labelledby="sit-wcpg-catalog-progress" aria-valuemin="0" aria-valuemax="40" aria-valuenow="10"',
+			$html
+		);
+		$this->assertStringContainsString( '<span class="sit-wcpg-ui-bar__fill" style="width: 25%"></span>', $html );
+	}
+
+	/**
+	 * A finished index draws no bar.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_no_progress_bar_when_current(): void {
+		$this->flagged_product();
+
+		$this->assertStringNotContainsString( 'role="progressbar"', $this->content() );
+	}
+
+	/**
+	 * A product with an image shows it at 44 px; one without shows its initials, hidden from
+	 * assistive technology because the name is already in the cell.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_row_shows_thumbnail_or_initials_placeholder(): void {
+		$with_image = $this->flagged_product( array( 'price' ), '', 'Pictured product' );
+
+		$image = $this->image();
+
+		// A real upload has dimensions; WordPress scales the 44 px request from them.
+		wp_update_attachment_metadata(
+			$image,
+			array(
+				'width'  => 600,
+				'height' => 600,
+				'file'   => 'sit-wcpg-test.jpg',
+			)
+		);
+		set_post_thumbnail( $with_image, $image );
+
+		$this->flagged_product( array( 'price' ), '', 'Linen Hoodie — Oat' );
+
+		$html = $this->content();
+
+		$this->assertMatchesRegularExpression( '#<span class="sit-wcpg-catalog__thumb"><img[^>]*width="44"[^>]*height="44"[^>]*class="[^"]*sit-wcpg-catalog__thumb-image#', $html );
+		$this->assertStringContainsString( '<span class="sit-wcpg-catalog__thumb sit-wcpg-catalog__thumb--initials" aria-hidden="true">LH</span>', $html );
+	}
+
+	/**
+	 * Initials skip dashes and symbols and stop at two.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_initials(): void {
+		$this->assertSame( 'LH', Catalog_List_Table::initials( 'Linen Hoodie — Oat' ) );
+		$this->assertSame( 'C', Catalog_List_Table::initials( 'café' ) );
+		$this->assertSame( 'ÉT', Catalog_List_Table::initials( 'été & thé' ) );
+		$this->assertSame( '', Catalog_List_Table::initials( '— —' ) );
+	}
+
+	/**
+	 * A variable product says so and counts its variations; others show the SKU, else the type.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_variable_product_line_says_variable_and_variation_count(): void {
+		$this->flag(
+			$this->variable_product(
+				array(
+					array( 'regular_price' => '10' ),
+					array( 'regular_price' => '12' ),
+					array(
+						'regular_price' => '14',
+						'status'        => 'private',
+					),
+				),
+				'publish'
+			)
+		);
+		$this->flag( $this->passing_product( 'publish', array( 'sku' => 'LH-OAT-M' ) ) );
+		$this->flagged_product();
+
+		$html = $this->content();
+
+		$this->assertStringContainsString( '<span class="sit-wcpg-catalog__product-meta">Variable · 3 variations</span>', $html );
+		$this->assertStringContainsString( '<span class="sit-wcpg-catalog__product-meta">SKU LH-OAT-M</span>', $html );
+		$this->assertStringContainsString( '<span class="sit-wcpg-catalog__product-meta">Simple</span>', $html );
+	}
+
+	/**
+	 * Each failing check is a required pill named by the registry's label.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_failing_checks_render_as_required_pills_with_rule_labels(): void {
+		$this->flagged_product( array( 'price', 'sku' ) );
+
+		$labels = array();
+
+		foreach ( array( 'price', 'sku' ) as $rule_id ) {
+			$labels[] = Plugin::instance()->registry()->get( $rule_id )->get_label();
+		}
+
+		$this->assertStringContainsString(
+			'<ul class="sit-wcpg-catalog__checks"><li class="sit-wcpg-ui-pill sit-wcpg-ui-pill--required">' . esc_html( $labels[0] ) . '</li><li class="sit-wcpg-ui-pill sit-wcpg-ui-pill--required">' . esc_html( $labels[1] ) . '</li></ul>',
+			$this->content()
+		);
+	}
+
+	/**
+	 * "Edit product" opens the editor, and names the product for screen readers.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_edit_product_action(): void {
+		$id = $this->flagged_product();
+
+		$this->assertStringContainsString(
+			'<a class="sit-wcpg-catalog__edit" href="' . esc_url( get_edit_post_link( $id, 'raw' ) ) . '">Edit product<span class="screen-reader-text">: A live product</span></a>',
+			$this->content()
+		);
+	}
+
+	/**
+	 * The empty state says nothing fails, and links to the checklist only for whoever can
+	 * change it.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_empty_state_copy_and_link_capability(): void {
+		$html = $this->content();
+		$link = esc_url( admin_url( 'admin.php?page=' . Settings_Page::MENU_SLUG ) );
+
+		$this->assertStringContainsString( '<h2 class="sit-wcpg-ui-empty__title">Every live product passes your required checks</h2>', $html );
+		$this->assertStringContainsString( esc_html( "We'll list a product here if a rule you tighten later would stop it being published." ), $html );
+		$this->assertStringContainsString( '<a class="sit-wcpg-catalog__empty-link" href="' . $link . '">Review your checklist', $html );
+		$this->assertStringNotContainsString( '<table', $html );
+
+		$user = self::factory()->user->create_and_get( array( 'role' => 'subscriber' ) );
+
+		$user->add_cap( 'edit_products' );
+		wp_set_current_user( $user->ID );
+
+		$this->assertFalse( current_user_can( Settings_Page::CAPABILITY ) );
+
+		$html = $this->content();
+
+		$this->assertStringContainsString( 'Every live product passes your required checks', $html );
+		$this->assertStringNotContainsString( 'Review your checklist', $html );
+	}
+
+	/**
+	 * Twenty a page still, newest change first, and sortable by name with an allow-listed order.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_list_table_still_paginates_and_sorts(): void {
+		foreach ( array( 'Bravo', 'Alpha', 'Charlie' ) as $name ) {
+			$this->flagged_product( array( 'price' ), '', $name );
+		}
+
+		for ( $i = 0; $i < 22; $i++ ) {
+			$this->flagged_product( array( 'price' ), '', 'Zulu ' . $i );
+		}
+
+		$table = $this->table();
+
+		$this->assertCount( Catalog_Page::PER_PAGE, $table->items );
+		$this->assertSame( 25, $table->get_pagination_arg( 'total_items' ) );
+
+		$_GET['orderby'] = 'title';
+		$_GET['order']   = 'asc';
+
+		try {
+			$titles = wp_list_pluck( $this->table()->items, 'post_title' );
+
+			$this->assertSame( array( 'Alpha', 'Bravo', 'Charlie' ), array_slice( $titles, 0, 3 ) );
+
+			$_GET['order'] = 'desc';
+
+			$this->assertStringStartsWith( 'Zulu', wp_list_pluck( $this->table()->items, 'post_title' )[0] );
+
+			// Anything off the allow-list falls back to the default order.
+			$_GET['orderby'] = 'post_title; DROP';
+			$_GET['order']   = 'sideways';
+
+			$this->assertCount( Catalog_Page::PER_PAGE, $this->table()->items );
+			$this->assertStringContainsString( 'sortable', $this->content() );
+		} finally {
+			unset( $_GET['orderby'], $_GET['order'] );
+		}
 	}
 }

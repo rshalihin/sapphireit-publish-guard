@@ -1,0 +1,62 @@
+/**
+ * Pill (U5): `--required`, `--warning`, `--success`, `--info`, `--neutral`, `--pro`.
+ * Status pills always carry a word, never colour alone.
+ */
+
+@use "../tokens" as *;
+
+.sit-wcpg-ui {
+
+	.sit-wcpg-ui-pill {
+		display: inline-flex;
+		gap: token("space-1");
+		align-items: center;
+		padding: 4px 10px;
+		color: token("muted");
+		font-size: 12px;
+		font-weight: 600;
+		line-height: 1.5;
+		white-space: nowrap;
+		background: token("ground");
+		border: 1px solid transparent;
+		border-radius: 999px;
+	}
+
+	.sit-wcpg-ui-pill--required {
+		color: token("required-700");
+		background: token("required-50");
+	}
+
+	.sit-wcpg-ui-pill--warning {
+		color: token("warning-700");
+		background: token("warning-50");
+	}
+
+	.sit-wcpg-ui-pill--success {
+		color: token("shield-700");
+		background: token("shield-50");
+	}
+
+	.sit-wcpg-ui-pill--info {
+		color: token("info-700");
+		background: token("info-50");
+	}
+
+	.sit-wcpg-ui-pill--neutral {
+		color: token("muted");
+		background: token("ground");
+		border-color: token("line");
+	}
+
+	.sit-wcpg-ui-pill--pro {
+		color: token("navy-900");
+		background: token("gold-300");
+	}
+}
+
+@media (forced-colors: active) {
+
+	.sit-wcpg-ui .sit-wcpg-ui-pill {
+		border-color: CanvasText;
+	}
+}

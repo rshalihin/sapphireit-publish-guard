@@ -7,8 +7,10 @@
 
 namespace ProductPublishGuard\Tests\Unit;
 
+use ProductPublishGuard\Admin\Admin_Shell;
 use ProductPublishGuard\Admin\Assets;
 use ProductPublishGuard\Admin\Catalog_Page;
+use ProductPublishGuard\Admin\Dashboard_Page;
 use ProductPublishGuard\Admin\Editor_Meta_Box;
 use ProductPublishGuard\Admin\Product_List_Column;
 use ProductPublishGuard\Admin\Readiness_Filter;
@@ -21,6 +23,7 @@ use ProductPublishGuard\Settings\Settings_Page;
 use ProductPublishGuard\Support\Checklist_Service;
 use ProductPublishGuard\Support\Override_Log;
 use ProductPublishGuard\Support\Readiness_Rebuild;
+use ProductPublishGuard\Support\Readiness_Stats;
 use ProductPublishGuard\Support\Readiness_Store;
 use Yoast\PHPUnitPolyfills\TestCases\TestCase;
 
@@ -53,6 +56,18 @@ final class Naming_Contract_Test extends TestCase {
 	 */
 	public function test_catalog_hook_is_derived_from_the_menu_slug() {
 		$this->assertSame( 'product_page_' . Catalog_Page::MENU_SLUG, Screen::CATALOG_HOOK );
+	}
+
+	/**
+	 * The Dashboard hook is the one core derives from the WooCommerce submenu (U7).
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_dashboard_hook_is_derived_from_the_menu_slug() {
+		$this->assertSame( 'woocommerce_page_' . Dashboard_Page::MENU_SLUG, Screen::DASHBOARD_HOOK );
+		$this->assertSame( Dashboard_Page::PARENT, 'woocommerce' );
 	}
 
 	/**
@@ -100,7 +115,12 @@ final class Naming_Contract_Test extends TestCase {
 			'rebuild hook' => array( Readiness_Rebuild::HOOK ),
 			'reindex hook' => array( Readiness_Rebuild::PRODUCTS_HOOK ),
 			'filter var'   => array( Readiness_Filter::QUERY_VAR ),
+			'rule var'     => array( Readiness_Filter::RULE_QUERY_VAR ),
+			'stats cache'  => array( Readiness_Stats::TRANSIENT ),
 			'review state' => array( Review_Notice::OPTION ),
+			'tabs filter'  => array( Admin_Shell::TABS_FILTER ),
+			'items filter' => array( Admin_Shell::ITEMS_FILTER ),
+			'prompts hook' => array( Admin_Shell::PROMPTS_FILTER ),
 		);
 	}
 
@@ -140,15 +160,18 @@ final class Naming_Contract_Test extends TestCase {
 	 */
 	public function data_kebab_identifiers(): array {
 		return array(
-			'menu slug'      => array( Settings_Page::MENU_SLUG ),
-			'mount id'       => array( Editor_Meta_Box::MOUNT_ID ),
-			'editor handle'  => array( Assets::EDITOR_HANDLE ),
-			'admin handle'   => array( Assets::ADMIN_HANDLE ),
-			'rest namespace' => array( Validate_Controller::REST_NAMESPACE ),
-			'as group'       => array( Readiness_Rebuild::GROUP ),
-			'catalog slug'   => array( Catalog_Page::MENU_SLUG ),
-			'review handle'  => array( Assets::REVIEW_HANDLE ),
-			'cli command'    => array( Gate_Command::COMMAND ),
+			'menu slug'       => array( Settings_Page::MENU_SLUG ),
+			'mount id'        => array( Editor_Meta_Box::MOUNT_ID ),
+			'editor handle'   => array( Assets::EDITOR_HANDLE ),
+			'admin handle'    => array( Assets::ADMIN_HANDLE ),
+			'rest namespace'  => array( Validate_Controller::REST_NAMESPACE ),
+			'as group'        => array( Readiness_Rebuild::GROUP ),
+			'catalog slug'    => array( Catalog_Page::MENU_SLUG ),
+			'dashboard slug'  => array( Dashboard_Page::MENU_SLUG ),
+			'review handle'   => array( Assets::REVIEW_HANDLE ),
+			'cli command'     => array( Gate_Command::COMMAND ),
+			'shell handle'    => array( Admin_Shell::STYLE_HANDLE ),
+			'settings handle' => array( Assets::SETTINGS_HANDLE ),
 		);
 	}
 
@@ -193,5 +216,29 @@ final class Naming_Contract_Test extends TestCase {
 
 		$this->assertStringContainsString( "const MOUNT_ID = '" . Editor_Meta_Box::MOUNT_ID . "';", $source );
 		$this->assertStringContainsString( "const PAYLOAD_GLOBAL = '" . Assets::PAYLOAD_GLOBAL . "';", $source );
+	}
+
+	/**
+	 * The shell fires each hook under its constant's name (the literal stays in the call so
+	 * `Hook_Documentation_Test` and hook parsers see it), and its tab ids are U7's.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_admin_shell_constants_match_what_it_fires() {
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local source file.
+		$source = (string) file_get_contents( dirname( __DIR__, 2 ) . '/src/Admin/Admin_Shell.php' );
+
+		foreach ( array( Admin_Shell::TABS_FILTER, Admin_Shell::ITEMS_FILTER, Admin_Shell::PROMPTS_FILTER ) as $hook ) {
+			$this->assertMatchesRegularExpression( "/apply_filters\(\s*'" . preg_quote( $hook, '/' ) . "'/", $source, $hook . ' is not fired under its constant.' );
+		}
+
+		$this->assertSame(
+			array( 'dashboard', 'checklist', 'live-products', 'upgrade' ),
+			array( Admin_Shell::TAB_DASHBOARD, Admin_Shell::TAB_CHECKLIST, Admin_Shell::TAB_LIVE_PRODUCTS, Admin_Shell::TAB_UPGRADE )
+		);
+		$this->assertSame( Admin_Shell::PRO_URL . '#pricing', Admin_Shell::PRO_PRICING_URL );
+		$this->assertStringNotContainsString( 'utm_', Admin_Shell::PRO_URL );
 	}
 }

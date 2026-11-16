@@ -27,6 +27,16 @@ defined( 'ABSPATH' ) || exit;
 final class Settings_Sanitizer {
 
 	/**
+	 * Settings-error code of a clamped threshold, followed by the threshold key.
+	 *
+	 * The settings screen reads it back to open the section holding that field.
+	 *
+	 * @since 1.2.0
+	 * @var string
+	 */
+	public const CLAMP_ERROR_PREFIX = 'sit_wcpg_threshold_clamped_';
+
+	/**
 	 * Where the defaults, the rule whitelist and the threshold ranges come from.
 	 *
 	 * @since 1.0.0
@@ -212,7 +222,7 @@ final class Settings_Sanitizer {
 
 		add_settings_error(
 			Settings::OPTION_NAME,
-			'sit_wcpg_threshold_clamped_' . $key,
+			self::CLAMP_ERROR_PREFIX . $key,
 			sprintf(
 				/* translators: 1: threshold setting label, 2: the value that was stored instead. */
 				__( '%1$s was outside the allowed range and has been saved as %2$d.', 'sapphireit-publish-guard' ),

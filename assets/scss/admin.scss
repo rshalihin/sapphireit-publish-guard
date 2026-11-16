@@ -1,124 +1,15 @@
 /**
- * Shared admin stylesheet: the products list Readiness column, the settings page, the
- * catalog screen and the welcome notice on the Plugins screen.
+ * Shared admin stylesheet: the settings page footer and the welcome and review notices.
+ * The products list Readiness column, the catalog screen and the settings form are styled
+ * by the shell stylesheet (UI phases U06 and U08).
  *
- * Enqueued as `sit-wcpg-admin` on those screens only (coding-plan.md section 11.1), and
- * on the Plugins screen only while the welcome notice is pending.
- * The status colours match editor.scss; status is always also carried by a glyph and a
- * text label, never by colour alone.
+ * Enqueued as `sit-wcpg-admin` on the products list, the settings page and the catalog
+ * screen (where the review request can appear), and on the Plugins screen only while the
+ * welcome notice is pending (coding-plan.md section 11.1).
  */
-
-@use "status-icons" as *;
-
-$sit-wcpg-pass: #00a32a;
-$sit-wcpg-warning: #996800;
-$sit-wcpg-fail: #d63638;
-$sit-wcpg-muted: #646970;
 
 // Brand green: the shield in the plugin icon (.wordpress-org/icon.svg).
 $sit-wcpg-brand: #00a32a;
-
-// Products list — the Readiness cell.
-.sit-wcpg-readiness {
-	white-space: nowrap;
-
-	a {
-		color: inherit;
-		text-decoration: none;
-
-		&:hover .sit-wcpg-readiness__label,
-		&:focus .sit-wcpg-readiness__label {
-			text-decoration: underline;
-		}
-	}
-}
-
-.sit-wcpg-readiness__icon {
-	display: inline-block;
-	width: 1em;
-	font-weight: 700;
-	text-align: center;
-}
-
-.sit-wcpg-readiness--pass {
-	color: $sit-wcpg-pass;
-}
-
-.sit-wcpg-readiness--warning {
-	color: $sit-wcpg-warning;
-}
-
-.sit-wcpg-readiness--fail {
-	color: $sit-wcpg-fail;
-}
-
-.sit-wcpg-readiness--none {
-	color: $sit-wcpg-muted;
-}
-
-// The same filled-circle icons as the editor checklist. A cell is only ever one of these.
-@each $status in pass, warning, fail {
-
-	.sit-wcpg-readiness--#{$status} .sit-wcpg-readiness__icon {
-
-		@include sit-wcpg-status-icon($status, 14px);
-	}
-}
-
-// Column width. The list table and its header classes are core's (`column-{key}` is
-// built from Product_List_Column::COLUMN), so they cannot follow the BEM prefix pattern.
-/* stylelint-disable-next-line selector-class-pattern -- core list-table classes */
-table.wp-list-table .manage-column.column-sit_wcpg_readiness {
-	width: 100px;
-}
-
-// Catalog screen: which required checks fail, and how old the answer is.
-.sit-wcpg-catalog__checks {
-	color: $sit-wcpg-fail;
-}
-
-.sit-wcpg-catalog__stale {
-	color: $sit-wcpg-muted;
-}
-
-// Settings page. Scoped to the page wrapper, because this stylesheet also loads on the
-// products list, whose table rows must not pick these up.
-.sit-wcpg-settings {
-
-	// Wider label column than core's 200px.
-	/* stylelint-disable-next-line selector-class-pattern -- core settings-table class */
-	.form-table th {
-		width: 260px;
-	}
-
-	tr > td:first-child {
-		max-width: 800px;
-	}
-
-	// A radio never wraps away from its own label; the two choices may still stack.
-	.sit-wcpg-settings-choice {
-		white-space: nowrap;
-	}
-
-	// Core sets `.form-table td fieldset label { margin: … !important }`, so only
-	// !important can widen the gap between two radio choices.
-	.sit-wcpg-settings-choice:first-child {
-		margin-right: 12px !important;
-	}
-
-	// Space under the first checkbox's description, before the second checkbox.
-	.sit-wcpg-settings-enforcement > p:first-of-type {
-		margin-bottom: 12px;
-	}
-
-	// A heading row above each group of rules, the same groups as the editor panel.
-	.sit-wcpg-settings-rules__group th {
-		padding-top: 12px;
-		padding-bottom: 8px;
-		background: #f0f0f1;
-		font-weight: 600;
-	}
-}
 
 // Settings page footer: the review link (Settings_Footer).
 .sit-wcpg-rating-link {

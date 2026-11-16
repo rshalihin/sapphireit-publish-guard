@@ -1,0 +1,152 @@
+/**
+ * Switch (U5): a native `<input type="checkbox" role="switch">`, styled; checked = shield-500.
+ *
+ *     <span class="sit-wcpg-ui-switch">
+ *         <input type="checkbox" role="switch" id="…" …>
+ *         <label for="…" class="sit-wcpg-ui-switch__label">…</label>
+ *     </span>
+ *
+ * The track is the input itself and the thumb its `::before`. Core's checkbox skin
+ * (wp-admin/css/forms.css, verification note V-U2) sets border, radius, background,
+ * size, margin and shadow on every checkbox, draws a tick in `:checked::before`, and
+ * resizes checkboxes at ≤ 782 px; every one of those is overridden here, in both the
+ * default and the ≤ 782 px rule. Core's `padding: 0 !important` is harmless: the track
+ * has no padding.
+ */
+
+@use "../tokens" as *;
+
+$sit-wcpg-switch-width: 36px;
+$sit-wcpg-switch-height: 20px;
+$sit-wcpg-switch-width-touch: 44px;
+$sit-wcpg-switch-height-touch: 24px;
+$sit-wcpg-switch-inset: 2px;
+
+@mixin switch-size($width, $height) {
+	width: $width;
+	min-width: $width;
+	height: $height;
+
+	&::before,
+	&:checked::before {
+		width: $height - 2 * $sit-wcpg-switch-inset;
+		height: $height - 2 * $sit-wcpg-switch-inset;
+	}
+
+	&:checked::before {
+		transform: translateX($width - $height);
+	}
+}
+
+.sit-wcpg-ui {
+
+	.sit-wcpg-ui-switch {
+		display: inline-flex;
+		gap: token("space-3");
+		align-items: center;
+		vertical-align: middle;
+	}
+
+	.sit-wcpg-ui-switch__label {
+		color: token("ink");
+		cursor: pointer;
+	}
+
+	.sit-wcpg-ui-switch input[role="switch"] {
+		position: relative;
+		display: inline-block;
+		flex: none;
+		margin: 0;
+		color: inherit;
+		line-height: 0;
+		vertical-align: middle;
+		background: token("line-strong");
+		border: 0;
+		border-radius: 999px;
+		outline: 0;
+		box-shadow: none;
+		cursor: pointer;
+		transition: background-color 0.15s ease-in-out;
+		appearance: none;
+
+		@include switch-size($sit-wcpg-switch-width, $sit-wcpg-switch-height);
+
+		&::before,
+		&:checked::before {
+			position: absolute;
+			top: $sit-wcpg-switch-inset;
+			left: $sit-wcpg-switch-inset;
+			float: none;
+			display: block;
+			margin: 0;
+			content: "";
+			background: #fff;
+			border-radius: 50%;
+			box-shadow: 0 1px 2px rgba(15, 24, 52, 0.25);
+			transition: transform 0.15s ease-in-out;
+		}
+
+		&:checked {
+			background: token("shield-500");
+			border-color: transparent;
+		}
+
+		&:focus {
+			border-color: transparent;
+			box-shadow: none;
+		}
+
+		&:focus-visible {
+
+			@include focus-ring;
+		}
+
+		&:disabled {
+			opacity: 0.55;
+			cursor: not-allowed;
+		}
+	}
+}
+
+@media screen and (max-width: 782px) {
+
+	.sit-wcpg-ui .sit-wcpg-ui-switch input[role="switch"] {
+		margin: 0;
+
+		@include switch-size($sit-wcpg-switch-width-touch, $sit-wcpg-switch-height-touch);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+	.sit-wcpg-ui .sit-wcpg-ui-switch input[role="switch"],
+	.sit-wcpg-ui .sit-wcpg-ui-switch input[role="switch"]::before {
+		transition: none;
+	}
+}
+
+@media (forced-colors: active) {
+
+	.sit-wcpg-ui .sit-wcpg-ui-switch input[role="switch"] {
+		background: Canvas;
+		border: 1px solid CanvasText;
+		forced-color-adjust: none;
+
+		&::before {
+			background: CanvasText;
+		}
+
+		&:checked {
+			background: Highlight;
+			border-color: Highlight;
+
+			&::before {
+				background: HighlightText;
+			}
+		}
+
+		&:focus-visible {
+			outline-color: Highlight;
+		}
+	}
+}

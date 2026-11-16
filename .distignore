@@ -45,5 +45,6 @@ artifacts
 test-results
 playwright-report
 
-# Empty companion of the style-only `admin` entry; nothing enqueues it.
+# Empty companions of the style-only `admin` and `shell` entries; nothing enqueues them.
 build/admin.js
+build/shell.js

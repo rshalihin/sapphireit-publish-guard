@@ -276,8 +276,8 @@ final class Rule_Groups_Test extends WP_UnitTestCase {
 		( new Settings_Page( new Settings( $registry ), $registry ) )->render_page();
 		$output = (string) ob_get_clean();
 
-		$this->assertStringContainsString( '<th colspan="3" scope="colgroup">Probe</th>', $output );
-		$this->assertStringNotContainsString( '<th colspan="3" scope="colgroup">Other</th>', $output );
+		$this->assertStringContainsString( '<h2 id="' . Settings_Page::SECTION_ID_PREFIX . 'probe-title">Probe</h2>', $output );
+		$this->assertStringNotContainsString( 'id="' . Settings_Page::SECTION_ID_PREFIX . 'other"', $output );
 
 		// The editor payload.
 		if ( ! file_exists( SIT_WCPG_PATH . 'build/editor.js' ) ) {

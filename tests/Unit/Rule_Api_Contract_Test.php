@@ -7,6 +7,7 @@
 
 namespace ProductPublishGuard\Tests\Unit;
 
+use ProductPublishGuard\Admin\Admin_Shell;
 use ProductPublishGuard\Engine\Abstract_Rule;
 use ProductPublishGuard\Engine\Managed_Rule_Interface;
 use ProductPublishGuard\Engine\Product_Context;
@@ -57,6 +58,7 @@ final class Rule_Api_Contract_Test extends TestCase {
 		Type_Family::class,
 		Settings::class,
 		Plugin::class,
+		Admin_Shell::class,
 	);
 
 	/**
@@ -241,6 +243,55 @@ final class Rule_Api_Contract_Test extends TestCase {
 			foreach ( array_keys( $actual[ $kind ] ) as $name ) {
 				$this->assertArrayHasKey( $name, $expected[ $kind ], "{$type}::{$name} is a new @api member — add it to rule-api-v2.json and README." );
 			}
+		}
+	}
+
+	/**
+	 * The `@api` CSS custom properties (UI decision U11) are exactly the design tokens.
+	 *
+	 * Reads the token map's keys from `assets/scss/_token-api.scss`, so a token renamed
+	 * or removed there fails here until the fixture, README and `API_VERSION` agree.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_css_custom_properties_match_the_tokens(): void {
+		$scss = (string) file_get_contents( SIT_WCPG_PATH . 'assets/scss/_token-api.scss' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading a local source file.
+
+		$this->assertSame( 1, preg_match( '/\$sit-wcpg-tokens:\s*\((.*?)\n\);/s', $scss, $map ), 'The token map was not found.' );
+		preg_match_all( '/^\t"([a-z0-9-]+)":/m', $map[1], $keys );
+
+		$tokens = array_map(
+			static function ( string $key ): string {
+				return '--sit-wcpg-' . $key;
+			},
+			$keys[1]
+		);
+
+		$this->assertSame( self::fixture()['css_custom_properties'] ?? null, $tokens, 'A design token changed — the --sit-wcpg-* custom properties are @api: update rule-api-v2.json and README, or bump API_VERSION.' );
+	}
+
+	/**
+	 * The built shell stylesheet declares every `@api` custom property.
+	 *
+	 * Skipped when `build/` has not been built (a fresh clone before `npm run build`).
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_shell_stylesheet_declares_every_custom_property(): void {
+		$file = SIT_WCPG_PATH . 'build/shell.css';
+
+		if ( ! is_readable( $file ) ) {
+			$this->markTestSkipped( 'Run npm run build first.' );
+		}
+
+		$css = (string) file_get_contents( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading a local build file.
+
+		foreach ( self::fixture()['css_custom_properties'] as $property ) {
+			$this->assertStringContainsString( $property . ':', $css, "{$property} is not declared in build/shell.css." );
 		}
 	}
 

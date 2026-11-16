@@ -1,0 +1,90 @@
+/**
+ * Stat card (U5): a coloured dot, a value, a caption and an optional link.
+ */
+
+@use "../tokens" as *;
+
+.sit-wcpg-ui {
+
+	.sit-wcpg-ui-stat {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		padding: token("space-5") 22px;
+		background: token("surface");
+		border: 1px solid token("line");
+		border-radius: token("radius-card");
+	}
+
+	.sit-wcpg-ui-stat__label {
+		display: flex;
+		gap: token("space-2");
+		align-items: center;
+		color: token("muted");
+		font-size: 13px;
+		font-weight: 500;
+	}
+
+	.sit-wcpg-ui-stat__dot {
+		flex: none;
+		width: 8px;
+		height: 8px;
+		background: token("muted");
+		border-radius: 50%;
+	}
+
+	.sit-wcpg-ui-stat__dot--success {
+		background: token("shield-500");
+	}
+
+	.sit-wcpg-ui-stat__dot--required {
+		background: token("required-700");
+	}
+
+	.sit-wcpg-ui-stat__dot--warning {
+		background: token("warning-700");
+	}
+
+	.sit-wcpg-ui-stat__dot--info {
+		background: token("info-700");
+	}
+
+	.sit-wcpg-ui-stat__value {
+		color: token("ink");
+		font-size: 32px;
+		font-weight: 700;
+		line-height: 1.2;
+		letter-spacing: -0.02em;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.sit-wcpg-ui-stat__caption {
+		margin: 0;
+		color: token("muted");
+		font-size: 13px;
+	}
+
+	.sit-wcpg-ui-stat__link {
+		margin-top: auto;
+		padding-top: token("space-2");
+		font-size: 13px;
+		font-weight: 600;
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+}
+
+@media (forced-colors: active) {
+
+	.sit-wcpg-ui .sit-wcpg-ui-stat {
+		border-color: CanvasText;
+	}
+
+	.sit-wcpg-ui .sit-wcpg-ui-stat__dot {
+		background: CanvasText;
+		forced-color-adjust: none;
+	}
+}

@@ -1,0 +1,95 @@
+/**
+ * The design tokens' Sass API (UI decisions U2, U4): the token and type-scale maps, the
+ * `token()` function and the shared mixins. Emits no CSS.
+ *
+ * `_tokens.scss` forwards this file and emits the custom properties, the font and the
+ * type scale once, into the shell stylesheet. A stylesheet that loads after the shell
+ * (editor.scss) uses this file directly, so it does not emit them a second time.
+ */
+
+@use "sass:map";
+
+// U2: name => value. Emitted as `--sit-wcpg-<name>`.
+$sit-wcpg-tokens: (
+	"navy-900": #16224a,
+	"navy-700": #1b2a5c,
+	"shield-500": #00a32a,
+	"shield-700": #0a6b26,
+	"shield-50": #e6f6eb,
+	"gold-300": #ffd27a,
+	"ink": #0f1834,
+	"muted": #5b6478,
+	"line": #e3e7ef,
+	"line-strong": #d5dbe7,
+	"ground": #f4f6fa,
+	"surface": #fff,
+	"required-700": #b42318,
+	"required-50": #feeceb,
+	"warning-700": #8a5300,
+	"warning-50": #fff4de,
+	"info-700": #1b3fa6,
+	"info-50": #eef2fc,
+	"radius-control": 9px,
+	"radius-card": 14px,
+	"radius-panel": 16px,
+	"space-1": 4px,
+	"space-2": 8px,
+	"space-3": 12px,
+	"space-4": 16px,
+	"space-5": 20px,
+	"space-6": 24px,
+	"space-7": 32px,
+	"space-8": 48px,
+	"font": (
+		"Inter",
+		-apple-system,
+		blinkmacsystemfont,
+		"Segoe UI",
+		roboto,
+		sans-serif,
+	),
+);
+
+// U4: utility name => (size, weight). Rendered as `.sit-wcpg-ui__t-<name>`.
+$sit-wcpg-type-scale: (
+	"page": (26px, 700),
+	"hero": (28px, 700),
+	"card": (18px, 700),
+	"rule": (15px, 600),
+	"body": (14px, 400),
+	"small": (13px, 400),
+	"overline": (12px, 600),
+);
+
+/// A token as a `var()` reference.
+/// @param {String} $name Token name without the prefix, e.g. "ink".
+@function token($name) {
+
+	@if not map.has-key($sit-wcpg-tokens, $name) {
+
+		@error "Unknown design token: #{$name}";
+	}
+
+	@return var(--sit-wcpg-#{$name});
+}
+
+/// The focus ring every interactive component shows (2 px info-700, 2 px offset).
+@mixin focus-ring {
+	outline: 2px solid token("info-700");
+	outline-offset: 2px;
+	box-shadow: none;
+}
+
+/// Hide an element visually while keeping it in the accessibility tree and tab order.
+@mixin visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+	border: 0;
+}
+

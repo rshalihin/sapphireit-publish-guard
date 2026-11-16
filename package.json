@@ -22,6 +22,7 @@
 		"package": "php bin/check-version.php --skip-pot && npm run build && npm run makepot && php bin/check-version.php && php bin/build-zip.php"
 	},
 	"devDependencies": {
+		"@axe-core/playwright": "^4.14.0",
 		"@playwright/test": "^1.63.0",
 		"@testing-library/react": "^16.3.3",
 		"@wordpress/api-fetch": "^7.56.0",

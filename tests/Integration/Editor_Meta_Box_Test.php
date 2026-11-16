@@ -8,6 +8,9 @@
 namespace ProductPublishGuard\Tests\Integration;
 
 use ProductPublishGuard\Admin\Editor_Meta_Box;
+use ProductPublishGuard\Engine\Abstract_Rule;
+use ProductPublishGuard\Engine\Product_Context;
+use ProductPublishGuard\Engine\Rule_Result;
 use ProductPublishGuard\Engine\Rule_Registry;
 use ProductPublishGuard\Engine\Validator;
 use ProductPublishGuard\Plugin;
@@ -155,6 +158,153 @@ final class Editor_Meta_Box_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * The no-JS fallback renders the React panel's section order with the kit classes.
+	 *
+	 * Summary, pre-flight statement, failing groups (failures before warnings), the
+	 * passed rows in a closed `<details>`, then the rows that do not apply.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_fallback_renders_the_panel_order_with_kit_classes(): void {
+		$registry = new Rule_Registry();
+		$registry->register( new Fake_Rule( 'gamma', 'warn', 10 ) );
+		$registry->register( new Fake_Rule( 'alpha', 'pass', 20 ) );
+		$registry->register( new Fake_Rule( 'beta', 'fail', 30 ) );
+		$registry->register( new Fake_Rule( 'delta', 'skip', 40 ) );
+
+		$output = $this->render( $this->box( $registry ), $this->product() );
+
+		$this->assertStringContainsString( 'id="' . Editor_Meta_Box::MOUNT_ID . '" class="sit-wcpg-ui sit-wcpg-checklist"', $output );
+
+		// The score ring, read out as the summary label.
+		$this->assertStringContainsString( 'sit-wcpg-checklist__ring sit-wcpg-checklist__ring--fail', $output );
+		$this->assertMatchesRegularExpression( '#<svg[^>]*role="img"[^>]*aria-label="1 of 3 checks passed"#', $output );
+		$this->assertStringContainsString( '<span class="sit-wcpg-checklist__ring-value" aria-hidden="true">1/3</span>', $output );
+
+		$order = array(
+			'sit-wcpg-checklist__summary',
+			'sit-wcpg-preflight',
+			'sit-wcpg-checklist__failing',
+			'sit-wcpg-checklist__item--fail',
+			'sit-wcpg-checklist__item--warning',
+			'<details class="sit-wcpg-checklist__passed">',
+			'sit-wcpg-checklist__item--pass',
+			'<details class="sit-wcpg-checklist__skipped">',
+			'sit-wcpg-checklist__item--skipped',
+		);
+
+		$last = -1;
+
+		foreach ( $order as $needle ) {
+			$position = strpos( $output, $needle );
+
+			$this->assertNotFalse( $position, "Missing {$needle}." );
+			$this->assertGreaterThan( $last, $position, "{$needle} is out of order." );
+
+			$last = $position;
+		}
+
+		$this->assertStringContainsString( 'sit-wcpg-checklist__group-count--fail">1 failing</span>', $output );
+		$this->assertStringContainsString( '1 more passed</summary>', $output );
+		$this->assertStringNotContainsString( '<details class="sit-wcpg-checklist__passed" open', $output );
+
+		// Icons come from the kit, never a text glyph.
+		$this->assertStringContainsString( 'sit-wcpg-checklist__icon sit-wcpg-checklist__icon--fail" aria-hidden="true"><svg class="sit-wcpg-ui-icon', $output );
+		$this->assertStringNotContainsString( "\u{2717}", $output );
+	}
+
+	/**
+	 * With every check passing there is no failing view and the passed count drops "more".
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_fallback_with_everything_passing(): void {
+		$registry = new Rule_Registry();
+		$registry->register( new Fake_Rule( 'alpha', 'pass', 10 ) );
+
+		$output = $this->render( $this->box( $registry ), $this->product() );
+
+		$this->assertStringNotContainsString( 'sit-wcpg-checklist__failing', $output );
+		$this->assertStringContainsString( 'sit-wcpg-checklist__ring--pass', $output );
+		$this->assertStringContainsString( 'All checks passed', $output );
+		$this->assertStringContainsString( '1 passed</summary>', $output );
+	}
+
+	/**
+	 * An add-on group keeps its label and its place after the core groups.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return void
+	 */
+	public function test_fallback_keeps_an_added_group_after_the_core_ones(): void {
+		$shopping = new class() extends Abstract_Rule {
+			/**
+			 * Rule id.
+			 *
+			 * @return string
+			 */
+			public function get_id(): string {
+				return 'probe_shopping';
+			}
+
+			/**
+			 * Rule label.
+			 *
+			 * @return string
+			 */
+			public function get_label(): string {
+				return 'Probe shopping';
+			}
+
+			/**
+			 * An add-on group.
+			 *
+			 * @return string
+			 */
+			public function get_group(): string {
+				return 'shopping';
+			}
+
+			/**
+			 * Always fails.
+			 *
+			 * @param Product_Context $context  Product.
+			 * @param Settings        $settings Settings.
+			 * @return Rule_Result
+			 */
+			public function check( Product_Context $context, Settings $settings ): Rule_Result {
+				return $this->fail( 'Probe failure.' );
+			}
+		};
+
+		$groups = static function ( array $labels ): array {
+			return $labels + array( 'shopping' => 'Google Shopping' );
+		};
+
+		add_filter( 'sit_wcpg_rule_groups', $groups );
+
+		$registry = new Rule_Registry();
+		$registry->register( $shopping );
+		$registry->register( new Fake_Rule( 'beta', 'fail', 99 ) );
+
+		$output = $this->render( $this->box( $registry ), $this->product() );
+
+		remove_filter( 'sit_wcpg_rule_groups', $groups );
+
+		$content = strpos( $output, '<span class="sit-wcpg-checklist__group-label">Content</span>' );
+		$added   = strpos( $output, '<span class="sit-wcpg-checklist__group-label">Google Shopping</span>' );
+
+		$this->assertNotFalse( $content );
+		$this->assertNotFalse( $added );
+		$this->assertGreaterThan( $content, $added );
+	}
+
+	/**
 	 * The box is registered in the side column of the product screen.
 	 *
 	 * @since 1.0.0
@@ -244,7 +394,8 @@ final class Editor_Meta_Box_Test extends WP_UnitTestCase {
 
 		$this->assertStringContainsString( 'Not ready to publish', $failing );
 		$this->assertStringContainsString( '1 of 3 checks passed', $failing );
-		$this->assertStringContainsString( '2 issues', $failing );
+		$this->assertStringContainsString( 'aria-label="1 of 3 checks passed"', $failing );
+		$this->assertStringContainsString( '1 required · 1 warning', $failing );
 
 		Checklist_Service::flush_memo();
 		wp_cache_flush();
@@ -286,7 +437,7 @@ final class Editor_Meta_Box_Test extends WP_UnitTestCase {
 		$output = $this->render( new Editor_Meta_Box( new Settings() ), $this->product() );
 
 		foreach ( array( 'Content', 'Media', 'Pricing', 'Organization', 'Inventory' ) as $heading ) {
-			$this->assertStringContainsString( '<h4 class="sit-wcpg-checklist__group">' . $heading . '</h4>', $output );
+			$this->assertStringContainsString( '<span class="sit-wcpg-checklist__group-label">' . $heading . '</span>', $output );
 		}
 	}
 

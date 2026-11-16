@@ -1,0 +1,53 @@
+/**
+ * Progress bar (U5). Give the track `role="progressbar"` with `aria-valuenow` (or use a
+ * native `<progress>`), and print the value as text beside it.
+ */
+
+@use "../tokens" as *;
+
+.sit-wcpg-ui {
+
+	.sit-wcpg-ui-bar {
+		position: relative;
+		width: 100%;
+		height: 6px;
+		overflow: hidden;
+		background: token("line");
+		border-radius: 999px;
+	}
+
+	.sit-wcpg-ui-bar__fill {
+		display: block;
+		height: 100%;
+		background: token("shield-500");
+		border-radius: inherit;
+		transition: width 0.3s ease-in-out;
+	}
+
+	.sit-wcpg-ui-bar--warning .sit-wcpg-ui-bar__fill {
+		background: token("warning-700");
+	}
+
+	.sit-wcpg-ui-bar--required .sit-wcpg-ui-bar__fill {
+		background: token("required-700");
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+	.sit-wcpg-ui .sit-wcpg-ui-bar__fill {
+		transition: none;
+	}
+}
+
+@media (forced-colors: active) {
+
+	.sit-wcpg-ui .sit-wcpg-ui-bar {
+		border: 1px solid CanvasText;
+	}
+
+	.sit-wcpg-ui .sit-wcpg-ui-bar__fill {
+		background: Highlight;
+		forced-color-adjust: none;
+	}
+}

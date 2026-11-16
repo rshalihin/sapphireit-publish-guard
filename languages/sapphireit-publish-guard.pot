@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-09T14:27:58+00:00\n"
+"POT-Creation-Date: 2026-11-16T13:18:39+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.9.0\n"
 "X-Domain: sapphireit-publish-guard\n"
@@ -42,6 +42,52 @@ msgstr ""
 msgid "Review checklist rules"
 msgstr ""
 
+#: src/Admin/Admin_Shell.php:214
+#: src/Admin/Admin_Shell.php:218
+#: src/Admin/Catalog_Page.php:122
+#: src/Admin/Dashboard_Page.php:157
+#: src/Admin/Dashboard_Page.php:158
+msgid "Publish Guard"
+msgstr ""
+
+#: src/Admin/Admin_Shell.php:230
+msgid "Docs"
+msgstr ""
+
+#: src/Admin/Admin_Shell.php:239
+msgid "Upgrade to Pro"
+msgstr ""
+
+#: src/Admin/Admin_Shell.php:446
+#: src/Admin/Plugin_Action_Links.php:51
+msgid "Dashboard"
+msgstr ""
+
+#: src/Admin/Admin_Shell.php:454
+msgid "Checklist"
+msgstr ""
+
+#: src/Admin/Admin_Shell.php:461
+msgid "Live products"
+msgstr ""
+
+#: src/Admin/Admin_Shell.php:469
+#: src/Admin/Dashboard_Page.php:432
+msgid "Channel Readiness"
+msgstr ""
+
+#: src/Admin/Admin_Shell.php:472
+#: src/Admin/Dashboard_Page.php:431
+msgid "PRO"
+msgstr ""
+
+#: src/Admin/Admin_Shell.php:818
+#: src/Admin/Dashboard_Page.php:751
+#: src/Admin/Settings_Footer.php:68
+#: src/Settings/Settings_Page.php:613
+msgid "(opens in a new tab)"
+msgstr ""
+
 #: src/Admin/Block_Editor_Notice.php:93
 msgid "The product checklist is not shown in the new product editor."
 msgstr ""
@@ -54,136 +100,513 @@ msgstr ""
 msgid "To see the checklist again, turn the new product editor off under WooCommerce, Settings, Advanced, Features."
 msgstr ""
 
-#: src/Admin/Catalog_List_Table.php:87
+#: src/Admin/Catalog_List_Table.php:113
 msgid "Product"
 msgstr ""
 
-#: src/Admin/Catalog_List_Table.php:88
+#: src/Admin/Catalog_List_Table.php:114
 msgid "Failing required checks"
 msgstr ""
 
-#: src/Admin/Catalog_List_Table.php:89
+#: src/Admin/Catalog_List_Table.php:115
 msgid "Last checked"
 msgstr ""
 
-#: src/Admin/Catalog_List_Table.php:163
+#: src/Admin/Catalog_List_Table.php:116
+msgid "Action"
+msgstr ""
+
+#: src/Admin/Catalog_List_Table.php:235
 msgid "A check that is no longer active"
 msgstr ""
 
 #. translators: %s: a human-readable length of time, such as "2 hours".
-#: src/Admin/Catalog_List_Table.php:187
+#: src/Admin/Catalog_List_Table.php:260
 msgid "%s ago"
 msgstr ""
 
-#: src/Admin/Catalog_List_Table.php:193
+#: src/Admin/Catalog_List_Table.php:266
 msgid " (not rechecked yet)"
 msgstr ""
 
-#: src/Admin/Catalog_List_Table.php:208
+#: src/Admin/Catalog_List_Table.php:288
+msgid "Edit product"
+msgstr ""
+
+#: src/Admin/Catalog_List_Table.php:302
 msgid "Every live product passes your required checks."
 msgstr ""
 
-#: src/Admin/Catalog_List_Table.php:213
+#: src/Admin/Catalog_List_Table.php:307
 msgid "No failing live products found yet. Rechecking is still running, so this list may grow."
 msgstr ""
 
-#: src/Admin/Catalog_Page.php:111
-#: src/Admin/Catalog_Page.php:143
-msgid "Live products that would fail your rules"
+#. translators: %s: number of variations.
+#: src/Admin/Catalog_List_Table.php:350
+msgid "Variable · %s variation"
+msgid_plural "Variable · %s variations"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: the product's SKU.
+#: src/Admin/Catalog_List_Table.php:359
+msgid "SKU %s"
 msgstr ""
 
-#: src/Admin/Catalog_Page.php:112
-msgid "Publish Guard"
+#: src/Admin/Catalog_List_Table.php:363
+msgid "Simple"
 msgstr ""
 
-#: src/Admin/Catalog_Page.php:139
+#: src/Admin/Catalog_List_Table.php:364
+msgid "Grouped"
+msgstr ""
+
+#: src/Admin/Catalog_List_Table.php:365
+msgid "External"
+msgstr ""
+
+#: src/Admin/Catalog_Page.php:149
+#: src/Admin/Dashboard_Page.php:188
 msgid "You do not have permission to view this page."
 msgstr ""
 
-#: src/Admin/Catalog_Page.php:144
-msgid "These products are published. Under the checks you have set as required, each one would be refused if it were published today. They stay live — Publish Guard never takes a product offline."
+#: src/Admin/Catalog_Page.php:158
+msgid "These products are published. Under your required checks, each would be held as a draft if it were published today."
 msgstr ""
 
-#: src/Admin/Catalog_Page.php:151
+#: src/Admin/Catalog_Page.php:160
+msgid "Open the products list"
+msgstr ""
+
+#: src/Admin/Catalog_Page.php:170
 msgid "The product checklist is switched off, so nothing is being checked. Turn it on under WooCommerce → Product Checklist."
 msgstr ""
 
+#: src/Admin/Catalog_Page.php:183
+msgid "They stay live — Publish Guard never takes a product offline."
+msgstr ""
+
+#: src/Admin/Catalog_Page.php:205
+msgid "Live products that would fail today"
+msgstr ""
+
 #. translators: 1: products rechecked so far, 2: products to recheck in total.
-#: src/Admin/Catalog_Page.php:176
+#: src/Admin/Catalog_Page.php:238
 msgid "Rechecking products against your current settings: %1$d of %2$d done. This list will be complete when it finishes."
 msgstr ""
 
-#: src/Admin/Editor_Meta_Box.php:144
-msgid "Product Readiness"
+#: src/Admin/Catalog_Page.php:281
+msgid "No failing live products found yet"
 msgstr ""
 
-#: src/Admin/Editor_Meta_Box.php:173
-msgid "The checklist will appear once this product has been saved."
+#: src/Admin/Catalog_Page.php:282
+msgid "Rechecking is still running, so this list may grow."
 msgstr ""
 
-#: src/Admin/Editor_Meta_Box.php:192
-msgid "Content"
+#: src/Admin/Catalog_Page.php:288
+msgid "Every live product passes your required checks"
 msgstr ""
 
-#: src/Admin/Editor_Meta_Box.php:193
-msgid "Media"
+#: src/Admin/Catalog_Page.php:289
+msgid "We'll list a product here if a rule you tighten later would stop it being published."
 msgstr ""
 
-#: src/Admin/Editor_Meta_Box.php:194
-msgid "Pricing"
+#: src/Admin/Catalog_Page.php:293
+msgid "Review your checklist"
 msgstr ""
 
-#: src/Admin/Editor_Meta_Box.php:195
-msgid "Organization"
+#: src/Admin/Dashboard_Page.php:196
+msgid "Publish Guard dashboard"
 msgstr ""
 
-#: src/Admin/Editor_Meta_Box.php:196
-msgid "Inventory"
+#: src/Admin/Dashboard_Page.php:247
+#: src/Admin/Dashboard_Page.php:262
+msgid "Catalog health"
 msgstr ""
 
-#: src/Admin/Editor_Meta_Box.php:249
-#: build/editor.js:2
+#: src/Admin/Dashboard_Page.php:248
+msgid "Nothing checked yet — products are checked when they are saved or when a recheck runs."
+msgstr ""
+
+#. translators: 1: products that pass every required check, 2: products checked.
+#: src/Admin/Dashboard_Page.php:266
+msgid "%1$s of %2$s product passes every required check"
+msgid_plural "%1$s of %2$s products pass every required check"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/Dashboard_Page.php:274
+msgid "Show not-ready products"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:275
+msgid "Live products report"
+msgstr ""
+
+#. translators: %s: a whole-number percentage.
+#: src/Admin/Dashboard_Page.php:295
+msgid "%s%%"
+msgstr ""
+
+#. translators: %s: a whole-number percentage.
+#: src/Admin/Dashboard_Page.php:300
+msgid "%s%% of checked products pass every required check"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:315
+msgid "publish-ready"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:329
+msgid "Every checked product passes your required checks."
+msgstr ""
+
+#. translators: %s: number of products.
+#: src/Admin/Dashboard_Page.php:338
+msgid "%s product not yet live is held back until it passes."
+msgid_plural "%s products not yet live are held back until they pass."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: number of products.
+#: src/Admin/Dashboard_Page.php:344
+msgid "%s product not yet live fails a required check."
+msgid_plural "%s products not yet live fail a required check."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: number of products.
+#: src/Admin/Dashboard_Page.php:352
+msgid "%s live product would be refused if it were published today."
+msgid_plural "%s live products would be refused if they were published today."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/Dashboard_Page.php:355
+msgid "Nothing live is ever taken offline."
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:375
+msgid "Rechecked automatically when settings change"
+msgstr ""
+
+#. translators: 1: products rechecked so far, 2: products to recheck in total.
+#: src/Admin/Dashboard_Page.php:381
+msgid "Rechecking products against your current settings: %1$s of %2$s done. The numbers update as it runs."
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:386
+msgid "Rechecking products against your current settings. The numbers update when it finishes."
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:404
+msgid "Checklist turned off"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:405
+msgid "The product checklist is turned off, so nothing is being checked."
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:408
+msgid "Turn it on in Checklist settings"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:424
+msgid "Google Shopping checks"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:425
+msgid "Meta catalog checks"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:426
+msgid "ChatGPT and agent feed checks"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:427
+msgid "GTIN / MPN integrity and store policy rules"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:433
+msgid "Catch what Google, Meta and AI shopping agents would reject"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:441
+msgid "See what Pro adds"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:457
+#: src/Admin/Editor_Meta_Box.php:351
+#: build/editor.js:5
 msgid "Ready to publish"
 msgstr ""
 
-#: src/Admin/Editor_Meta_Box.php:250
-#: build/editor.js:2
+#: src/Admin/Dashboard_Page.php:457
+msgid "Pass every check"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:458
+#: src/Admin/Readiness_Filter.php:389
+msgid "Not ready"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:458
+msgid "Failing a required check"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:459
+#: src/Admin/Readiness_Filter.php:388
+msgid "Warnings"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:459
+msgid "Never blocked, worth a look"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:460
+msgid "Live, would fail today"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:460
+msgid "Published, and failing a required check"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:463
+#: src/Admin/Readiness_Filter.php:390
+msgid "Not checked yet"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:463
+msgid "Checked when next saved or rechecked"
+msgstr ""
+
+#. translators: %s: the stat card's label, such as "Not ready".
+#: src/Admin/Dashboard_Page.php:491
+msgid "%s: show these products"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:519
+msgid "Most common issues"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:522
+msgid "All not-ready products"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:528
+msgid "No product fails a required check."
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:534
+msgid "Required checks only: warnings are not counted per check."
+msgstr ""
+
+#. translators: %s: number of products read.
+#: src/Admin/Dashboard_Page.php:540
+msgid "Based on the first %s not-ready products."
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:572
+#: src/Settings/Settings_Page.php:473
+msgid "Other"
+msgstr ""
+
+#. translators: %s: the check's group, such as "Media".
+#: src/Admin/Dashboard_Page.php:575
+msgid "%s · Required"
+msgstr ""
+
+#. translators: %s: the check's label.
+#: src/Admin/Dashboard_Page.php:588
+msgid "products failing %s: show them"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:621
+msgid "Active checks"
+msgstr ""
+
+#. translators: 1: checks switched on, 2: checks in total.
+#: src/Admin/Dashboard_Page.php:625
+msgid "%1$s of %2$s on"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:634
+#: src/Settings/Settings_Page.php:315
+msgid "No checks are registered."
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:644
+msgid "On"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:644
+msgid "Off"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:652
+msgid "Manage all checks"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:667
+msgid "Documentation"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:667
+msgid "How each check decides, and what it skips."
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:667
+msgid "Read the docs"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:668
+msgid "Support"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:668
+msgid "Ask on the WordPress.org forum."
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:668
+msgid "Open a topic"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:669
+msgid "Enjoying Publish Guard?"
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:669
+msgid "A review helps other store owners find it."
+msgstr ""
+
+#: src/Admin/Dashboard_Page.php:669
+#: src/Admin/Review_Notice.php:262
+msgid "Leave a review"
+msgstr ""
+
+#: src/Admin/Editor_Meta_Box.php:164
+msgid "Product Readiness"
+msgstr ""
+
+#: src/Admin/Editor_Meta_Box.php:194
+msgid "The checklist will appear once this product has been saved."
+msgstr ""
+
+#: src/Admin/Editor_Meta_Box.php:217
+msgid "Content"
+msgstr ""
+
+#: src/Admin/Editor_Meta_Box.php:218
+msgid "Media"
+msgstr ""
+
+#: src/Admin/Editor_Meta_Box.php:219
+msgid "Pricing"
+msgstr ""
+
+#: src/Admin/Editor_Meta_Box.php:220
+msgid "Organization"
+msgstr ""
+
+#: src/Admin/Editor_Meta_Box.php:221
+msgid "Inventory"
+msgstr ""
+
+#: src/Admin/Editor_Meta_Box.php:303
+#: build/editor.js:15
+msgid "No checks are enabled."
+msgstr ""
+
+#: src/Admin/Editor_Meta_Box.php:352
+#: build/editor.js:5
 msgid "Not ready to publish"
 msgstr ""
 
-#. translators: %d: number of checks that did not pass.
-#: src/Admin/Editor_Meta_Box.php:263
+#. translators: %d: number of required checks that fail.
+#: src/Admin/Editor_Meta_Box.php:403
+#: build/editor.js:6
+msgid "%d required"
+msgid_plural "%d required"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of checks with a warning.
+#. translators: %d: number of warnings in this group.
+#: src/Admin/Editor_Meta_Box.php:408
+#: src/Admin/Editor_Meta_Box.php:485
+#: src/Admin/Product_List_Column.php:282
+#: build/editor.js:4
+#: build/editor.js:7
+msgid "%d warning"
+msgid_plural "%d warnings"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/Editor_Meta_Box.php:413
+#: build/editor.js:7
+msgid "All checks passed"
+msgstr ""
+
+#: src/Admin/Editor_Meta_Box.php:414
+#: build/editor.js:7
+msgid "No checks apply"
+msgstr ""
+
+#. translators: 1: e.g. "3 required", 2: e.g. "2 warnings".
+#: src/Admin/Editor_Meta_Box.php:422
+#: build/editor.js:8
+msgid "%1$s · %2$s"
+msgstr ""
+
+#. translators: %d: number of required checks failing in this group.
+#: src/Admin/Editor_Meta_Box.php:481
 #: build/editor.js:3
-msgid "%d issue"
-msgid_plural "%d issues"
+msgid "%d failing"
+msgid_plural "%d failing"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of checks that passed, listed below the failing ones.
+#: src/Admin/Editor_Meta_Box.php:511
+#: build/editor.js:14
+msgid "%d more passed"
+msgid_plural "%d more passed"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of checks that passed.
+#: src/Admin/Editor_Meta_Box.php:514
+#: build/editor.js:15
+msgid "%d passed"
+msgid_plural "%d passed"
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of checks that do not apply to this product.
-#: src/Admin/Editor_Meta_Box.php:319
-#: build/editor.js:9
+#: src/Admin/Editor_Meta_Box.php:549
+#: build/editor.js:16
 msgid "Not applicable (%d)"
 msgid_plural "Not applicable (%d)"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Admin/Editor_Meta_Box.php:399
+#: src/Admin/Editor_Meta_Box.php:671
 #: build/editor.js:2
 msgid "Passed"
 msgstr ""
 
-#: src/Admin/Editor_Meta_Box.php:401
+#: src/Admin/Editor_Meta_Box.php:673
 #: src/Engine/Severity.php:82
 #: build/editor.js:2
 msgid "Warning"
 msgstr ""
 
-#: src/Admin/Editor_Meta_Box.php:403
+#: src/Admin/Editor_Meta_Box.php:675
 #: build/editor.js:2
 msgid "Failed"
 msgstr ""
 
-#: src/Admin/Editor_Meta_Box.php:405
+#: src/Admin/Editor_Meta_Box.php:677
 #: build/editor.js:2
 msgid "Not applicable"
 msgstr ""
@@ -223,7 +646,8 @@ msgstr ""
 msgid "A new product"
 msgstr ""
 
-#: src/Admin/Plugin_Action_Links.php:51
+#: src/Admin/Plugin_Action_Links.php:56
+#: src/Settings/Settings_Page.php:592
 msgid "Settings"
 msgstr ""
 
@@ -232,63 +656,50 @@ msgid "Readiness"
 msgstr ""
 
 #. translators: %d: number of failed required checks.
-#: src/Admin/Product_List_Column.php:270
+#: src/Admin/Product_List_Column.php:271
 msgid "%d error"
 msgid_plural "%d errors"
 msgstr[0] ""
 msgstr[1] ""
 
-#. translators: %d: number of checks with a warning.
-#: src/Admin/Product_List_Column.php:280
-msgid "%d warning"
-msgid_plural "%d warnings"
-msgstr[0] ""
-msgstr[1] ""
-
-#: src/Admin/Product_List_Column.php:287
-#: src/Admin/Readiness_Filter.php:252
+#: src/Admin/Product_List_Column.php:290
+#: src/Admin/Readiness_Filter.php:387
 msgid "Ready"
 msgstr ""
 
-#: src/Admin/Product_List_Column.php:382
+#: src/Admin/Product_List_Column.php:384
 msgid "No readiness state"
 msgstr ""
 
-#: src/Admin/Readiness_Filter.php:118
+#: src/Admin/Readiness_Filter.php:178
 msgid "This filtered list may be out of date: background rechecks need WooCommerce's Action Scheduler, which isn't available. Run \"wp sit-wcpg reindex\" to update it."
 msgstr ""
 
-#: src/Admin/Readiness_Filter.php:137
+#: src/Admin/Readiness_Filter.php:198
 msgid "Filter by readiness"
 msgstr ""
 
+#. translators: %s: the label of a check, such as "Featured image".
+#: src/Admin/Readiness_Filter.php:249
+msgid "Failing: %s"
+msgstr ""
+
+#. translators: %s: the label of a check, such as "Featured image".
+#: src/Admin/Readiness_Filter.php:253
+msgid "Remove the filter: %s"
+msgstr ""
+
 #. translators: 1: products rechecked so far, 2: products to recheck in total.
-#: src/Admin/Readiness_Filter.php:231
+#: src/Admin/Readiness_Filter.php:366
 msgid "Rechecking products against your current settings: %1$d of %2$d done. This filtered list will be complete when it finishes."
 msgstr ""
 
-#: src/Admin/Readiness_Filter.php:251
+#: src/Admin/Readiness_Filter.php:386
 msgid "All readiness states"
-msgstr ""
-
-#: src/Admin/Readiness_Filter.php:253
-msgid "Warnings"
-msgstr ""
-
-#: src/Admin/Readiness_Filter.php:254
-msgid "Not ready"
-msgstr ""
-
-#: src/Admin/Readiness_Filter.php:255
-msgid "Not checked yet"
 msgstr ""
 
 #: src/Admin/Review_Notice.php:259
 msgid "Publish Guard has been stopping incomplete products from going live on this store. If it has helped, a short review on WordPress.org helps other store owners find it."
-msgstr ""
-
-#: src/Admin/Review_Notice.php:262
-msgid "Leave a review"
 msgstr ""
 
 #: src/Admin/Review_Notice.php:264
@@ -301,10 +712,6 @@ msgstr ""
 
 #: src/Admin/Settings_Footer.php:67
 msgid "review"
-msgstr ""
-
-#: src/Admin/Settings_Footer.php:68
-msgid "(opens in a new tab)"
 msgstr ""
 
 #. translators: 1: plugin name, 2: link to the WordPress.org review form, reading "review".
@@ -367,12 +774,12 @@ msgstr ""
 msgid "WooCommerce is not active. Activate WooCommerce to use the product checklist."
 msgstr ""
 
-#: src/Engine/Rule_Registry.php:69
+#: src/Engine/Rule_Registry.php:84
 msgid "A rule must have a non-empty id."
 msgstr ""
 
 #. translators: %s is the duplicate rule identifier.
-#: src/Engine/Rule_Registry.php:79
+#: src/Engine/Rule_Registry.php:94
 msgid "A rule with the id \"%s\" is already registered."
 msgstr ""
 
@@ -382,6 +789,7 @@ msgstr ""
 
 #. translators: 1: number of checks that passed, 2: number of checks evaluated.
 #: src/Engine/Validation_Result.php:302
+#: build/editor.js:5
 msgid "%1$d of %2$d check passed"
 msgid_plural "%1$d of %2$d checks passed"
 msgstr[0] ""
@@ -391,56 +799,60 @@ msgstr[1] ""
 msgid "You are not allowed to answer this request."
 msgstr ""
 
-#: src/Rest/Validate_Controller.php:204
+#: src/Rest/Validate_Controller.php:229
 msgid "Product identifier."
 msgstr ""
 
-#: src/Rest/Validate_Controller.php:213
+#: src/Rest/Validate_Controller.php:238
 msgid "Unsaved editor values. Only the keys present override the stored product."
 msgstr ""
 
-#: src/Rest/Validate_Controller.php:280
+#: src/Rest/Validate_Controller.php:310
 msgid "You are not allowed to check this product."
 msgstr ""
 
-#: src/Rest/Validate_Controller.php:311
+#: src/Rest/Validate_Controller.php:355
 msgid "The checklist could not be calculated."
 msgstr ""
 
-#: src/Rest/Validate_Controller.php:350
+#: src/Rest/Validate_Controller.php:434
+msgid "The draft could not be read."
+msgstr ""
+
+#: src/Rest/Validate_Controller.php:456
 msgid "Expected an object."
 msgstr ""
 
-#: src/Rest/Validate_Controller.php:382
+#: src/Rest/Validate_Controller.php:489
 msgid "Expected a list of identifiers."
 msgstr ""
 
-#: src/Rest/Validate_Controller.php:388
+#: src/Rest/Validate_Controller.php:495
 msgid "Expected a number or null."
 msgstr ""
 
-#: src/Rest/Validate_Controller.php:392
+#: src/Rest/Validate_Controller.php:499
 msgid "Expected a single value."
 msgstr ""
 
-#: src/Rest/Validate_Controller.php:396
+#: src/Rest/Validate_Controller.php:503
 msgid "Not one of the registered product types."
 msgstr ""
 
-#: src/Rest/Validate_Controller.php:400
+#: src/Rest/Validate_Controller.php:507
 msgid "Not one of the registered stock statuses."
 msgstr ""
 
-#: src/Rest/Validate_Controller.php:407
+#: src/Rest/Validate_Controller.php:514
 msgid "Expected a price."
 msgstr ""
 
-#: src/Rest/Validate_Controller.php:619
+#: src/Rest/Validate_Controller.php:731
 msgid "No product was found with that identifier."
 msgstr ""
 
 #. translators: 1: parameter name, 2: reason the value was rejected.
-#: src/Rest/Validate_Controller.php:638
+#: src/Rest/Validate_Controller.php:750
 msgid "Invalid parameter: %1$s. %2$s"
 msgstr ""
 
@@ -786,173 +1198,246 @@ msgstr ""
 msgid "This variable product has no enabled variations yet — see the \"Variations and grouped products\" check."
 msgstr ""
 
-#: src/Settings/Settings.php:184
+#: src/Settings/Settings.php:193
 msgid "Minimum description length"
 msgstr ""
 
-#: src/Settings/Settings.php:186
+#: src/Settings/Settings.php:195
 msgid "Minimum short description length"
 msgstr ""
 
-#: src/Settings/Settings.php:188
+#: src/Settings/Settings.php:197
 msgid "Minimum number of images"
 msgstr ""
 
-#: src/Settings/Settings_Page.php:141
-#: src/Settings/Settings_Page.php:142
-#: src/Settings/Settings_Page.php:208
+#: src/Settings/Settings_Page.php:211
+#: src/Settings/Settings_Page.php:212
 msgid "Product Checklist"
 msgstr ""
 
-#: src/Settings/Settings_Page.php:165
+#: src/Settings/Settings_Page.php:235
 msgid "Product readiness checklist configuration."
 msgstr ""
 
-#: src/Settings/Settings_Page.php:202
+#: src/Settings/Settings_Page.php:275
 msgid "You do not have permission to manage these settings."
 msgstr ""
 
-#: src/Settings/Settings_Page.php:238
-msgid "Checklist"
+#: src/Settings/Settings_Page.php:360
+#: build/settings.js:1
+msgid "All changes saved"
 msgstr ""
 
-#: src/Settings/Settings_Page.php:244
-msgid "Enable the product readiness checklist"
+#: src/Settings/Settings_Page.php:363
+msgid "Discard"
 msgstr ""
 
-#: src/Settings/Settings_Page.php:245
-msgid "When this is off, no checks run and nothing is enforced."
-msgstr ""
-
-#: src/Settings/Settings_Page.php:260
-msgid "Rules"
-msgstr ""
-
-#: src/Settings/Settings_Page.php:262
-msgid "Each check protects against a specific problem. A required check must pass before a product can be published; a warning is shown but never blocks publishing."
-msgstr ""
-
-#: src/Settings/Settings_Page.php:268
-msgid "No checks are registered."
-msgstr ""
-
-#: src/Settings/Settings_Page.php:274
-msgid "Check"
-msgstr ""
-
-#: src/Settings/Settings_Page.php:275
-msgid "Enabled"
-msgstr ""
-
-#: src/Settings/Settings_Page.php:276
-msgid "Severity"
-msgstr ""
-
-#: src/Settings/Settings_Page.php:326
-msgid "Other"
-msgstr ""
-
-#. translators: %s: the name of the check being enabled.
 #: src/Settings/Settings_Page.php:365
-msgid "Run the %s check"
+msgid "Save changes"
 msgstr ""
 
-#: src/Settings/Settings_Page.php:388
-msgid "Content thresholds"
+#: src/Settings/Settings_Page.php:493
+msgid "What shoppers and search engines read first."
 msgstr ""
 
-#: src/Settings/Settings_Page.php:392
-#: src/Settings/Settings_Page.php:393
-msgid "Characters. Set to 0 to turn the length warning off."
+#: src/Settings/Settings_Page.php:495
+msgid "Channels disapprove products without images."
 msgstr ""
 
-#: src/Settings/Settings_Page.php:394
-msgid "Images, counting the featured image. Set to 0 or 1 to turn this check off."
+#: src/Settings/Settings_Page.php:497
+msgid "A product can't be bought without a valid price."
 msgstr ""
 
-#: src/Settings/Settings_Page.php:430
-msgid "All signed-in requests"
+#: src/Settings/Settings_Page.php:499
+msgid "How shoppers and channels find the product."
 msgstr ""
 
-#: src/Settings/Settings_Page.php:431
-msgid "Admin editor screens only"
+#: src/Settings/Settings_Page.php:501
+msgid "What you can sell and how it is identified."
 msgstr ""
 
-#: src/Settings/Settings_Page.php:434
+#: src/Settings/Settings_Page.php:503
+msgid "Checks added by other plugins."
+msgstr ""
+
+#: src/Settings/Settings_Page.php:578
+msgid "Checklist sections"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:582
+msgid "Check groups"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:596
+#: src/Settings/Settings_Page.php:933
+msgid "Thresholds"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:599
+#: src/Settings/Settings_Page.php:966
 msgid "Publishing"
 msgstr ""
 
-#: src/Settings/Settings_Page.php:437
-msgid "Enforcement"
-msgstr ""
-
-#: src/Settings/Settings_Page.php:442
-msgid "Prevent publishing when required checks fail"
-msgstr ""
-
-#: src/Settings/Settings_Page.php:443
-msgid "Enforced on the server, so it also covers quick edit, bulk edit and the REST API."
-msgstr ""
-
-#: src/Settings/Settings_Page.php:449
-msgid "Allow users who can manage WooCommerce to publish anyway"
-msgstr ""
-
-#: src/Settings/Settings_Page.php:450
-msgid "Off by default, which means nobody can publish past a failing required check."
-msgstr ""
-
-#: src/Settings/Settings_Page.php:455
-msgid "Enforcement applies to"
-msgstr ""
-
-#: src/Settings/Settings_Page.php:467
-msgid "Scheduled publishing run by WP-Cron and requests made through WP-CLI are always excluded."
-msgstr ""
-
-#: src/Settings/Settings_Page.php:471
-msgid "Products list"
-msgstr ""
-
-#: src/Settings/Settings_Page.php:476
-msgid "Show the Readiness column in the products list"
-msgstr ""
-
-#: src/Settings/Settings_Page.php:498
+#: src/Settings/Settings_Page.php:602
+#: src/Settings/Settings_Page.php:1060
 msgid "Readiness filter"
 msgstr ""
 
+#: src/Settings/Settings_Page.php:609
+msgid "Need channel rules?"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:610
+msgid "Pro adds Google, Meta and agent-feed packs and your own store rules."
+msgstr ""
+
+#: src/Settings/Settings_Page.php:611
+msgid "Learn about Pro"
+msgstr ""
+
+#. translators: %s: number of checks in the group.
+#: src/Settings/Settings_Page.php:636
+msgid "(%s check)"
+msgid_plural "(%s checks)"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Settings/Settings_Page.php:656
+msgid "Product checklist"
+msgstr ""
+
+#. translators: 1: the word "Required", 2: the word "Warning".
+#: src/Settings/Settings_Page.php:660
+msgid "A %1$s check must pass before a product can be published. A %2$s is shown in the editor but never blocks publishing."
+msgstr ""
+
+#: src/Settings/Settings_Page.php:669
+msgid "Run the checklist"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:670
+msgid "When this is off, no checks run and nothing is enforced."
+msgstr ""
+
+#. translators: %s: number of required checks.
+#: src/Settings/Settings_Page.php:760
+msgid "%s required"
+msgid_plural "%s required"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: number of checks that warn.
+#: src/Settings/Settings_Page.php:765
+msgid "%s warning"
+msgid_plural "%s warnings"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: number of checks switched off.
+#: src/Settings/Settings_Page.php:770
+msgid "%s off"
+msgid_plural "%s off"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: the name of the check.
+#: src/Settings/Settings_Page.php:822
+msgid "Severity of the %s check"
+msgstr ""
+
+#. translators: %s: the name of the check being enabled.
+#: src/Settings/Settings_Page.php:830
+msgid "Run the %s check"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:907
+msgid "characters"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:908
+msgid "Set to 0 to turn the length warning off."
+msgstr ""
+
+#: src/Settings/Settings_Page.php:912
+msgid "images"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:913
+msgid "Counts the featured image. Set to 0 or 1 to turn this check off."
+msgstr ""
+
+#: src/Settings/Settings_Page.php:956
+msgid "All signed-in requests"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:957
+msgid "Admin editor screens only"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:966
+msgid "What happens when a product fails a required check."
+msgstr ""
+
+#: src/Settings/Settings_Page.php:974
+msgid "Prevent publishing when required checks fail"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:975
+msgid "Enforced on the server, so it also covers quick edit, bulk edit and the REST API."
+msgstr ""
+
+#: src/Settings/Settings_Page.php:982
+msgid "Allow users who can manage WooCommerce to publish anyway"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:983
+msgid "Off by default, which means nobody can publish past a failing required check."
+msgstr ""
+
+#: src/Settings/Settings_Page.php:989
+#: src/Settings/Settings_Page.php:997
+msgid "Enforcement applies to"
+msgstr ""
+
+#: src/Settings/Settings_Page.php:990
+msgid "Scheduled publishing run by WP-Cron and requests made through WP-CLI are always excluded."
+msgstr ""
+
+#: src/Settings/Settings_Page.php:1006
+msgid "Show the Readiness column in the products list"
+msgstr ""
+
 #. translators: %d: number of products.
-#: src/Settings/Settings_Page.php:517
+#: src/Settings/Settings_Page.php:1078
 msgid "All %d products have been checked against these settings."
 msgstr ""
 
-#: src/Settings/Settings_Page.php:523
+#: src/Settings/Settings_Page.php:1084
 msgid "Background rechecks need WooCommerce's Action Scheduler, which isn't available. Run \"wp sit-wcpg reindex\" to update the products list filter."
 msgstr ""
 
 #. translators: 1: products rechecked so far, 2: products to recheck in total.
-#: src/Settings/Settings_Page.php:529
+#: src/Settings/Settings_Page.php:1090
 msgid "Rechecking products against these settings: %1$d of %2$d done."
 msgstr ""
 
-#: src/Settings/Settings_Page.php:535
+#: src/Settings/Settings_Page.php:1096
 msgid "Products will be rechecked against these settings in the background."
 msgstr ""
 
 #. translators: 1: threshold setting label, 2: the value that was stored instead.
-#: src/Settings/Settings_Sanitizer.php:218
+#: src/Settings/Settings_Sanitizer.php:228
 msgid "%1$s was outside the allowed range and has been saved as %2$d."
 msgstr ""
 
 #: src/Support/Preflight.php:110
-#: build/editor.js:3
+#: build/editor.js:8
 msgid "This product can be published now."
 msgstr ""
 
 #. translators: %d: number of advisory warnings.
 #: src/Support/Preflight.php:115
-#: build/editor.js:4
+#: build/editor.js:9
 msgid "This product can be published now. %d warning is advisory and won't stop it."
 msgid_plural "This product can be published now. %d warnings are advisory and won't stop it."
 msgstr[0] ""
@@ -960,7 +1445,7 @@ msgstr[1] ""
 
 #. translators: %d: number of required checks that fail.
 #: src/Support/Preflight.php:127
-#: build/editor.js:5
+#: build/editor.js:10
 msgid "This product can't be published yet — %d required check fails. Publishing now saves it as a draft."
 msgid_plural "This product can't be published yet — %d required checks fail. Publishing now saves it as a draft."
 msgstr[0] ""
@@ -968,7 +1453,7 @@ msgstr[1] ""
 
 #. translators: %d: number of required checks that fail.
 #: src/Support/Preflight.php:139
-#: build/editor.js:6
+#: build/editor.js:11
 msgid "%d required check fails. You can publish anyway, and the override will be recorded."
 msgid_plural "%d required checks fail. You can publish anyway, and the override will be recorded."
 msgstr[0] ""
@@ -976,20 +1461,20 @@ msgstr[1] ""
 
 #. translators: %d: number of required checks that fail.
 #: src/Support/Preflight.php:151
-#: build/editor.js:7
+#: build/editor.js:12
 msgid "%d required check fails, but this store doesn't block publishing, so it can still go live."
 msgid_plural "%d required checks fail, but this store doesn't block publishing, so it can still go live."
 msgstr[0] ""
 msgstr[1] ""
 
 #: src/Support/Preflight.php:162
-#: build/editor.js:7
+#: build/editor.js:12
 msgid "This product is live and passes every required check."
 msgstr ""
 
 #. translators: %d: number of required checks that fail.
 #: src/Support/Preflight.php:167
-#: build/editor.js:8
+#: build/editor.js:13
 msgid "This product is live, but %d required check fails. Publish Guard never takes a live product offline."
 msgid_plural "This product is live, but %d required checks fail. Publish Guard never takes a live product offline."
 msgstr[0] ""
@@ -1007,35 +1492,47 @@ msgstr ""
 msgid "Could not refresh the checklist."
 msgstr ""
 
-#. translators: %s: time of day the checklist was last checked.
-#: build/editor.js:2
-msgid "Checked at %s"
-msgstr ""
-
-#: build/editor.js:2
+#: build/editor.js:1
 msgid "Re-check"
 msgstr ""
 
+#. translators: %s: time of day the checklist was last checked.
 #: build/editor.js:2
+msgid "Checked at %s · updates as you type"
+msgstr ""
+
+#: build/editor.js:2
+msgid "Updates as you type"
+msgstr ""
+
+#: build/editor.js:5
 msgid "Checking…"
 msgstr ""
 
-#: build/editor.js:8
+#: build/editor.js:15
 msgid "Required checks are failing. Publish this product anyway?"
 msgstr ""
 
-#: build/editor.js:8
+#: build/editor.js:15
 msgid "Required checks are failing, so this product will be saved as a draft instead of being published. Save it anyway?"
 msgstr ""
 
-#: build/editor.js:8
-msgid "No checks are enabled."
-msgstr ""
-
-#: build/editor.js:9
+#: build/editor.js:16
 msgid "Required checks are failing. You can still publish, because you are allowed to override this check."
 msgstr ""
 
-#: build/editor.js:9
+#: build/editor.js:16
 msgid "Required checks are failing. If you publish now, the product will be saved as a draft instead."
+msgstr ""
+
+#: build/settings.js:1
+msgid "Saving…"
+msgstr ""
+
+#: build/settings.js:1
+msgid "Unsaved changes"
+msgstr ""
+
+#: build/settings.js:1
+msgid "Changes discarded"
 msgstr ""

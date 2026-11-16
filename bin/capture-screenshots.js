@@ -1,7 +1,7 @@
 /**
  * Regenerates the WordPress.org screenshots that Playwright can produce:
- * `.wordpress-org/screenshot-1.png`, `-3`, `-4`, `-5`, `-6` and `-7` (see the
- * spec for what each shows). Screenshot 2 is still taken by hand.
+ * `.wordpress-org/screenshot-1.png` to `screenshot-8.png` (see the
+ * spec for what each shows).
  *
  * Runs tests/e2e/screenshots.spec.js against the dedicated Laragon site the
  * same way bin/e2e-local.js runs the suite. SIT_WCPG_CAPTURE=1 is what

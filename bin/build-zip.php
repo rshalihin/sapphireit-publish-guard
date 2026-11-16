@@ -36,6 +36,11 @@ $sit_wcpg_required = array(
 	'readme.txt',
 	'build/editor.js',
 	'build/editor.asset.php',
+	'build/shell.css',
+	'build/shell-rtl.css',
+	// The shell's font and its licence (UI decision U3); build/fonts/ holds the copy the CSS loads.
+	'assets/fonts/inter-latin-var.woff2',
+	'assets/fonts/OFL.txt',
 	'languages/' . $sit_wcpg_slug . '.pot',
 );
 

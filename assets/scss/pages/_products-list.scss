@@ -1,0 +1,81 @@
+/**
+ * The products list (UI phase U08): the Readiness column's pills and the chip naming an
+ * active `sit_wcpg_rule` filter. Both sit on core's own screen, so each is its own
+ * `.sit-wcpg-ui` island and nothing else on the screen changes.
+ */
+
+@use "../tokens" as *;
+
+.sit-wcpg-ui.sit-wcpg-readiness {
+	display: inline-block;
+	font-size: 13px;
+	white-space: nowrap;
+}
+
+.sit-wcpg-ui {
+
+	.sit-wcpg-readiness__pill {
+		text-decoration: none;
+
+		&:hover .sit-wcpg-readiness__label,
+		&:focus .sit-wcpg-readiness__label {
+			text-decoration: underline;
+		}
+	}
+
+	&.sit-wcpg-readiness--none {
+		color: token("muted");
+	}
+
+	// One chip: the required pill and its remove button joined (V-U15). Core's tablenav
+	// still wraps it below the filters when they fill the row; joined, it reads as one
+	// control there instead of a pill with a loose button beside it.
+	&.sit-wcpg-rule-chip {
+		display: flex;
+		align-items: stretch;
+		min-height: 30px;
+	}
+
+	.sit-wcpg-rule-chip__label {
+		display: inline-flex;
+		align-items: center;
+		border-start-end-radius: 0;
+		border-end-end-radius: 0;
+	}
+
+	// `.button` is core's; the chip's own class makes it beat `.wp-core-ui .button`.
+	&.sit-wcpg-rule-chip .sit-wcpg-rule-chip__remove {
+		display: inline-flex;
+		align-items: center;
+		min-height: 0;
+		margin: 0;
+		padding: 0 token("space-3");
+		color: token("required-700");
+		font-size: 16px;
+		line-height: 1;
+		background: token("required-50");
+		border: 0;
+		border-inline-start: 1px solid token("surface");
+		// The RTL build flips this radius for right-to-left screens.
+		border-radius: 0 999px 999px 0;
+		box-shadow: none;
+
+		&:hover,
+		&:focus {
+			color: token("surface");
+			background: token("required-700");
+		}
+
+		&:focus-visible {
+			outline: 2px solid token("info-700");
+			outline-offset: 2px;
+		}
+	}
+}
+
+// Column width. The list table and its header classes are core's (`column-{key}` is
+// built from Product_List_Column::COLUMN), so they cannot follow the BEM prefix pattern.
+/* stylelint-disable-next-line selector-class-pattern -- core list-table classes */
+table.wp-list-table .manage-column.column-sit_wcpg_readiness {
+	width: 130px;
+}

@@ -1,0 +1,64 @@
+/**
+ * Design tokens, the font and the type scale (UI decisions U2, U3, U4).
+ *
+ * The custom properties on `.sit-wcpg-ui` are part of the public contract (U11): an
+ * add-on page inside the shell may read them. The SCSS variables, maps and mixins
+ * (in `_token-api.scss`, forwarded from here) are not; they exist only to build this
+ * plugin's own stylesheets.
+ *
+ * Every component partial `@use`s this file; Sass emits its CSS once.
+ */
+
+@forward "token-api";
+@use "sass:list";
+@use "token-api" as *;
+
+// U3: Inter, variable weight, Latin + Latin Extended, shipped with the plugin.
+// The build copies the file into build/fonts/ and rewrites this URL to it.
+@font-face {
+	font-family: Inter;
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url(../fonts/inter-latin-var.woff2) format("woff2");
+}
+
+.sit-wcpg-ui {
+
+	@each $name, $value in $sit-wcpg-tokens {
+		--sit-wcpg-#{$name}: #{$value};
+	}
+
+	@each $name, $spec in $sit-wcpg-type-scale {
+		$size: list.nth($spec, 1);
+
+		.sit-wcpg-ui__t-#{$name} {
+			margin: 0;
+			font-size: $size;
+			font-weight: list.nth($spec, 2);
+
+			// Body copy 1.5 (U4); headings tighter.
+			@if $size >= 18px {
+				line-height: 1.3;
+			} @else {
+				line-height: 1.5;
+			}
+		}
+	}
+
+	// The Style guide artboard tightens the two display sizes.
+	.sit-wcpg-ui__t-page,
+	.sit-wcpg-ui__t-hero {
+		letter-spacing: -0.02em;
+	}
+
+	.sit-wcpg-ui__t-overline {
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: token("muted");
+	}
+
+	.sit-wcpg-ui__t-small {
+		color: token("muted");
+	}
+}
